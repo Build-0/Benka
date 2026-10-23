@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from './supabase.js'
 import Login from './Login.jsx'
 import Ideas from './Ideas.jsx'
+import { VersionTag, UpdatePrompt } from './Version.jsx'
 
 // 之後每個模組加落呢個表，手機底部分頁 / 闊畫面側邊欄會自動出現。
 const MODULES = [
@@ -19,10 +20,11 @@ export default function App() {
   }, [])
 
   if (session === undefined) return <div className="center muted">載入中…</div>
-  if (!session) return <Login />
+  if (!session) return <><Login /><UpdatePrompt /></>
 
   return (
     <div className="shell">
+      <UpdatePrompt />
       <aside className="nav">
         <div className="brand">本家</div>
         {MODULES.map((m) => (
@@ -38,6 +40,7 @@ export default function App() {
       </aside>
       <main className="main">
         {tab === 'ideas' && <Ideas />}
+        <VersionTag />
       </main>
     </div>
   )
