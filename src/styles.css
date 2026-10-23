@@ -19,6 +19,9 @@ h1 { font-size: 22px; margin: 0 0 12px; }
 .login { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; }
 input { font: inherit; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
 input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+.pw { position: relative; display: flex; }
+.pw input { flex: 1; padding-right: 46px; }
+.eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: 0; background: none; font-size: 20px; padding: 8px; cursor: pointer; }
 .primary { font: inherit; padding: 12px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; cursor: pointer; }
 .primary:disabled { opacity: .6; }
 .err { color: var(--err); font-size: 14px; }
