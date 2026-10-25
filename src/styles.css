@@ -97,3 +97,8 @@ textarea:focus { outline: 2px solid var(--accent-soft); border-color: var(--acce
 .update { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); max-width: 460px; z-index: 50; background: var(--card); border: 1px solid var(--accent); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 6px 24px rgba(20, 32, 46, .22); }
 .update > div { flex: 1; font-size: 14px; }
 .update .primary, .update .ghost { padding: 8px 12px; font-size: 14px; white-space: nowrap; }
+
+/* 保健品清單 */
+.list { padding: 4px 16px; }
+.row { display: flex; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }

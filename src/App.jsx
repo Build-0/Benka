@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { supabase } from './supabase.js'
 import Login from './Login.jsx'
 import Ideas from './Ideas.jsx'
+import Supplements from './Supplements.jsx'
 import { VersionTag, UpdatePrompt } from './Version.jsx'
 
 // 之後每個模組加落呢個表，手機底部分頁 / 闊畫面側邊欄會自動出現。
 const MODULES = [
   { key: 'ideas', label: '想法', icon: '💡' },
+  { key: 'supp', label: '保健品', icon: '💊' },
 ]
 
 export default function App() {
@@ -40,6 +42,7 @@ export default function App() {
       </aside>
       <main className="main">
         {tab === 'ideas' && <Ideas />}
+        {tab === 'supp' && <Supplements />}
         <VersionTag />
       </main>
     </div>
