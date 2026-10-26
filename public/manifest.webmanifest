@@ -1,0 +1,10 @@
+{
+  "name": "本家",
+  "short_name": "本家",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef2f7",
+  "theme_color": "#2f4a6b",
+  "icons": [{ "src": "./icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }]
+}

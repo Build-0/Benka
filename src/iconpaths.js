@@ -1,0 +1,16 @@
+// 由 @tabler/icons 抽出嘅內嵌 SVG(離線都顯示,唔靠外部字型)
+export const PATHS = {
+  "bulb": "<path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/>\n  <path d=\"M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7\" />\n  <path d=\"M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3\" />\n  <path d=\"M9.7 17l4.6 0\" />",
+  "pill": "<path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/>\n  <path d=\"M4.5 12.5l8 -8a4.94 4.94 0 0 1 7 7l-8 8a4.94 4.94 0 0 1 -7 -7\" />\n  <path d=\"M8.5 8.5l7 7\" />",
+  "logout": "<path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/>\n  <path d=\"M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2\" />\n  <path d=\"M9 12h12l-3 -3\" />\n  <path d=\"M18 15l3 -3\" />",
+  "plus": "<path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/>\n  <path d=\"M12 5l0 14\" />\n  <path d=\"M5 12l14 0\" />",
+  "x": "<path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/>\n  <path d=\"M18 6l-12 12\" />\n  <path d=\"M6 6l12 12\" />",
+  "layout-grid": "<path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/>\n  <path d=\"M4 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z\" />\n  <path d=\"M14 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z\" />\n  <path d=\"M4 14m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z\" />\n  <path d=\"M14 14m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z\" />",
+  "list": "<path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/>\n  <path d=\"M9 6l11 0\" />\n  <path d=\"M9 12l11 0\" />\n  <path d=\"M9 18l11 0\" />\n  <path d=\"M5 6l0 .01\" />\n  <path d=\"M5 12l0 .01\" />\n  <path d=\"M5 18l0 .01\" />",
+  "pin": "<path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/>\n  <path d=\"M15 4.5l-4 4l-4 1.5l-1.5 1.5l7 7l1.5 -1.5l1.5 -4l4 -4\" />\n  <path d=\"M9 15l-4.5 4.5\" />\n  <path d=\"M14.5 4l5.5 5.5\" />",
+  "sunrise": "<path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/>\n  <path d=\"M3 17h1m16 0h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7m-9.7 5.7a4 4 0 0 1 8 0\" />\n  <path d=\"M3 21l18 0\" />\n  <path d=\"M12 9v-6l3 3m-6 0l3 -3\" />",
+  "sun": "<path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/>\n  <path d=\"M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0\" />\n  <path d=\"M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7\" />",
+  "sun-high": "<path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/>\n  <path d=\"M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z\" />\n  <path d=\"M6.343 17.657l-1.414 1.414\" />\n  <path d=\"M6.343 6.343l-1.414 -1.414\" />\n  <path d=\"M17.657 6.343l1.414 -1.414\" />\n  <path d=\"M17.657 17.657l1.414 1.414\" />\n  <path d=\"M4 12h-2\" />\n  <path d=\"M12 4v-2\" />\n  <path d=\"M20 12h2\" />\n  <path d=\"M12 20v2\" />",
+  "sunset-2": "<path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/>\n  <path d=\"M3 13h1\" />\n  <path d=\"M20 13h1\" />\n  <path d=\"M5.6 6.6l.7 .7\" />\n  <path d=\"M18.4 6.6l-.7 .7\" />\n  <path d=\"M8 13a4 4 0 1 1 8 0\" />\n  <path d=\"M3 17h18\" />\n  <path d=\"M7 20h5\" />\n  <path d=\"M16 20h1\" />\n  <path d=\"M12 5v-1\" />",
+  "moon": "<path stroke=\"none\" d=\"M0 0h24v24H0z\" fill=\"none\"/>\n  <path d=\"M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z\" />",
+}

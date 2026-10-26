@@ -1,13 +1,27 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from './supabase.js'
+import { cget, cset } from './cache.js'
+import Icon from './Icon.jsx'
 
-const fmt = (s) => new Date(s).toLocaleDateString('zh-HK', { year: 'numeric', month: '2-digit', day: '2-digit' })
+const PALETTE = ['#3f7fbf', '#2f9e9a', '#6a58a8', '#5a6fc0', '#4a8fa8', '#6b9bd1']
+const NO_TAG = '#8da2b8'
+const colorOf = (tag) => {
+  if (!tag) return NO_TAG
+  let h = 0
+  for (const ch of tag) h = (h * 31 + ch.charCodeAt(0)) >>> 0
+  return PALETTE[h % PALETTE.length]
+}
+const fmt = (s) => {
+  const d = new Date(s)
+  return `${d.getDate()}/${d.getMonth() + 1}`
+}
 
 export default function Ideas() {
-  const [rows, setRows] = useState(null)
+  const [rows, setRows] = useState(() => cget('ideas'))
   const [err, setErr] = useState('')
   const [q, setQ] = useState('')
   const [tag, setTag] = useState('')
+  const [view, setView] = useState(() => cget('ideas-view') || 'grid')
   const [editing, setEditing] = useState(null) // null = 關閉;{} = 新增;row = 編輯
 
   const load = async () => {
@@ -16,9 +30,11 @@ export default function Ideas() {
       .select('*')
       .order('pinned', { ascending: false })
       .order('created_at', { ascending: false })
-    if (error) { setErr(error.message); setRows([]) } else { setErr(''); setRows(data) }
+    if (error) { setErr(error.message); setRows((r) => r || []) } else { setErr(''); setRows(data); cset('ideas', data) }
   }
   useEffect(() => { load() }, [])
+
+  const pickView = (v) => { setView(v); cset('ideas-view', v) }
 
   const allTags = useMemo(() => {
     const n = {}
@@ -40,19 +56,27 @@ export default function Ideas() {
       <div className="head">
         <div>
           <h1>想法百寶箱</h1>
-          <div className="muted">{rows ? `共 ${rows.length} 個想法` : '載入中…'}</div>
+          <div className="muted">{rows ? `共 ${rows.length} 個想法${shown.length !== rows.length ? ` · 顯示 ${shown.length}` : ''}` : '載入中…'}</div>
         </div>
-        <button className="primary add" onClick={() => setEditing({})}>＋ 新增</button>
+        <button className="primary add" onClick={() => setEditing({})}><Icon n="plus" />新增</button>
       </div>
 
       {err && (
         <div className="card errbox">
           讀取失敗:{err}
-          <div className="muted">如果提示 ideas 表不存在,請先喺 Supabase SQL Editor 執行 supabase/01_ideas.sql。</div>
+          {/relation|schema cache|does not exist/i.test(err) && (
+            <div className="muted">ideas 表未建立,請先喺 Supabase SQL Editor 執行 supabase/01_ideas.sql。</div>
+          )}
         </div>
       )}
 
-      <input className="search" type="search" placeholder="搜尋標題、內容、標籤…" value={q} onChange={(e) => setQ(e.target.value)} />
+      <div className="tools">
+        <input className="search" type="search" placeholder="搜尋標題、內容、標籤…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <div className="tog" role="group" aria-label="檢視方式">
+          <button className={view === 'grid' ? 'on' : ''} onClick={() => pickView('grid')} aria-label="卡片檢視"><Icon n="layout-grid" /></button>
+          <button className={view === 'list' ? 'on' : ''} onClick={() => pickView('list')} aria-label="列表檢視"><Icon n="list" /></button>
+        </div>
+      </div>
 
       {allTags.length > 0 && (
         <div className="chips">
@@ -64,24 +88,27 @@ export default function Ideas() {
       )}
 
       {rows && shown.length === 0 && !err && (
-        <div className="empty muted">{rows.length === 0 ? '未有想法,撳右上「新增」記低第一個。' : '搵唔到符合嘅想法。'}</div>
+        <div className="empty muted">{rows.length === 0 ? '未有想法,撳右下角「＋」記低第一個。' : '搵唔到符合嘅想法。'}</div>
       )}
 
-      <div className="grid">
+      <div className={'grid' + (view === 'list' ? ' list' : '')}>
         {shown.map((r) => (
-          <article key={r.id} className="idea" onClick={() => setEditing(r)}>
-            <div className="idea-top">
+          <article key={r.id} className="idea" style={{ '--c': colorOf(r.tags[0]) }} onClick={() => setEditing(r)}>
+            <div className="stripe" />
+            <div className="ib">
               <h3>{r.title}</h3>
-              {r.pinned && <span className="pin" title="置頂">📌</span>}
-            </div>
-            {r.content && <p>{r.content}</p>}
-            <div className="idea-foot">
-              <div className="tags">{r.tags.map((t) => <span key={t} className="tag">{t}</span>)}</div>
-              <span className="muted date">{fmt(r.created_at)}</span>
+              {r.content && <p>{r.content}</p>}
+              <div className="ft">
+                <span className="tg">{r.tags[0] || ''}{r.tags.length > 1 ? ` +${r.tags.length - 1}` : ''}</span>
+                <span>{fmt(r.created_at)}</span>
+                {r.pinned && <Icon n="pin" className="pin" />}
+              </div>
             </div>
           </article>
         ))}
       </div>
+
+      <button className="fab" onClick={() => setEditing({})} aria-label="新增想法"><Icon n="plus" /></button>
 
       {editing && <Editor idea={editing} allTags={allTags} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load() }} />}
     </>
@@ -98,11 +125,24 @@ function Editor({ idea, allTags, onClose, onSaved }) {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
 
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
+
   useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && onClose()
+    const close = () => closeRef.current()
+    const onKey = (e) => e.key === 'Escape' && close()
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+    document.body.style.overflow = 'hidden'
+    // 手機「返回」掣只關面板,唔會離開網站
+    window.history.pushState({ e: 1 }, '')
+    window.addEventListener('popstate', close)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('popstate', close)
+      document.body.style.overflow = ''
+      if (window.history.state && window.history.state.e) window.history.back()
+    }
+  }, [])
 
   const addTag = (raw) => {
     const t = raw.trim()
@@ -141,36 +181,38 @@ function Editor({ idea, allTags, onClose, onSaved }) {
       <form className="sheet" onSubmit={save}>
         <div className="sheet-head">
           <h2>{isNew ? '新增想法' : '編輯想法'}</h2>
-          <button type="button" className="x" onClick={onClose} aria-label="關閉">✕</button>
+          <button type="button" className="x" onClick={onClose} aria-label="關閉"><Icon n="x" /></button>
         </div>
 
-        <input placeholder="標題" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus={isNew} />
-        <textarea placeholder="想法內容(可寫長文)…" rows={9} value={content} onChange={(e) => setContent(e.target.value)} />
+        <div className="sheet-body">
+          <input placeholder="標題" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus={isNew} />
+          <textarea placeholder="想法內容(可寫長文)…" rows={8} value={content} onChange={(e) => setContent(e.target.value)} />
 
-        <div>
-          <div className="tags edit">
-            {tags.map((t) => (
-              <span key={t} className="tag">{t}<button type="button" onClick={() => setTags(tags.filter((x) => x !== t))} aria-label={'移除 ' + t}>×</button></span>
-            ))}
-            <input
-              className="taginput"
-              placeholder="加標籤,按 Enter"
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagInput) } }}
-              onBlur={() => addTag(tagInput)}
-            />
-          </div>
-          {suggestions.length > 0 && (
-            <div className="chips small">
-              {suggestions.map((t) => <button key={t} type="button" className="chip" onClick={() => addTag(t)}>＋ {t}</button>)}
+          <div>
+            <div className="tags edit">
+              {tags.map((t) => (
+                <span key={t} className="tag">{t}<button type="button" onClick={() => setTags(tags.filter((x) => x !== t))} aria-label={'移除 ' + t}>×</button></span>
+              ))}
+              <input
+                className="taginput"
+                placeholder="加標籤,按 Enter"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagInput) } }}
+                onBlur={() => addTag(tagInput)}
+              />
             </div>
-          )}
+            {suggestions.length > 0 && (
+              <div className="chips small">
+                {suggestions.map((t) => <button key={t} type="button" className="chip" onClick={() => addTag(t)}>＋ {t}</button>)}
+              </div>
+            )}
+          </div>
+
+          <label className="check"><input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} /> 置頂</label>
+          {err && <div className="err">{err}</div>}
         </div>
 
-        <label className="check"><input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} /> 📌 置頂</label>
-
-        {err && <div className="err">{err}</div>}
         <div className="actions">
           {!isNew && <button type="button" className="danger" onClick={del} disabled={busy}>刪除</button>}
           <span className="sp" />
