@@ -22,11 +22,10 @@ export default function App() {
   }, [])
 
   if (session === undefined) return <div className="center muted">載入中…</div>
-  if (!session) return <><Login /><VersionBadge /><UpdatePrompt /></>
+  if (!session) return <><Login /><div className="toprow fixed"><VersionBadge /></div><UpdatePrompt /></>
 
   return (
     <div className="shell">
-      <VersionBadge />
       <UpdatePrompt />
       <aside className="nav">
         <div className="brand">本家</div>
@@ -37,11 +36,12 @@ export default function App() {
           </button>
         ))}
         <button className="navbtn out" onClick={() => supabase.auth.signOut()}>
-          <span className="ico">⎋</span>
+          <span className="ico">🚪</span>
           <span>登出</span>
         </button>
       </aside>
       <main className="main">
+        <div className="toprow"><VersionBadge /></div>
         {tab === 'ideas' && <Ideas />}
         {tab === 'supp' && <Supplements />}      </main>
     </div>

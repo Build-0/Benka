@@ -110,3 +110,21 @@ textarea:focus { outline: 2px solid var(--accent-soft); border-color: var(--acce
 .updico { font-size: 36px; color: var(--accent); line-height: 1; }
 .vrow { display: flex; justify-content: space-between; font-size: 14px; background: var(--bg); border-radius: 10px; padding: 8px 12px; }
 .vrow .new { color: var(--accent); }
+
+/* 保健品時間軸 */
+.tl { position: relative; padding-left: 26px; display: flex; flex-direction: column; gap: 18px; }
+.tl::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
+.tl-item { position: relative; }
+.tl-dot { position: absolute; left: -26px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--c); border: 3px solid var(--bg); box-sizing: content-box; margin-left: -3px; }
+.tl-head { display: flex; align-items: center; gap: 8px; color: var(--c); margin-bottom: 8px; font-size: 16px; }
+.tl-head .ti { font-size: 20px; }
+.tl-n { margin-left: auto; font-size: 12px; color: var(--muted); }
+.tl-card { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--c); border-radius: 12px; padding: 4px 14px; }
+.tl-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.tl-row:last-child { border-bottom: 0; }
+.dose { font-size: 13px; color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent); padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+
+/* 版本標籤:唔再浮喺掣上面 */
+.toprow { display: flex; justify-content: flex-end; margin-bottom: 6px; }
+.verbadge { position: static; pointer-events: auto; }
+.toprow.fixed { position: fixed; top: 8px; right: 10px; z-index: 40; margin: 0; pointer-events: none; }
