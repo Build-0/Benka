@@ -10,19 +10,14 @@ const SLOTS = [
   { key: 'evening', label: '晚上', color: '#5a6fc0', icon: 'sunset-2' },
   { key: 'bedtime', label: '睡前', color: '#6a58a8', icon: 'moon' },
 ]
-const PILLS = ['#3f7fbf', '#2f9e9a', '#5a6fc0', '#6a58a8', '#6b9bd1', '#4a8fa8']
-
-// 開頁自動跳去而家呢個時段
-const nowSlot = () => {
-  const h = new Date().getHours()
-  return h < 8 ? 'wake' : h < 12 ? 'morning' : h < 17 ? 'noon' : h < 21 ? 'evening' : 'bedtime'
-}
+const TABS = [{ key: 'all', label: '全部', color: '#2f4a6b', icon: 'layout-grid' }, ...SLOTS]
 
 // 讀取照行 app 嘅保健品清單(同一個 supplements 表,只睇啟用中、只顯示品名同劑量)
 export default function Supplements() {
   const [rows, setRows] = useState(() => cget('supp'))
   const [err, setErr] = useState('')
-  const [slot, setSlot] = useState(nowSlot)
+  const [slot, setSlot] = useState(() => cget('supp-slot') || 'all')
+  const pick = (k) => { setSlot(k); cset('supp-slot', k) }
 
   useEffect(() => {
     supabase
@@ -36,40 +31,52 @@ export default function Supplements() {
   }, [])
 
   const inSlot = (k) => (rows || []).filter((r) => (r.time_slots || []).includes(k))
-  const cur = SLOTS.find((s) => s.key === slot)
-  const items = inSlot(slot)
+  const shown = slot === 'all' ? SLOTS : SLOTS.filter((s) => s.key === slot)
+  const cur = TABS.find((s) => s.key === slot)
+  const total = (rows || []).length
 
   return (
     <>
       <div className="head">
         <div>
           <h1>保健品</h1>
-          <div className="muted">{rows ? `共 ${rows.length} 項 · ${cur.label} ${items.length} 種` : '載入中…'}</div>
+          <div className="muted">{rows ? `共 ${total} 項${slot === 'all' ? '' : ` · ${cur.label} ${inSlot(slot).length} 種`}` : '載入中…'}</div>
         </div>
       </div>
       {err && <div className="card errbox">讀取失敗:{err}</div>}
 
       <div className="seg" role="tablist">
-        {SLOTS.map((s) => (
-          <button key={s.key} role="tab" aria-selected={slot === s.key} className={'sg' + (slot === s.key ? ' on' : '')} style={{ '--c': s.color }} onClick={() => setSlot(s.key)}>
+        {TABS.map((s) => (
+          <button key={s.key} role="tab" aria-selected={slot === s.key} className={'sg' + (slot === s.key ? ' on' : '')} style={{ '--c': s.color }} onClick={() => pick(s.key)}>
             <Icon n={s.icon} />
             {s.label}
-            <span className="n">{inSlot(s.key).length}</span>
+            <span className="n">{s.key === 'all' ? total : inSlot(s.key).length}</span>
           </button>
         ))}
       </div>
 
-      {rows && items.length === 0 && <div className="empty muted">呢個時段冇保健品。</div>}
+      {rows && total === 0 && <div className="empty muted">未有保健品。</div>}
 
-      <div className="tiles">
-        {items.map((r, i) => (
-          <div key={r.id} className="tile" style={{ '--c': PILLS[i % PILLS.length] }}>
-            <div className="pill"><Icon n="pill" /></div>
-            <b>{r.name}</b>
-            <span className="dose">{r.dose_text || '—'}</span>
-          </div>
-        ))}
-      </div>
+      {shown.map((s) => {
+        const items = inSlot(s.key)
+        if (!items.length) return null
+        return (
+          <section key={s.key} style={{ '--c': s.color }}>
+            {slot === 'all' && (
+              <div className="grp"><Icon n={s.icon} />{s.label}<span className="gn">{items.length} 種</span></div>
+            )}
+            <div className="tiles">
+              {items.map((r) => (
+                <div key={r.id} className="tile">
+                  <div className="pill"><Icon n="pill" /></div>
+                  <b>{r.name}</b>
+                  <span className="dose">{r.dose_text || '—'}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )
+      })}
     </>
   )
 }

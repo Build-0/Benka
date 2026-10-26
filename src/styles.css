@@ -125,11 +125,15 @@ input:focus, textarea:focus { outline: 2px solid var(--accent-soft); border-colo
 .sg.on .ti { color: #fff; }
 .sg .n { position: absolute; top: 3px; right: 5px; font-size: 10px; color: var(--muted); }
 .sg.on .n { color: rgba(255, 255, 255, .85); }
-.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.tile { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; min-height: 104px; }
-.pill { width: 36px; height: 36px; border-radius: 50%; background: var(--c); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-.tile b { font-size: 16px; font-weight: 600; line-height: 1.25; }
-.dose { align-self: flex-start; margin-top: auto; font-size: 13px; padding: 3px 11px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; display: flex; align-items: center; gap: 7px; min-height: 44px; }
+.pill { width: 24px; height: 24px; flex: none; border-radius: 50%; background: var(--c); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.tile b { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.dose { flex: none; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.grp { display: flex; align-items: center; gap: 6px; margin: 14px 2px 6px; font-size: 13px; font-weight: 600; color: var(--c); }
+.grp:first-of-type { margin-top: 4px; }
+.grp .ti { font-size: 16px; }
+.grp .gn { margin-left: auto; font-weight: 400; color: var(--muted); font-size: 12px; }
 
 /* 滑鼠裝置先有 hover(觸控唔會黐住高亮) */
 @media (hover: hover) {
