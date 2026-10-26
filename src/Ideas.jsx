@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from './supabase.js'
 import { cget, cset } from './cache.js'
 import Icon from './Icon.jsx'
+import Hero from './Hero.jsx'
 
 const PALETTE = ['#3f7fbf', '#2f9e9a', '#6a58a8', '#5a6fc0', '#4a8fa8', '#6b9bd1']
 const NO_TAG = '#8da2b8'
@@ -53,13 +54,18 @@ export default function Ideas() {
 
   return (
     <>
-      <div className="head">
-        <div>
-          <h1>想法百寶箱</h1>
-          <div className="muted">{rows ? `共 ${rows.length} 個想法${shown.length !== rows.length ? ` · 顯示 ${shown.length}` : ''}` : '載入中…'}</div>
-        </div>
-        <button className="primary add" onClick={() => setEditing({})}><Icon n="plus" />新增</button>
-      </div>
+      <Hero
+        title="想法百寶箱"
+        icon="bulb"
+        sub={rows ? (shown.length !== rows.length ? `顯示 ${shown.length} / ${rows.length} 個想法` : '記低每個靈感') : '載入中…'}
+        stats={rows ? [
+          { n: rows.length, label: '想法' },
+          { n: rows.filter((r) => r.pinned).length, label: '置頂' },
+          { n: rows.filter((r) => Date.now() - new Date(r.created_at) < 7 * 86400000).length, label: '近7日' },
+          { n: allTags.length, label: '標籤' },
+        ] : []}
+        action={<button className="primary add" onClick={() => setEditing({})}><Icon n="plus" />新增</button>}
+      />
 
       {err && (
         <div className="card errbox">

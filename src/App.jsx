@@ -15,6 +15,7 @@ const MODULES = [
 
 export default function App() {
   const [session, setSession] = useState(undefined)
+  const [menu, setMenu] = useState(false)
   const [tab, setTab] = useState(() => {
     const t = cget('tab')
     return MODULES.some((m) => m.key === t) ? t : 'ideas'
@@ -27,7 +28,7 @@ export default function App() {
   }, [])
 
   const go = (k) => { setTab(k); cset('tab', k); window.scrollTo(0, 0) }
-  const logout = async () => { cclear(); await supabase.auth.signOut() }
+  const logout = async () => { cclear(); setMenu(false); await supabase.auth.signOut() }
 
   if (session === undefined) return <div className="center muted">載入中…</div>
   if (!session) return <><Login /><div className="toprow fixed"><VersionBadge /></div><UpdatePrompt /></>
@@ -43,16 +44,31 @@ export default function App() {
             <span>{m.label}</span>
           </button>
         ))}
-        <button className="navbtn out" onClick={logout}>
-          <Icon n="logout" />
-          <span>登出</span>
+        <button className="navbtn out" onClick={() => setMenu(true)}>
+          <Icon n="user" />
+          <span>帳戶</span>
         </button>
       </nav>
       <main className="main">
-        <div className="toprow"><VersionBadge /></div>
+        <div className="toprow">
+          <VersionBadge />
+          <button className="acct" onClick={() => setMenu(true)} aria-label="帳戶"><Icon n="user" /></button>
+        </div>
         {tab === 'ideas' && <Ideas />}
         {tab === 'supp' && <Supplements />}
       </main>
+
+      {menu && (
+        <div className="backdrop upd" onMouseDown={(e) => e.target === e.currentTarget && setMenu(false)}>
+          <div className="updbox">
+            <div className="updico"><Icon n="user" /></div>
+            <h2>帳戶</h2>
+            <div className="email">{session.user.email}</div>
+            <button className="danger" onClick={logout}>登出</button>
+            <button className="ghost" onClick={() => setMenu(false)}>取消</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

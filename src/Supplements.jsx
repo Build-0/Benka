@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from './supabase.js'
 import { cget, cset } from './cache.js'
 import Icon from './Icon.jsx'
+import Hero from './Hero.jsx'
 
 const SLOTS = [
   { key: 'wake', label: '起床', color: '#6b9bd1', icon: 'sunrise' },
@@ -37,12 +38,15 @@ export default function Supplements() {
 
   return (
     <>
-      <div className="head">
-        <div>
-          <h1>保健品</h1>
-          <div className="muted">{rows ? `共 ${total} 項${slot === 'all' ? '' : ` · ${cur.label} ${inSlot(slot).length} 種`}` : '載入中…'}</div>
-        </div>
-      </div>
+      <Hero
+        title="保健品"
+        icon="pill"
+        sub={rows ? (slot === 'all' ? '每日服用清單' : `${cur.label} · ${inSlot(slot).length} 種`) : '載入中…'}
+        stats={rows ? [
+          { n: total, label: '項' },
+          ...SLOTS.map((s) => ({ n: inSlot(s.key).length, label: s.label })),
+        ] : []}
+      />
       {err && <div className="card errbox">讀取失敗:{err}</div>}
 
       <div className="seg" role="tablist">
