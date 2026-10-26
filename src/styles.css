@@ -102,3 +102,11 @@ textarea:focus { outline: 2px solid var(--accent-soft); border-color: var(--acce
 .list { padding: 4px 16px; }
 .row { display: flex; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
 .row:last-child { border-bottom: 0; }
+
+/* 常駐版本標籤 + 置中更新彈窗 */
+.verbadge { position: fixed; top: 8px; right: 10px; z-index: 40; font-size: 12px; color: var(--accent); background: var(--accent-soft); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; pointer-events: none; }
+.backdrop.upd { align-items: center; z-index: 60; }
+.updbox { background: var(--card); border-radius: 18px; padding: 24px 22px; width: calc(100% - 40px); max-width: 340px; display: flex; flex-direction: column; gap: 10px; text-align: center; box-shadow: 0 12px 40px rgba(20, 32, 46, .35); }
+.updico { font-size: 36px; color: var(--accent); line-height: 1; }
+.vrow { display: flex; justify-content: space-between; font-size: 14px; background: var(--bg); border-radius: 10px; padding: 8px 12px; }
+.vrow .new { color: var(--accent); }

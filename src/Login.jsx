@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { supabase } from './supabase.js'
-import { VersionTag } from './Version.jsx'
-
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -30,9 +28,7 @@ export default function Login() {
           </button>
         </div>
         {err && <div className="err">{err}</div>}
-        <button className="primary" disabled={busy}>{busy ? '登入中…' : '登入'}</button>
-        <VersionTag />
-      </form>
+        <button className="primary" disabled={busy}>{busy ? '登入中…' : '登入'}</button>      </form>
     </div>
   )
 }

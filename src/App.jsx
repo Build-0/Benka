@@ -3,7 +3,7 @@ import { supabase } from './supabase.js'
 import Login from './Login.jsx'
 import Ideas from './Ideas.jsx'
 import Supplements from './Supplements.jsx'
-import { VersionTag, UpdatePrompt } from './Version.jsx'
+import { VersionBadge, UpdatePrompt } from './Version.jsx'
 
 // 之後每個模組加落呢個表，手機底部分頁 / 闊畫面側邊欄會自動出現。
 const MODULES = [
@@ -22,10 +22,11 @@ export default function App() {
   }, [])
 
   if (session === undefined) return <div className="center muted">載入中…</div>
-  if (!session) return <><Login /><UpdatePrompt /></>
+  if (!session) return <><Login /><VersionBadge /><UpdatePrompt /></>
 
   return (
     <div className="shell">
+      <VersionBadge />
       <UpdatePrompt />
       <aside className="nav">
         <div className="brand">本家</div>
@@ -42,9 +43,7 @@ export default function App() {
       </aside>
       <main className="main">
         {tab === 'ideas' && <Ideas />}
-        {tab === 'supp' && <Supplements />}
-        <VersionTag />
-      </main>
+        {tab === 'supp' && <Supplements />}      </main>
     </div>
   )
 }
