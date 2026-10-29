@@ -1,8 +1,37 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from './supabase.js'
-import { cget, cset } from './cache.js'
+import { cget, cset, cdel } from './cache.js'
 import Icon from './Icon.jsx'
 import Hero from './Hero.jsx'
+
+// 搜尋關鍵字標黃
+const hl = (text, q) => {
+  const k = q.trim()
+  if (!k || !text) return text
+  const low = text.toLowerCase()
+  const kl = k.toLowerCase()
+  const out = []
+  let i = 0
+  for (let j = low.indexOf(kl); j !== -1; j = low.indexOf(kl, i)) {
+    if (j > i) out.push(text.slice(i, j))
+    out.push(<mark key={j}>{text.slice(j, j + k.length)}</mark>)
+    i = j + k.length
+  }
+  out.push(text.slice(i))
+  return out
+}
+// 卡片內容:命中位置喺後面時,擷取關鍵字附近嘅文字
+const snippet = (text, q) => {
+  const k = q.trim().toLowerCase()
+  if (!k || !text) return text
+  const j = text.toLowerCase().indexOf(k)
+  return j > 40 ? '…' + text.slice(j - 20) : text
+}
+const fmtFull = (s) => {
+  const d = new Date(s)
+  const p = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}/${p(d.getMonth() + 1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
+}
 
 const PALETTE = ['#3f7fbf', '#2f9e9a', '#6a58a8', '#5a6fc0', '#4a8fa8', '#6b9bd1']
 const NO_TAG = '#8da2b8'
@@ -102,8 +131,8 @@ export default function Ideas() {
           <article key={r.id} className="idea" style={{ '--c': colorOf(r.tags[0]) }} onClick={() => setEditing(r)}>
             <div className="stripe" />
             <div className="ib">
-              <h3>{r.title}</h3>
-              {r.content && <p>{r.content}</p>}
+              <h3>{hl(r.title, q)}</h3>
+              {r.content && <p>{hl(snippet(r.content, q), q)}</p>}
               <div className="ft">
                 <span className="tg">{r.tags[0] || ''}{r.tags.length > 1 ? ` +${r.tags.length - 1}` : ''}</span>
                 <span>{fmt(r.created_at)}</span>
@@ -116,20 +145,46 @@ export default function Ideas() {
 
       <button className="fab" onClick={() => setEditing({})} aria-label="新增想法"><Icon n="plus" /></button>
 
-      {editing && <Editor idea={editing} allTags={allTags} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load() }} />}
+      {editing && <Editor idea={editing} q={q} allTags={allTags} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load() }} />}
     </>
   )
 }
 
-function Editor({ idea, allTags, onClose, onSaved }) {
+function Editor({ idea, q = '', allTags, onClose, onSaved }) {
   const isNew = !idea.id
-  const [title, setTitle] = useState(idea.title || '')
-  const [content, setContent] = useState(idea.content || '')
-  const [tags, setTags] = useState(idea.tags || [])
+  const dkey = 'draft:' + (idea.id || 'new')
+  // 上次未儲存嘅草稿(同原內容唔同先算)
+  const [draft] = useState(() => {
+    const d = cget(dkey)
+    if (!d) return null
+    const same = d.title === (idea.title || '') && d.content === (idea.content || '') && d.pinned === !!idea.pinned
+      && JSON.stringify(d.tags) === JSON.stringify(idea.tags || [])
+    return same || (!d.title && !d.content && !(d.tags || []).length) ? null : d
+  })
+  const init = draft || idea
+  const [mode, setMode] = useState(isNew || draft ? 'edit' : 'read')
+  const [restored, setRestored] = useState(!!draft)
+  const [title, setTitle] = useState(init.title || '')
+  const [content, setContent] = useState(init.content || '')
+  const [tags, setTags] = useState(init.tags || [])
   const [tagInput, setTagInput] = useState('')
-  const [pinned, setPinned] = useState(!!idea.pinned)
+  const [pinned, setPinned] = useState(!!init.pinned)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
+
+  // 編輯時自動保存草稿,關面板/斷網/撳錯返回都唔會冇
+  useEffect(() => {
+    if (mode !== 'edit') return
+    const t = setTimeout(() => cset(dkey, { title, content, tags, pinned }), 400)
+    return () => clearTimeout(t)
+  }, [mode, title, content, tags, pinned, dkey])
+
+  const discard = () => {
+    cdel(dkey)
+    setTitle(idea.title || ''); setContent(idea.content || ''); setTags(idea.tags || []); setPinned(!!idea.pinned)
+    setRestored(false)
+    if (!isNew) setMode('read')
+  }
 
   const closeRef = useRef(onClose)
   closeRef.current = onClose
@@ -168,7 +223,7 @@ function Editor({ idea, allTags, onClose, onSaved }) {
       : await supabase.from('ideas').update({ ...body, updated_at: new Date().toISOString() }).eq('id', idea.id)
     setBusy(false)
     if (error) setErr(error.message)
-    else onSaved()
+    else { cdel(dkey); onSaved() }
   }
 
   const del = async () => {
@@ -177,10 +232,36 @@ function Editor({ idea, allTags, onClose, onSaved }) {
     const { error } = await supabase.from('ideas').delete().eq('id', idea.id)
     setBusy(false)
     if (error) setErr(error.message)
-    else onSaved()
+    else { cdel(dkey); onSaved() }
   }
 
   const suggestions = allTags.filter((t) => !tags.includes(t)).slice(0, 12)
+
+  if (mode === 'read') {
+    return (
+      <div className="backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+        <div className="sheet reader" style={{ '--c': colorOf(idea.tags[0]) }}>
+          <div className="sheet-head">
+            <span className="rmeta">{fmtFull(idea.created_at)}{idea.pinned ? ' · 置頂' : ''}</span>
+            <button type="button" className="x" onClick={onClose} aria-label="關閉"><Icon n="x" /></button>
+          </div>
+          <div className="sheet-body">
+            <h2 className="rtitle">{hl(idea.title, q)}</h2>
+            {idea.tags.length > 0 && <div className="tags">{idea.tags.map((t) => <span key={t} className="tag">{t}</span>)}</div>}
+            {idea.content
+              ? <div className="rcontent">{hl(idea.content, q)}</div>
+              : <div className="muted">(冇內容)</div>}
+            {idea.updated_at && idea.updated_at !== idea.created_at && <div className="muted rupd">最後修改 {fmtFull(idea.updated_at)}</div>}
+          </div>
+          <div className="actions">
+            <span className="sp" />
+            <button type="button" className="ghost" onClick={onClose}>關閉</button>
+            <button type="button" className="primary" onClick={() => setMode('edit')}>編輯</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
@@ -191,6 +272,12 @@ function Editor({ idea, allTags, onClose, onSaved }) {
         </div>
 
         <div className="sheet-body">
+          {restored && (
+            <div className="draftnote">
+              <span>已還原你上次未儲存嘅草稿</span>
+              <button type="button" onClick={discard}>放棄草稿</button>
+            </div>
+          )}
           <input placeholder="標題" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus={isNew} />
           <textarea placeholder="想法內容(可寫長文)…" rows={8} value={content} onChange={(e) => setContent(e.target.value)} />
 
