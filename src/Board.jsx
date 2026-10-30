@@ -100,6 +100,7 @@ const dur = (slots) => { const m = slots * 30; return m >= 60 ? `${Math.floor(m 
 
 export default function Board() {
   const [day, setDay] = useState(() => cget('board-day') || defaultDay())
+  const [who, setWho] = useState(() => cget('board-who') || 'benny')
   const [view, setView] = useState(() => (cget('board-view') === 'day' ? 'day' : 'list'))
   const [rows, setRows] = useState(() => cget('board')) // 全部日子嘅格
   const [err, setErr] = useState('')
@@ -121,6 +122,7 @@ export default function Board() {
   const grid = grids[day]
 
   const pickDay = (k) => { setDay(k); cset('board-day', k) }
+  const pickWho = (k) => { setWho(k); cset('board-who', k) }
   const pickView = (k) => { setView(k); cset('board-view', k) }
 
   const wins = useMemo(() => freeWins(grid.benny), [grid])
@@ -170,13 +172,22 @@ export default function Board() {
       )}
       {empty && <div className="card errbox">未有看板資料,請先執行 supabase/02_board.sql。</div>}
 
+      {view === 'list' && (
+        <div className="chips">
+          {TRACKS.map((t) => (
+            <button key={t.key} className={'chip' + (who === t.key ? ' on' : '')} onClick={() => pickWho(t.key)}>{t.name}</button>
+          ))}
+          <button className={'chip' + (who === 'all' ? ' on' : '')} onClick={() => pickWho('all')}>全部人</button>
+        </div>
+      )}
+
       <div className="chips">
         {DAYS.map((d) => (
           <button key={d.key} className={'chip daychip' + (day === d.key ? ' on' : '') + (d.key === bestDay ? ' best' : '')} onClick={() => pickDay(d.key)}>{d.label}<small>{dur(summary.find((s) => s.key === d.key).total)}{d.key === bestDay ? ' ★' : ''}</small></button>
         ))}
       </div>
 
-      {rows && (
+      {rows && (view === 'day' || who === 'benny') && (
         <section className="freecard">
           <div className="fc-top">
             <div><div className="fc-n">{total ? dur(total) : '冇'}</div><div className="fc-l">我嘅自由時間</div></div>
@@ -199,7 +210,7 @@ export default function Board() {
         <button role="tab" aria-selected={view === 'day'} className={'sg' + (view === 'day' ? ' on' : '')} style={{ '--c': '#2f4a6b' }} onClick={() => pickView('day')}>總表</button>
       </div>
 
-      {rows && view === 'list' && <ListView grid={grid} wins={wins} onEdit={(track, s) => setEdit({ track, ...s })} />}
+      {rows && view === 'list' && <ListView who={who} grid={grid} wins={wins} onEdit={(track, s) => setEdit({ track, ...s })} />}
       {rows && view === 'day' && <DayView grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
 
       {edit && (
@@ -227,8 +238,7 @@ const catOf = (task) => {
   return (CATS.find((c) => c.tasks.includes(t)) || { key: 'other' }).key
 }
 
-function ListView({ grid, wins, onEdit }) {
-  const [who, setWho] = useState('all')
+function ListView({ who, grid, wins, onEdit }) {
   const keys = who === 'all' ? ['benny', 'carol', 'popo', 'helper'] : [who]
   // 同一時段、同一任務嘅人合併做一行
   const events = useMemo(() => {
@@ -245,12 +255,6 @@ function ListView({ grid, wins, onEdit }) {
   const nm = (k) => TRACKS.find((t) => t.key === k)
   return (
     <>
-      <div className="chips">
-        <button className={'chip' + (who === 'all' ? ' on' : '')} onClick={() => setWho('all')}>全部人</button>
-        {TRACKS.map((t) => (
-          <button key={t.key} className={'chip' + (who === t.key ? ' on' : '')} onClick={() => setWho(t.key)}>{t.name}</button>
-        ))}
-      </div>
       {[...CATS, { key: 'other', name: '其他', tasks: [] }].map((p) => {
         const list = events.filter((e) => catOf(e.task) === p.key)
         if (!list.length) return null
