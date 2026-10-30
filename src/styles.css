@@ -302,3 +302,6 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .bdgrid > .bdh { color: #5b6f86; border-bottom-color: var(--line); }
 .bdgrid > .bdh:nth-child(2) { color: var(--accent); border-bottom-color: var(--accent); }
 .bdseg { border-radius: 6px; }
+
+/* 總表色塊:文字上下左右置中 */
+.bdseg { align-items: center; justify-content: center; text-align: center; }
