@@ -88,29 +88,7 @@ const freeWins = (arr) => {
   }
   return out
 }
-// 自由 + 待命連埋計(調配後可以連成幾長)
-const openRuns = (arr) => {
-  const out = []
-  let i = WAKE_FROM
-  while (i < WAKE_TO) {
-    if (!kindOf(arr[i])) { i++; continue }
-    let j = i
-    while (j + 1 < WAKE_TO && kindOf(arr[j + 1])) j++
-    out.push({ from: i, to: j + 1 })
-    i = j + 1
-  }
-  return out
-}
 const dur = (slots) => { const m = slots * 30; return m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? (m % 60) + 'm' : ''}` : `${m}分` }
-// 邊個喺邊個時段有可能接手(粗略:婆婆週末 11:00 後、工人 07–11 / 14–20、週日休息)
-const AVAIL = (p, day, i) => {
-  if (p === 'carol') return i >= 12
-  if (p === 'popo') return day === 'sat' || day === 'sun' ? i >= 22 && i < 44 : i >= 18 && i < 46
-  if (p === 'helper') return day !== 'sun' && ((i >= 14 && i < 22) || (i >= 28 && i < 40))
-  return false
-}
-const MOVABLE = new Set(['feed', 'bed', 'edu', 'cook', 'wash', 'school', 'class', 'play', 'kid', 'bath'])
-const pname = (k) => TRACKS.find((t) => t.key === k).name
 
 export default function Board() {
   const [day, setDay] = useState(() => cget('board-day') || defaultDay())
@@ -149,35 +127,6 @@ export default function Board() {
   const best = summary.reduce((a, s) => (s.total > a.total ? s : a), summary[0])
   const bestDay = best.total > 0 ? best.key : ''
 
-  // 調配提示:Benny 做緊、但嗰個時間其他人有空嘅事,交出後自由時間會變幾長
-  const swaps = useMemo(() => {
-    const out = []
-    segsOf(grid.benny).forEach((s) => {
-      if (!s.task || !s.task.split('+').every((p) => MOVABLE.has(p))) return
-      const who = ['carol', 'popo', 'helper'].filter((p) => {
-        for (let i = s.from; i < s.to; i++) if (grid[p][i] || !AVAIL(p, day, i)) return false
-        return true
-      })
-      if (!who.length) return
-      const tmp = grid.benny.slice()
-      for (let i = s.from; i < s.to; i++) tmp[i] = ''
-      const w = openRuns(tmp).find((x) => s.from >= x.from && s.from < x.to)
-      if (!w || w.to - w.from <= s.to - s.from) return
-      out.push({ ...s, who, win: w, slots: w.to - w.from })
-    })
-    return out.sort((a, b) => b.slots - a.slots).slice(0, 6)
-  }, [grid, day])
-
-  const reassign = async (sw, to) => {
-    if (!window.confirm(`將「${label(sw.task)} ${hm(sw.from)}–${endHm(sw.to)}」由 Benny 改派畀${pname(to)}?`)) return
-    const { error: e1 } = await supabase.from('board_slots').delete().eq('day_type', day).eq('track', 'benny').gte('slot', sw.from).lt('slot', sw.to)
-    if (e1) { setErr(e1.message); return }
-    const ins = []
-    for (let s = sw.from; s < sw.to; s++) ins.push({ day_type: day, track: to, slot: s, task: sw.task })
-    const { error: e2 } = await supabase.from('board_slots').insert(ins)
-    if (e2) { setErr(e2.message); return }
-    await load()
-  }
 
   const saveRange = async ({ track, from, to, task, oldFrom = from, oldTo = to }) => {
     // 連同原本嗰段一齊清走,縮短時段先會真係縮短
@@ -242,19 +191,6 @@ export default function Board() {
             {wins.length === 0 && <span className="muted">呢日冇空檔</span>}
             {total === 0 && wins.length > 0 && <span className="muted fc-hint">未有自由時間,撳灰色「待命」段可以劃做★私人時間</span>}
           </div>
-        </section>
-      )}
-
-      {rows && view === 'list' && swaps.length > 0 && (
-        <section className="swaps">
-          <div className="agh">調配提示</div>
-          <div className="muted swnote">呢啲係你而家要做、但嗰個時間其他人有空嘅事。交出去,你就可以連成更長一段(包括待命時間),再劃做★私人時間。</div>
-          {swaps.map((sw) => (
-            <div key={sw.from + sw.task} className="sw">
-              <div className="sw-h"><b>{hm(sw.from)}–{endHm(sw.to)} {label(sw.task)}</b><span>交出後可連成 {hm(sw.win.from)}–{endHm(sw.win.to)}<em>{dur(sw.slots)}</em></span></div>
-              <div className="sw-b">{sw.who.map((p) => <button key={p} onClick={() => reassign(sw, p)}>交畀{pname(p)}</button>)}</div>
-            </div>
-          ))}
         </section>
       )}
 
