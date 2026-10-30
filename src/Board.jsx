@@ -38,20 +38,28 @@ const TASKS = [
   { k: 'eat', l: '食飯', c: '#b08a5a' },
   { k: 'bed', l: '陪睡', c: '#5b6aa8' },
   { k: 'sleep', l: '睡眠', c: '#34456b' },
-  { k: 'kid', l: '照顧', c: '#7aa7c7', d: 1 },
+  { k: 'kidr', l: '照顧仁仁', c: '#7aa7c7', d: 1 },
+  { k: 'kidd', l: '照顧德德', c: '#7aa7c7', d: 1 },
+  { k: 'kid', l: '照顧(未指明)', c: '#7aa7c7', d: 1, old: 1 }, // 舊資料,揀任務時唔再出現
   { k: 'me', l: '★ 私人時間', c: '#f2774b' },
+  { k: 'flex', l: '~ 大約／彈性', c: '#8da2b8', mod: 1 }, // 修飾:時間唔固定
 ]
 const TASK = Object.fromEntries(TASKS.map((t) => [t.k, t]))
 
 const hm = (i) => `${String(Math.floor(i / 2)).padStart(2, '0')}:${i % 2 ? '30' : '00'}`
 const endHm = (i) => (i >= 48 ? '24:00' : hm(i))
-const label = (task) => task.split('+').map((c) => (TASK[c] ? TASK[c].l : c)).join(' ＋ ')
-const style = (task, track) => {
+const isFlex = (task) => task.split('+').includes('flex')
+const label = (task) => (isFlex(task) ? '~ ' : '') + task.split('+').filter((c) => c !== 'flex').map((c) => (TASK[c] ? TASK[c].l : c)).join(' ＋ ')
+const baseStyle = (task, track) => {
   const first = task.split('+')[0]
   if (first === 'sleep') return { background: '#eef2f7', color: '#8da2b8' }
   if (task.split('+').includes('me')) return { background: '#f2774b', color: '#fff' }
   if (track === 'benny') return { background: '#2f4a6b', color: '#fff' }
   return { background: '#e3eaf2', color: '#3b4f66' }
+}
+const style = (task, track) => {
+  const s = baseStyle(task, track)
+  return isFlex(task) ? { ...s, opacity: 0.75, outline: '1.5px dashed currentColor', outlineOffset: -4 } : s
 }
 const defaultDay = () => {
   const w = new Date().getDay()
@@ -268,7 +276,7 @@ function ListView({ grid, wins, onEdit }) {
                 }
                 const c = e.task.split('+').includes('me') ? '#f2774b' : e.people.includes('benny') ? '#2f4a6b' : '#c3cfdc'
                 return (
-                  <button key={e.from + '-' + e.to + e.task} className="ag" onClick={() => onEdit(e.people[0], e)} style={{ '--c': c }}>
+                  <button key={e.from + '-' + e.to + e.task} className="ag" onClick={() => onEdit(e.people[0], e)} style={{ '--c': c, ...(isFlex(e.task) ? { borderStyle: 'dashed' } : {}) }}>
                     <span className="agt">{e.to - e.from === 1 ? hm(e.from) : hm(e.from) + '–' + endHm(e.to)}</span>
                     <span className="agb"><i />{label(e.task)}</span>
                     <span className="agp">{who === 'all' ? e.people.map((k) => <em key={k} style={{ '--p': nm(k).color }}>{nm(k).name}</em>) : null}</span>
@@ -342,7 +350,8 @@ function SlotEditor({ init, grid, onClose, onSave }) {
 
   const toggle = (k) => {
     if (picked.includes(k)) setPicked(picked.filter((x) => x !== k))
-    else setPicked([...picked, k].slice(-2)) // 最多同時兩件事
+    else if (k === 'flex') setPicked([...picked, k])
+    else setPicked([...picked.filter((x) => x !== 'flex'), k].slice(-2).concat(picked.includes('flex') ? ['flex'] : [])) // 最多同時兩件事(彈性標記唔計,永遠排最尾)
   }
   const save = async (clearIt) => {
     if (to <= from) { setErr('「至」要遲過「由」'); return }
@@ -370,7 +379,7 @@ function SlotEditor({ init, grid, onClose, onSave }) {
           </div>
           <div className="muted" style={{ fontSize: 13 }}>揀任務(最多兩個,一齊做嘅事)</div>
           <div className="taskpick">
-            {TASKS.map((t) => (
+            {TASKS.filter((t) => !t.old || picked.includes(t.k)).map((t) => (
               <button
                 key={t.k}
                 type="button"
