@@ -30,7 +30,9 @@ const TASKS = [
   { k: 'wash', l: '洗奶樽', c: '#4a8fa8' },
   { k: 'routine', l: '起身流程', c: '#6b9bd1', d: 1 },
   { k: 'school', l: '學校接送', c: '#2f9e9a' },
-  { k: 'cook', l: '煮飯家務', c: '#5a6fc0' },
+  { k: 'cookf', l: '煮飯', c: '#5a6fc0' },
+  { k: 'chore', l: '家務', c: '#5a6fc0' },
+  { k: 'cook', l: '煮飯家務(未分)', c: '#5a6fc0', old: 1 }, // 舊資料
   { k: 'work', l: '返工', c: '#2f4a6b' },
   { k: 'go', l: '通勤', c: '#8da2b8', d: 1 },
   { k: 'rest', l: '休息', c: '#b4c3d3', d: 1 },
@@ -226,7 +228,7 @@ const CATS = [
   { key: 'free', name: '★ 自由 / 待命', tasks: ['me', '__free', '__open'] },
   { key: 'care', name: '🍼 照顧孩子', tasks: ['feed', 'pump', 'wash', 'bath', 'nap', 'bed', 'kid', 'kidr', 'kidd'] },
   { key: 'school', name: '🎒 接送 · 學習 · 活動', tasks: ['school', 'class', 'edu', 'screen', 'play'] },
-  { key: 'home', name: '🏠 家務 · 日常', tasks: ['cook', 'eat', 'routine', 'rest'] },
+  { key: 'home', name: '🏠 家務 · 日常', tasks: ['cookf', 'chore', 'cook', 'eat', 'routine', 'rest'] },
   { key: 'work', name: '💼 返工 · 通勤', tasks: ['work', 'go'] },
 ]
 const catOf = (task) => {
