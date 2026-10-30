@@ -305,3 +305,32 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 
 /* 總表色塊:文字上下左右置中 */
 .bdseg { align-items: center; justify-content: center; text-align: center; }
+
+/* 自由時間卡 + 調配 */
+.freecard { background: linear-gradient(135deg, #fff4ee, #fde9e1); border: 1px solid #f6c6b3; border-radius: 16px; padding: 12px 14px; margin: 0 0 12px; }
+.fc-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; }
+.fc-n { font-size: 30px; font-weight: 800; color: #d4561f; line-height: 1.05; }
+.fc-l { font-size: 13px; color: #b4501f; }
+.fc-r { text-align: right; font-size: 13px; color: #b4501f; display: flex; flex-direction: column; }
+.fc-r b { font-size: 18px; color: #d4561f; }
+.fc-r span { font-size: 11px; opacity: .8; }
+.fc-wins { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.fw { display: flex; flex-direction: column; align-items: flex-start; border: 1px solid #f1c5b2; background: #fff; border-radius: 10px; padding: 6px 12px; font: inherit; font-size: 14px; font-weight: 600; color: #6b4a3c; cursor: pointer; min-height: 44px; }
+.fw small { font-size: 11px; font-weight: 500; color: #8a6a5c; }
+.fw.ok { background: #f2774b; border-color: #f2774b; color: #fff; }
+.fw.ok small { color: rgba(255, 255, 255, .9); }
+.daychip { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; padding: 4px 14px; min-height: 44px; }
+.daychip small { font-size: 11px; opacity: .75; }
+.daychip.best:not(.on) small { color: #d4561f; opacity: 1; font-weight: 700; }
+.ag.free { border-left-color: #f2774b; background: #fff4ee; border-color: #f6c6b3; }
+.ag.free .agb { color: #d4561f; }
+.bdseg.bfree { background: #fde9e1; color: #d4561f; font-weight: 700; }
+.swnote { font-size: 12px; margin: 0 2px 8px; }
+.sw { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+.sw-h { display: flex; flex-direction: column; gap: 2px; }
+.sw-h b { font-size: 15px; }
+.sw-h span { font-size: 13px; color: #b4501f; }
+.sw-h em { font-style: normal; font-weight: 700; margin-left: 6px; }
+.sw-b { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.sw-b button { border: 1px solid var(--accent); background: #fff; color: var(--accent); border-radius: 999px; padding: 0 14px; min-height: 40px; font: inherit; font-size: 14px; cursor: pointer; }
+.sw-b button:active { background: var(--accent-soft); }

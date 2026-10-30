@@ -70,6 +70,33 @@ const segsOf = (arr) => {
   return out
 }
 
+const WAKE_FROM = 12 // 06:00
+const WAKE_TO = 44 // 22:00
+const isFree = (t) => !t || t.split('+').includes('me')
+// Benny 清醒時段(06:00–22:00)內連續空檔(冇安排,或已標★私人時間)
+const freeWins = (arr) => {
+  const out = []
+  let i = WAKE_FROM
+  while (i < WAKE_TO) {
+    if (!isFree(arr[i])) { i++; continue }
+    let j = i
+    while (j + 1 < WAKE_TO && isFree(arr[j + 1])) j++
+    out.push({ from: i, to: j + 1 })
+    i = j + 1
+  }
+  return out
+}
+const dur = (slots) => { const m = slots * 30; return m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? (m % 60) + 'm' : ''}` : `${m}分` }
+// 邊個喺邊個時段有可能接手(粗略:婆婆週末 11:00 後、工人 07–11 / 14–20、週日休息)
+const AVAIL = (p, day, i) => {
+  if (p === 'carol') return i >= 12
+  if (p === 'popo') return day === 'sat' || day === 'sun' ? i >= 22 && i < 44 : i >= 18 && i < 46
+  if (p === 'helper') return day !== 'sun' && ((i >= 14 && i < 22) || (i >= 28 && i < 40))
+  return false
+}
+const MOVABLE = new Set(['feed', 'bed', 'edu', 'cook', 'wash', 'school', 'class', 'play', 'kid', 'bath'])
+const pname = (k) => TRACKS.find((t) => t.key === k).name
+
 export default function Board() {
   const [day, setDay] = useState(() => cget('board-day') || defaultDay())
   const [view, setView] = useState(() => (cget('board-view') === 'day' ? 'day' : 'list'))
@@ -83,30 +110,56 @@ export default function Board() {
   }
   useEffect(() => { load() }, [])
 
-  // grid[track][slot] = task,只取當前日子類型
-  const grid = useMemo(() => {
-    const g = Object.fromEntries(TRACKS.map((t) => [t.key, Array(48).fill('')]))
-    ;(rows || []).forEach((r) => { if (r.day_type === day && g[r.track]) g[r.track][r.slot] = r.task })
-    return g
-  }, [rows, day])
+  // 全部日子嘅格:grids[day][track][slot]
+  const grids = useMemo(() => {
+    const all = {}
+    DAYS.forEach((d) => { all[d.key] = Object.fromEntries(TRACKS.map((t) => [t.key, Array(48).fill('')])) })
+    ;(rows || []).forEach((r) => { if (all[r.day_type] && all[r.day_type][r.track]) all[r.day_type][r.track][r.slot] = r.task })
+    return all
+  }, [rows])
+  const grid = grids[day]
 
   const pickDay = (k) => { setDay(k); cset('board-day', k) }
   const pickView = (k) => { setView(k); cset('board-view', k) }
 
-  // Benny 最長連續空檔(06:00–22:00 之間冇安排嘅時段)
-  const free = useMemo(() => {
-    let best = null
-    let i = 12
-    while (i < 44) {
-      if (grid.benny[i]) { i++; continue }
-      let j = i
-      while (j + 1 < 44 && !grid.benny[j + 1]) j++
-      if (!best || j - i > best.to - best.from - 1) best = { from: i, to: j + 1 }
-      i = j + 1
-    }
-    return best
-  }, [grid])
-  const freeMin = free ? (free.to - free.from) * 30 : 0
+  const wins = useMemo(() => freeWins(grid.benny), [grid])
+  const total = wins.reduce((a, w) => a + w.to - w.from, 0)
+  const longest = Math.max(0, ...wins.map((w) => w.to - w.from))
+  const summary = useMemo(() => DAYS.map((d) => {
+    const ws = freeWins(grids[d.key].benny)
+    return { key: d.key, total: ws.reduce((a, w) => a + w.to - w.from, 0) }
+  }), [grids])
+  const bestDay = summary.reduce((a, s) => (s.total > a.total ? s : a), summary[0]).key
+
+  // 調配提示:Benny 做緊、但嗰個時間其他人有空嘅事,交出後自由時間會變幾長
+  const swaps = useMemo(() => {
+    const out = []
+    segsOf(grid.benny).forEach((s) => {
+      if (!s.task || !s.task.split('+').every((p) => MOVABLE.has(p))) return
+      const who = ['carol', 'popo', 'helper'].filter((p) => {
+        for (let i = s.from; i < s.to; i++) if (grid[p][i] || !AVAIL(p, day, i)) return false
+        return true
+      })
+      if (!who.length) return
+      const tmp = grid.benny.slice()
+      for (let i = s.from; i < s.to; i++) tmp[i] = ''
+      const w = freeWins(tmp).find((x) => s.from >= x.from && s.from < x.to)
+      if (!w || w.to - w.from <= s.to - s.from) return
+      out.push({ ...s, who, win: w, slots: w.to - w.from })
+    })
+    return out.sort((a, b) => b.slots - a.slots).slice(0, 6)
+  }, [grid, day])
+
+  const reassign = async (sw, to) => {
+    if (!window.confirm(`將「${label(sw.task)} ${hm(sw.from)}–${endHm(sw.to)}」由 Benny 改派畀${pname(to)}?`)) return
+    const { error: e1 } = await supabase.from('board_slots').delete().eq('day_type', day).eq('track', 'benny').gte('slot', sw.from).lt('slot', sw.to)
+    if (e1) { setErr(e1.message); return }
+    const ins = []
+    for (let s = sw.from; s < sw.to; s++) ins.push({ day_type: day, track: to, slot: s, task: sw.task })
+    const { error: e2 } = await supabase.from('board_slots').insert(ins)
+    if (e2) { setErr(e2.message); return }
+    await load()
+  }
 
   const saveRange = async ({ track, from, to, task }) => {
     const base = supabase.from('board_slots').delete().eq('day_type', day).eq('track', track).gte('slot', from).lt('slot', to)
@@ -132,7 +185,7 @@ export default function Board() {
         icon="calendar-time"
         sub={DAYS.find((d) => d.key === day).label + ' · 家庭分工'}
         stats={rows ? [
-          { n: free ? `${Math.floor(freeMin / 60)}h${freeMin % 60 ? freeMin % 60 + 'm' : ''}` : '—', label: 'Benny 最長空檔' },
+          { n: total ? dur(total) : '—', label: '自由時間' },
         ] : []}
       />
 
@@ -146,7 +199,7 @@ export default function Board() {
 
       <div className="chips">
         {DAYS.map((d) => (
-          <button key={d.key} className={'chip' + (day === d.key ? ' on' : '')} onClick={() => pickDay(d.key)}>{d.label}</button>
+          <button key={d.key} className={'chip daychip' + (day === d.key ? ' on' : '') + (d.key === bestDay ? ' best' : '')} onClick={() => pickDay(d.key)}>{d.label}<small>{dur(summary.find((s) => s.key === d.key).total)}{d.key === bestDay ? ' ★' : ''}</small></button>
         ))}
       </div>
 
@@ -155,14 +208,37 @@ export default function Board() {
                 <button role="tab" aria-selected={view === 'day'} className={'sg' + (view === 'day' ? ' on' : '')} style={{ '--c': '#2f4a6b' }} onClick={() => pickView('day')}>總表</button>
       </div>
 
-      {free && (
-        <div className={'freebar' + (freeMin >= 90 ? ' ok' : '')}>
-          <Icon n="sun" />
-          <span>Benny 最長連續空檔 <b>{hm(free.from)}–{endHm(free.to)}</b>({freeMin} 分鐘){freeMin >= 90 ? ',夠做★私人時間' : ',未夠 90 分鐘'}</span>
-        </div>
+      {rows && (
+        <section className="freecard">
+          <div className="fc-top">
+            <div><div className="fc-n">{total ? dur(total) : '冇'}</div><div className="fc-l">我嘅自由時間</div></div>
+            <div className="fc-r">最長連續 <b>{dur(longest)}</b><span>目標 90–120 分鐘</span></div>
+          </div>
+          <div className="fc-wins">
+            {wins.map((w) => (
+              <button key={w.from} className={'fw' + (w.to - w.from >= 3 ? ' ok' : '')} onClick={() => setEdit({ track: 'benny', from: w.from, to: w.to, task: '' })}>
+                {hm(w.from)}–{endHm(w.to)}<small>{dur(w.to - w.from)}</small>
+              </button>
+            ))}
+            {wins.length === 0 && <span className="muted">呢日冇空檔</span>}
+          </div>
+        </section>
       )}
 
-      {rows && view === 'list' && <ListView grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
+      {rows && view === 'list' && swaps.length > 0 && (
+        <section className="swaps">
+          <div className="agh">調配提示</div>
+          <div className="muted swnote">呢啲係你而家要做、但嗰個時間其他人有空嘅事。交出去,你嘅自由時間就連成更長一段。</div>
+          {swaps.map((sw) => (
+            <div key={sw.from + sw.task} className="sw">
+              <div className="sw-h"><b>{hm(sw.from)}–{endHm(sw.to)} {label(sw.task)}</b><span>交出後自由 {hm(sw.win.from)}–{endHm(sw.win.to)}<em>{dur(sw.slots)}</em></span></div>
+              <div className="sw-b">{sw.who.map((p) => <button key={p} onClick={() => reassign(sw, p)}>交畀{pname(p)}</button>)}</div>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {rows && view === 'list' && <ListView grid={grid} wins={wins} onEdit={(track, s) => setEdit({ track, ...s })} />}
             {rows && view === 'day' && <DayView grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
 
       {edit && (
@@ -184,7 +260,7 @@ const PARTS = [
   { from: 36, to: 48, name: '晚上 18:00–24:00' },
 ]
 
-function ListView({ grid, onEdit }) {
+function ListView({ grid, wins, onEdit }) {
   const [who, setWho] = useState('all')
   const keys = who === 'all' ? ['benny', 'carol', 'popo', 'helper'] : [who]
   // 同一時段、同一任務嘅人合併做一行
@@ -196,8 +272,9 @@ function ListView({ grid, onEdit }) {
       if (!m.has(id)) m.set(id, { ...s, people: [] })
       m.get(id).people.push(k)
     }))
+    if (who === 'all' || who === 'benny') wins.forEach((w) => m.set('free' + w.from, { from: w.from, to: w.to, task: '__free', people: ['benny'] }))
     return [...m.values()].sort((a, b) => a.from - b.from || a.to - b.to)
-  }, [grid, who]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [grid, who, wins]) // eslint-disable-line react-hooks/exhaustive-deps
   const nm = (k) => TRACKS.find((t) => t.key === k)
   return (
     <>
@@ -215,6 +292,15 @@ function ListView({ grid, onEdit }) {
             <div className="agh">{p.name}</div>
             <div className="agenda">
               {list.map((e) => {
+                if (e.task === '__free') {
+                  return (
+                    <button key={'f' + e.from} className="ag free" onClick={() => onEdit('benny', { from: e.from, to: e.to, task: '' })}>
+                      <span className="agt">{hm(e.from)}–{endHm(e.to)}</span>
+                      <span className="agb">★ 自由時間</span>
+                      <span className="agp"><em style={{ '--p': '#f2774b' }}>{dur(e.to - e.from)}</em></span>
+                    </button>
+                  )
+                }
                 const c = e.task.split('+').includes('me') ? '#f2774b' : e.people.includes('benny') ? '#2f4a6b' : '#c3cfdc'
                 return (
                   <button key={e.from + '-' + e.to + e.task} className="ag" onClick={() => onEdit(e.people[0], e)} style={{ '--c': c }}>
@@ -248,11 +334,11 @@ function DayView({ grid, onEdit }) {
           segsOf(grid[t.key]).map((s) => (
             <button
               key={t.key + s.from}
-              className={'bdseg' + (s.task ? '' : ' blank')}
+              className={'bdseg' + (s.task ? '' : ' blank') + (!s.task && t.key === 'benny' && s.from >= WAKE_FROM && s.to <= WAKE_TO ? ' bfree' : '')}
               style={{ gridRow: `${s.from + 2} / ${s.to + 2}`, gridColumn: c + 2, ...(s.task ? style(s.task, t.key) : {}) }}
               onClick={() => onEdit(t.key, s)}
             >
-              {s.task ? label(s.task) : ''}
+              {s.task ? label(s.task) : t.key === 'benny' && s.from >= WAKE_FROM && s.to <= WAKE_TO ? '★ 自由' : ''}
             </button>
           ))
         )}
