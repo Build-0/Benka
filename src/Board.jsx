@@ -18,6 +18,11 @@ const DAYS = [
   { key: 'sun', label: '週日/公假' },
   { key: 'off', label: '休息日' },
 ]
+const BENNY_DAYS = [
+  { key: 'wk', label: '工作日' },
+  { key: 'off', label: '休息日' },
+]
+const OTHER_DAYS = DAYS.filter((d) => d.key !== 'off')
 // d = 淺色底用深字
 const TASKS = [
   { k: 'feed', l: '餵奶換片', c: '#3f7fbf' },
@@ -99,7 +104,7 @@ const freeWins = (arr) => {
 const dur = (slots) => { const m = slots * 30; return m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? (m % 60) + 'm' : ''}` : `${m}分` }
 
 export default function Board() {
-  const [day, setDay] = useState(() => cget('board-day') || defaultDay())
+  const [dayRaw, setDay] = useState(() => cget('board-day') || defaultDay())
   const [who, setWho] = useState(() => cget('board-who') || 'benny')
   const [view, setView] = useState(() => (cget('board-view') === 'day' ? 'day' : 'list'))
   const [rows, setRows] = useState(() => cget('board')) // 全部日子嘅格
@@ -119,6 +124,9 @@ export default function Board() {
     ;(rows || []).forEach((r) => { if (all[r.day_type] && all[r.day_type][r.track]) all[r.day_type][r.track][r.slot] = r.task })
     return all
   }, [rows])
+  // Benny 淨係分工作日 / 休息日(週末都返工);其他人先有週六日
+  const dayOpts = view === 'list' && who === 'benny' ? BENNY_DAYS : view === 'list' && who !== 'all' ? OTHER_DAYS : DAYS
+  const day = (dayOpts.find((d) => d.key === dayRaw) || dayOpts[0]).key
   const grid = grids[day]
 
   const pickDay = (k) => { setDay(k); cset('board-day', k) }
@@ -130,10 +138,10 @@ export default function Board() {
   const total = meWins.reduce((a, w) => a + w.to - w.from, 0)
   const standby = wins.filter((w) => w.kind === 'open').reduce((a, w) => a + w.to - w.from, 0)
   const longest = Math.max(0, ...meWins.map((w) => w.to - w.from))
-  const summary = useMemo(() => DAYS.map((d) => {
+  const summary = useMemo(() => dayOpts.map((d) => {
     const ws = freeWins(grids[d.key].benny).filter((w) => w.kind === 'me')
     return { key: d.key, total: ws.reduce((a, w) => a + w.to - w.from, 0) }
-  }), [grids])
+  }), [grids, dayOpts])
   const best = summary.reduce((a, s) => (s.total > a.total ? s : a), summary[0])
   const bestDay = best.total > 0 ? best.key : ''
 
@@ -183,7 +191,7 @@ export default function Board() {
       )}
 
       <div className="segc" role="tablist">
-        {DAYS.map((d) => (
+        {dayOpts.map((d) => (
           <button key={d.key} role="tab" aria-selected={day === d.key} className={'segi' + (day === d.key ? ' on' : '')} onClick={() => pickDay(d.key)}>
             {d.label}<small>{dur(summary.find((s) => s.key === d.key).total)}{d.key === bestDay ? ' ★' : ''}</small>
           </button>
