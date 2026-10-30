@@ -14,9 +14,9 @@ const TRACKS = [
 ]
 const DAYS = [
   { key: 'wk', label: '平日' },
-  { key: 'off', label: '休息日(不固定)' },
   { key: 'sat', label: '週六' },
   { key: 'sun', label: '週日／公假' },
+  { key: 'off', label: '休息日(不固定)' },
 ]
 // d = 淺色底用深字
 const TASKS = [
