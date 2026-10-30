@@ -351,5 +351,4 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .segi.on { background: #fff; box-shadow: 0 1px 4px rgba(30, 50, 80, .18); color: #2f4a6b; }
 .segi.on small { color: #d4561f; font-weight: 700; }
 @media (max-width: 420px) { .segi { font-size: 13px; } }
-.addrow { width: 100%; min-height: 44px; margin: 0 0 4px; border: 1.5px dashed var(--accent); background: transparent; color: var(--accent); border-radius: 12px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
-.addrow:active { background: var(--accent-soft); }
+.bfab { display: flex !important; }

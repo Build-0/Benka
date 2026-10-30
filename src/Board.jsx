@@ -204,7 +204,7 @@ export default function Board() {
       </div>
 
       {rows && view === 'list' && (
-        <button className="addrow" onClick={() => setEdit({ track: who === 'all' ? 'benny' : who, from: 18, to: 19, task: '', isNew: true })}>＋ 新增安排</button>
+        <button className="fab bfab" onClick={() => setEdit({ track: who === 'all' ? 'benny' : who, from: 18, to: 19, task: '', isNew: true })} aria-label="新增安排"><Icon n="plus" /></button>
       )}
       {rows && view === 'list' && <ListView who={who} grid={grid} wins={wins} onEdit={(track, s) => setEdit({ track, ...s })} />}
       {rows && view === 'day' && <DayView grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
