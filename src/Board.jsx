@@ -6,11 +6,11 @@ import Hero from './Hero.jsx'
 
 const TRACKS = [
   { key: 'benny', name: 'Benny', color: '#2f4a6b' },
-  { key: 'carol', name: 'Carol', color: '#6a58a8' },
-  { key: 'popo', name: '婆婆', color: '#2f9e9a' },
-  { key: 'helper', name: '工人', color: '#4a8fa8' },
-  { key: 'renren', name: '仁仁', color: '#5a6fc0' },
-  { key: 'dede', name: '德德', color: '#6b9bd1' },
+  { key: 'carol', name: 'Carol', color: '#8a9db3' },
+  { key: 'popo', name: '婆婆', color: '#8a9db3' },
+  { key: 'helper', name: '工人', color: '#8a9db3' },
+  { key: 'renren', name: '仁仁', color: '#8a9db3' },
+  { key: 'dede', name: '德德', color: '#8a9db3' },
 ]
 const DAYS = [
   { key: 'wk', label: '平日' },
@@ -46,9 +46,12 @@ const TASK = Object.fromEntries(TASKS.map((t) => [t.k, t]))
 const hm = (i) => `${String(Math.floor(i / 2)).padStart(2, '0')}:${i % 2 ? '30' : '00'}`
 const endHm = (i) => (i >= 48 ? '24:00' : hm(i))
 const label = (task) => task.split('+').map((c) => (TASK[c] ? TASK[c].l : c)).join(' ＋ ')
-const style = (task) => {
-  const t = TASK[task.split('+')[0]]
-  return t ? { background: t.c, color: t.d ? '#1c2b3f' : '#fff' } : {}
+const style = (task, track) => {
+  const first = task.split('+')[0]
+  if (first === 'sleep') return { background: '#eef2f7', color: '#8da2b8' }
+  if (task.split('+').includes('me')) return { background: '#f2774b', color: '#fff' }
+  if (track === 'benny') return { background: '#2f4a6b', color: '#fff' }
+  return { background: '#e3eaf2', color: '#3b4f66' }
 }
 const defaultDay = () => {
   const w = new Date().getDay()
@@ -149,7 +152,7 @@ export default function Board() {
 
       <div className="seg" role="tablist">
         <button role="tab" aria-selected={view === 'list'} className={'sg' + (view === 'list' ? ' on' : '')} style={{ '--c': '#2f4a6b' }} onClick={() => pickView('list')}>時間表</button>
-                <button role="tab" aria-selected={view === 'day'} className={'sg' + (view === 'day' ? ' on' : '')} style={{ '--c': '#6a58a8' }} onClick={() => pickView('day')}>總表</button>
+                <button role="tab" aria-selected={view === 'day'} className={'sg' + (view === 'day' ? ' on' : '')} style={{ '--c': '#2f4a6b' }} onClick={() => pickView('day')}>總表</button>
       </div>
 
       {free && (
@@ -212,9 +215,9 @@ function ListView({ grid, onEdit }) {
             <div className="agh">{p.name}</div>
             <div className="agenda">
               {list.map((e) => {
-                const t = TASK[e.task.split('+')[0]]
+                const c = e.task.split('+').includes('me') ? '#f2774b' : e.people.includes('benny') ? '#2f4a6b' : '#c3cfdc'
                 return (
-                  <button key={e.from + '-' + e.to + e.task} className="ag" onClick={() => onEdit(e.people[0], e)} style={{ '--c': t ? t.c : '#8da2b8' }}>
+                  <button key={e.from + '-' + e.to + e.task} className="ag" onClick={() => onEdit(e.people[0], e)} style={{ '--c': c }}>
                     <span className="agt">{e.to - e.from === 1 ? hm(e.from) : hm(e.from) + '–' + endHm(e.to)}</span>
                     <span className="agb"><i />{label(e.task)}</span>
                     <span className="agp">{who === 'all' ? e.people.map((k) => <em key={k} style={{ '--p': nm(k).color }}>{nm(k).name}</em>) : null}</span>
@@ -246,7 +249,7 @@ function DayView({ grid, onEdit }) {
             <button
               key={t.key + s.from}
               className={'bdseg' + (s.task ? '' : ' blank')}
-              style={{ gridRow: `${s.from + 2} / ${s.to + 2}`, gridColumn: c + 2, ...(s.task ? style(s.task) : {}) }}
+              style={{ gridRow: `${s.from + 2} / ${s.to + 2}`, gridColumn: c + 2, ...(s.task ? style(s.task, t.key) : {}) }}
               onClick={() => onEdit(t.key, s)}
             >
               {s.task ? label(s.task) : ''}

@@ -295,3 +295,10 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
   .ag { grid-template-columns: 84px 1fr auto; }
   .agp { grid-column: auto; justify-content: flex-end; max-width: 108px; }
 }
+
+/* 降低顏色:只強調 Benny */
+.tp { border-color: var(--line); }
+.tp.on { background: var(--accent); border-color: var(--accent); }
+.bdgrid > .bdh { color: #5b6f86; border-bottom-color: var(--line); }
+.bdgrid > .bdh:nth-child(2) { color: var(--accent); border-bottom-color: var(--accent); }
+.bdseg { border-radius: 6px; }
