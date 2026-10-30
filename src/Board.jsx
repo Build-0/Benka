@@ -214,12 +214,18 @@ export default function Board() {
   )
 }
 
-const PARTS = [
-  { from: 0, to: 12, name: '凌晨 00:00–06:00' },
-  { from: 12, to: 24, name: '上午 06:00–12:00' },
-  { from: 24, to: 36, name: '下午 12:00–18:00' },
-  { from: 36, to: 48, name: '晚上 18:00–24:00' },
+// 分類:同一類嘅事放埋一齊,組內按時間排
+const CATS = [
+  { key: 'free', name: '★ 自由 / 待命', tasks: ['me', '__free', '__open'] },
+  { key: 'care', name: '🍼 照顧孩子', tasks: ['feed', 'pump', 'wash', 'bath', 'nap', 'bed', 'kid', 'kidr', 'kidd'] },
+  { key: 'school', name: '🎒 接送 · 學習 · 活動', tasks: ['school', 'class', 'edu', 'screen', 'play'] },
+  { key: 'home', name: '🏠 家務 · 日常', tasks: ['cook', 'eat', 'routine', 'rest'] },
+  { key: 'work', name: '💼 返工 · 通勤', tasks: ['work', 'go'] },
 ]
+const catOf = (task) => {
+  const t = task.split('+').find((x) => x !== 'flex')
+  return (CATS.find((c) => c.tasks.includes(t)) || { key: 'other' }).key
+}
 
 function ListView({ grid, wins, onEdit }) {
   const [who, setWho] = useState('all')
@@ -245,12 +251,12 @@ function ListView({ grid, wins, onEdit }) {
           <button key={t.key} className={'chip' + (who === t.key ? ' on' : '')} onClick={() => setWho(t.key)}>{t.name}</button>
         ))}
       </div>
-      {PARTS.map((p) => {
-        const list = events.filter((e) => e.from >= p.from && e.from < p.to)
+      {[...CATS, { key: 'other', name: '其他', tasks: [] }].map((p) => {
+        const list = events.filter((e) => catOf(e.task) === p.key)
         if (!list.length) return null
         return (
-          <section key={p.name}>
-            <div className="agh">{p.name}</div>
+          <section key={p.key}>
+            <div className="agh">{p.name}<span className="agn">{list.length}</span></div>
             <div className="agenda">
               {list.map((e) => {
                 if (e.task === '__open') {
