@@ -179,8 +179,9 @@ export default function Board() {
     await load()
   }
 
-  const saveRange = async ({ track, from, to, task }) => {
-    const base = supabase.from('board_slots').delete().eq('day_type', day).eq('track', track).gte('slot', from).lt('slot', to)
+  const saveRange = async ({ track, from, to, task, oldFrom = from, oldTo = to }) => {
+    // 連同原本嗰段一齊清走,縮短時段先會真係縮短
+    const base = supabase.from('board_slots').delete().eq('day_type', day).eq('track', track).gte('slot', Math.min(from, oldFrom)).lt('slot', Math.max(to, oldTo))
     const { error: e1 } = await base
     if (e1) return e1.message
     if (task) {
@@ -410,7 +411,7 @@ function SlotEditor({ init, grid, onClose, onSave }) {
   const save = async (clearIt) => {
     if (to <= from) { setErr('「至」要遲過「由」'); return }
     setBusy(true); setErr('')
-    const m = await onSave({ track: init.track, from, to, task: clearIt ? '' : picked.join('+') })
+    const m = await onSave({ track: init.track, from, to, task: clearIt ? '' : picked.join('+'), oldFrom: seg.from, oldTo: seg.to })
     setBusy(false)
     if (m) setErr(m)
   }
