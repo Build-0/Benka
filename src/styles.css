@@ -343,3 +343,11 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .ag.open .agb { color: var(--muted); font-weight: 500; }
 .bdseg.bfree { background: #f4f6f9; color: #9aaabb; font-weight: 500; }
 .agn { order: 3; font-size: 11px; font-weight: 600; color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; }
+
+/* iOS 式分段控制器 */
+.segc { display: flex; background: #dfe6ef; border-radius: 12px; padding: 3px; margin: 0 0 10px; gap: 2px; }
+.segi { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 14px; font-weight: 600; border-radius: 9px; padding: 6px 2px; min-height: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.15; cursor: pointer; }
+.segi small { font-size: 11px; font-weight: 500; color: var(--muted); }
+.segi.on { background: #fff; box-shadow: 0 1px 4px rgba(30, 50, 80, .18); color: #2f4a6b; }
+.segi.on small { color: #d4561f; font-weight: 700; }
+@media (max-width: 420px) { .segi { font-size: 13px; } }

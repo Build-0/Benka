@@ -15,8 +15,8 @@ const TRACKS = [
 const DAYS = [
   { key: 'wk', label: '平日' },
   { key: 'sat', label: '週六' },
-  { key: 'sun', label: '週日／公假' },
-  { key: 'off', label: '休息日(不固定)' },
+  { key: 'sun', label: '週日/公假' },
+  { key: 'off', label: '休息日' },
 ]
 // d = 淺色底用深字
 const TASKS = [
@@ -161,7 +161,8 @@ export default function Board() {
         compact
         title="24 小時看板"
         icon="calendar-time"
-        sub="家庭分工 · 我嘅自由時間"
+        sub={rows ? `最長連續 ${dur(longest)} · 目標 90–120 分鐘${standby ? ` · 待命 ${dur(standby)}` : ''}` : '家庭分工'}
+        stats={rows ? [{ n: total ? dur(total) : '—', label: '我嘅自由時間' }] : []}
       />
 
       {err && (
@@ -181,33 +182,17 @@ export default function Board() {
         </div>
       )}
 
-      <div className="chips">
+      <div className="segc" role="tablist">
         {DAYS.map((d) => (
-          <button key={d.key} className={'chip daychip' + (day === d.key ? ' on' : '') + (d.key === bestDay ? ' best' : '')} onClick={() => pickDay(d.key)}>{d.label}<small>{dur(summary.find((s) => s.key === d.key).total)}{d.key === bestDay ? ' ★' : ''}</small></button>
+          <button key={d.key} role="tab" aria-selected={day === d.key} className={'segi' + (day === d.key ? ' on' : '')} onClick={() => pickDay(d.key)}>
+            {d.label}<small>{dur(summary.find((s) => s.key === d.key).total)}{d.key === bestDay ? ' ★' : ''}</small>
+          </button>
         ))}
       </div>
 
-      {rows && (view === 'day' || who === 'benny') && (
-        <section className="freecard">
-          <div className="fc-top">
-            <div><div className="fc-n">{total ? dur(total) : '冇'}</div><div className="fc-l">我嘅自由時間</div></div>
-            <div className="fc-r">最長連續 <b>{dur(longest)}</b><span>目標 90–120 分鐘{standby ? ` · 另有待命 ${dur(standby)}` : ''}</span></div>
-          </div>
-          <div className="fc-wins">
-            {wins.map((w) => (
-              <button key={w.from} className={'fw' + (w.kind === 'open' ? ' standby' : w.to - w.from >= 3 ? ' ok' : '')} onClick={() => setEdit({ track: 'benny', from: w.from, to: w.to, task: w.kind === 'me' ? 'me' : '' })}>
-                {hm(w.from)}–{endHm(w.to)}<small>{w.kind === 'open' ? '待命 ' : ''}{dur(w.to - w.from)}</small>
-              </button>
-            ))}
-            {wins.length === 0 && <span className="muted">呢日冇空檔</span>}
-            {total === 0 && wins.length > 0 && <span className="muted fc-hint">未有自由時間,撳灰色「待命」段可以劃做★私人時間</span>}
-          </div>
-        </section>
-      )}
-
-      <div className="seg" role="tablist">
-        <button role="tab" aria-selected={view === 'list'} className={'sg' + (view === 'list' ? ' on' : '')} style={{ '--c': '#2f4a6b' }} onClick={() => pickView('list')}>時間表</button>
-        <button role="tab" aria-selected={view === 'day'} className={'sg' + (view === 'day' ? ' on' : '')} style={{ '--c': '#2f4a6b' }} onClick={() => pickView('day')}>總表</button>
+      <div className="segc" role="tablist">
+        <button role="tab" aria-selected={view === 'list'} className={'segi' + (view === 'list' ? ' on' : '')} onClick={() => pickView('list')}>時間表</button>
+        <button role="tab" aria-selected={view === 'day'} className={'segi' + (view === 'day' ? ' on' : '')} onClick={() => pickView('day')}>總表</button>
       </div>
 
       {rows && view === 'list' && <ListView who={who} grid={grid} wins={wins} onEdit={(track, s) => setEdit({ track, ...s })} />}
