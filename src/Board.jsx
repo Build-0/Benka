@@ -56,7 +56,10 @@ const TASK = Object.fromEntries(TASKS.map((t) => [t.k, t]))
 const hm = (i) => `${String(Math.floor(i / 2)).padStart(2, '0')}:${i % 2 ? '30' : '00'}`
 const endHm = (i) => (i >= 48 ? '24:00' : hm(i))
 const isFlex = (task) => task.split('+').includes('flex')
-const label = (task) => (isFlex(task) ? '~ ' : '') + task.split('+').filter((c) => c !== 'flex').map((c) => (TASK[c] ? TASK[c].l : c)).join(' ＋ ')
+// 自訂任務名(改名),優先過預設
+let NAMES = cget('board-names') || {}
+const tname = (k) => NAMES[k] || (TASK[k] ? TASK[k].l : k)
+const label = (task) => (isFlex(task) ? '~ ' : '') + task.split('+').filter((c) => c !== 'flex').map(tname).join(' ＋ ')
 const baseStyle = (task, track) => {
   const first = task.split('+')[0]
   if (first === 'sleep') return { background: '#eef2f7', color: '#8da2b8' }
@@ -112,12 +115,32 @@ export default function Board() {
   const [rows, setRows] = useState(() => cget('board')) // 全部日子嘅格
   const [err, setErr] = useState('')
   const [edit, setEdit] = useState(null)
+  const [, bump] = useState(0)
 
   const load = async () => {
     const { data, error } = await supabase.from('board_slots').select('day_type, track, slot, task').limit(2000)
     if (error) { setErr(error.message); setRows((r) => r || []) } else { setErr(''); setRows(data); cset('board', data) }
   }
-  useEffect(() => { load() }, [])
+  const loadNames = async () => {
+    const { data, error } = await supabase.from('board_task_names').select('task, name')
+    if (error) return // 未建表:淨係用本機名
+    NAMES = Object.fromEntries(data.map((r) => [r.task, r.name]))
+    cset('board-names', NAMES)
+    bump((n) => n + 1)
+  }
+  useEffect(() => { load(); loadNames() }, [])
+
+  const renameTask = async (k, name) => {
+    const n = name.trim()
+    NAMES = { ...NAMES }
+    if (n) NAMES[k] = n; else delete NAMES[k]
+    cset('board-names', NAMES)
+    bump((x) => x + 1)
+    const { error } = n
+      ? await supabase.from('board_task_names').upsert({ task: k, name: n }, { onConflict: 'user_id,task' })
+      : await supabase.from('board_task_names').delete().eq('task', k)
+    if (error) setErr('改名只存咗喺呢部機(跨裝置同步要先喺 Supabase 跑 supabase/03_board_task_names.sql):' + error.message)
+  }
 
   // 全部日子嘅格:grids[day][track][slot]
   const grids = useMemo(() => {
@@ -216,6 +239,7 @@ export default function Board() {
           init={edit}
           grid={grid}
           onClose={() => setEdit(null)}
+          onRename={renameTask}
           onSave={async (v) => { const m = await saveRange(v); if (!m) setEdit(null); return m }}
         />
       )}
@@ -325,7 +349,8 @@ function DayView({ grid, onEdit }) {
   )
 }
 
-function SlotEditor({ init, grid, onClose, onSave }) {
+function SlotEditor({ init, grid, onClose, onSave, onRename }) {
+  const [renaming, setRenaming] = useState(false)
   const [track, setTrack] = useState(init.track)
   const tr = TRACKS.find((t) => t.key === track)
   const cur = grid[init.track]
@@ -391,6 +416,10 @@ function SlotEditor({ init, grid, onClose, onSave }) {
             </select></label>
           </div>
           <div className="muted" style={{ fontSize: 13 }}>揀任務(最多兩個,一齊做嘅事)</div>
+          <div className="rnbar">
+            <button type="button" className={'rnbtn' + (renaming ? ' on' : '')} onClick={() => setRenaming(!renaming)}>{renaming ? '完成改名' : '✎ 改任務名'}</button>
+            {renaming && <span className="muted">撳任務就可以改名,留空=還原預設</span>}
+          </div>
           <div className="taskpick">
             {TASKS.filter((t) => !t.old || picked.includes(t.k)).map((t) => (
               <button
@@ -398,8 +427,12 @@ function SlotEditor({ init, grid, onClose, onSave }) {
                 type="button"
                 className={'tp' + (picked.includes(t.k) ? ' on' : '')}
                 style={{ '--tc': t.c }}
-                onClick={() => toggle(t.k)}
-              >{t.l}</button>
+                onClick={() => {
+                  if (!renaming) return toggle(t.k)
+                  const v = window.prompt('任務名稱(留空=還原預設)', tname(t.k))
+                  if (v !== null) onRename(t.k, v)
+                }}
+              >{renaming ? '✎ ' : ''}{tname(t.k)}</button>
             ))}
           </div>
           {err && <div className="err">{err}</div>}
