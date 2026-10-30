@@ -169,7 +169,7 @@ export default function Board() {
         compact
         title="24 小時看板"
         icon="calendar-time"
-        sub={rows ? `最長連續 ${dur(longest)} · 目標 90–120 分鐘${standby ? ` · 待命 ${dur(standby)}` : ''}` : '家庭分工'}
+        sub={rows ? `最長連續 ${dur(longest)}${standby ? ` · 待命 ${dur(standby)}` : ''}` : '家庭分工'}
         stats={rows ? [{ n: total ? dur(total) : '—', label: '我嘅自由時間' }] : []}
       />
 
@@ -203,6 +203,9 @@ export default function Board() {
         <button role="tab" aria-selected={view === 'day'} className={'segi' + (view === 'day' ? ' on' : '')} onClick={() => pickView('day')}>總表</button>
       </div>
 
+      {rows && view === 'list' && (
+        <button className="addrow" onClick={() => setEdit({ track: who === 'all' ? 'benny' : who, from: 18, to: 19, task: '', isNew: true })}>＋ 新增安排</button>
+      )}
       {rows && view === 'list' && <ListView who={who} grid={grid} wins={wins} onEdit={(track, s) => setEdit({ track, ...s })} />}
       {rows && view === 'day' && <DayView grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
 
@@ -321,7 +324,8 @@ function DayView({ grid, onEdit }) {
 }
 
 function SlotEditor({ init, grid, onClose, onSave }) {
-  const tr = TRACKS.find((t) => t.key === init.track)
+  const [track, setTrack] = useState(init.track)
+  const tr = TRACKS.find((t) => t.key === track)
   const cur = grid[init.track]
   // 由撳落嗰格擴展成同任務嘅連續一段
   const seg = init.from !== undefined ? init : segsOf(cur).find((s) => init.slot >= s.from && init.slot < s.to)
@@ -356,7 +360,7 @@ function SlotEditor({ init, grid, onClose, onSave }) {
   const save = async (clearIt) => {
     if (to <= from) { setErr('「至」要遲過「由」'); return }
     setBusy(true); setErr('')
-    const m = await onSave({ track: init.track, from, to, task: clearIt ? '' : picked.join('+'), oldFrom: seg.from, oldTo: seg.to })
+    const m = await onSave({ track, from, to, task: clearIt ? '' : picked.join('+'), oldFrom: init.isNew ? from : seg.from, oldTo: init.isNew ? to : seg.to })
     setBusy(false)
     if (m) setErr(m)
   }
@@ -365,10 +369,17 @@ function SlotEditor({ init, grid, onClose, onSave }) {
     <div className="backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="sheet" style={{ '--c': tr.color }}>
         <div className="sheet-head">
-          <h2>{tr.name} · 改時段</h2>
+          <h2>{tr.name} · {init.isNew ? '新增安排' : '改時段'}</h2>
           <button type="button" className="x" onClick={onClose} aria-label="關閉"><Icon n="x" /></button>
         </div>
         <div className="sheet-body">
+          {init.isNew && (
+            <div className="chips">
+              {TRACKS.map((t) => (
+                <button key={t.key} type="button" className={'chip' + (track === t.key ? ' on' : '')} onClick={() => setTrack(t.key)}>{t.name}</button>
+              ))}
+            </div>
+          )}
           <div className="timepick">
             <label>由<select value={from} onChange={(e) => setFrom(+e.target.value)}>
               {Array.from({ length: 48 }, (_, i) => <option key={i} value={i}>{hm(i)}</option>)}
