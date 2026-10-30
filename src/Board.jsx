@@ -72,15 +72,30 @@ const segsOf = (arr) => {
 
 const WAKE_FROM = 12 // 06:00
 const WAKE_TO = 44 // 22:00
-const isFree = (t) => !t || t.split('+').includes('me')
-// Benny 清醒時段(06:00–22:00)內連續空檔(冇安排,或已標★私人時間)
+// 'me' = 真自由(★私人時間);空白 = 冇指定責任嘅待命(喺屋企隨時要照應);其他 = 責任
+const kindOf = (t) => (!t ? 'open' : t.split('+').includes('me') ? 'me' : '')
+// Benny 清醒時段(06:00–22:00)內,連續同類嘅自由 / 待命時段
 const freeWins = (arr) => {
   const out = []
   let i = WAKE_FROM
   while (i < WAKE_TO) {
-    if (!isFree(arr[i])) { i++; continue }
+    const k = kindOf(arr[i])
+    if (!k) { i++; continue }
     let j = i
-    while (j + 1 < WAKE_TO && isFree(arr[j + 1])) j++
+    while (j + 1 < WAKE_TO && kindOf(arr[j + 1]) === k) j++
+    out.push({ from: i, to: j + 1, kind: k })
+    i = j + 1
+  }
+  return out
+}
+// 自由 + 待命連埋計(調配後可以連成幾長)
+const openRuns = (arr) => {
+  const out = []
+  let i = WAKE_FROM
+  while (i < WAKE_TO) {
+    if (!kindOf(arr[i])) { i++; continue }
+    let j = i
+    while (j + 1 < WAKE_TO && kindOf(arr[j + 1])) j++
     out.push({ from: i, to: j + 1 })
     i = j + 1
   }
@@ -123,13 +138,16 @@ export default function Board() {
   const pickView = (k) => { setView(k); cset('board-view', k) }
 
   const wins = useMemo(() => freeWins(grid.benny), [grid])
-  const total = wins.reduce((a, w) => a + w.to - w.from, 0)
-  const longest = Math.max(0, ...wins.map((w) => w.to - w.from))
+  const meWins = wins.filter((w) => w.kind === 'me')
+  const total = meWins.reduce((a, w) => a + w.to - w.from, 0)
+  const standby = wins.filter((w) => w.kind === 'open').reduce((a, w) => a + w.to - w.from, 0)
+  const longest = Math.max(0, ...meWins.map((w) => w.to - w.from))
   const summary = useMemo(() => DAYS.map((d) => {
-    const ws = freeWins(grids[d.key].benny)
+    const ws = freeWins(grids[d.key].benny).filter((w) => w.kind === 'me')
     return { key: d.key, total: ws.reduce((a, w) => a + w.to - w.from, 0) }
   }), [grids])
-  const bestDay = summary.reduce((a, s) => (s.total > a.total ? s : a), summary[0]).key
+  const best = summary.reduce((a, s) => (s.total > a.total ? s : a), summary[0])
+  const bestDay = best.total > 0 ? best.key : ''
 
   // 調配提示:Benny 做緊、但嗰個時間其他人有空嘅事,交出後自由時間會變幾長
   const swaps = useMemo(() => {
@@ -143,7 +161,7 @@ export default function Board() {
       if (!who.length) return
       const tmp = grid.benny.slice()
       for (let i = s.from; i < s.to; i++) tmp[i] = ''
-      const w = freeWins(tmp).find((x) => s.from >= x.from && s.from < x.to)
+      const w = openRuns(tmp).find((x) => s.from >= x.from && s.from < x.to)
       if (!w || w.to - w.from <= s.to - s.from) return
       out.push({ ...s, who, win: w, slots: w.to - w.from })
     })
@@ -212,15 +230,16 @@ export default function Board() {
         <section className="freecard">
           <div className="fc-top">
             <div><div className="fc-n">{total ? dur(total) : '冇'}</div><div className="fc-l">我嘅自由時間</div></div>
-            <div className="fc-r">最長連續 <b>{dur(longest)}</b><span>目標 90–120 分鐘</span></div>
+            <div className="fc-r">最長連續 <b>{dur(longest)}</b><span>目標 90–120 分鐘{standby ? ` · 另有待命 ${dur(standby)}` : ''}</span></div>
           </div>
           <div className="fc-wins">
             {wins.map((w) => (
-              <button key={w.from} className={'fw' + (w.to - w.from >= 3 ? ' ok' : '')} onClick={() => setEdit({ track: 'benny', from: w.from, to: w.to, task: '' })}>
-                {hm(w.from)}–{endHm(w.to)}<small>{dur(w.to - w.from)}</small>
+              <button key={w.from} className={'fw' + (w.kind === 'open' ? ' standby' : w.to - w.from >= 3 ? ' ok' : '')} onClick={() => setEdit({ track: 'benny', from: w.from, to: w.to, task: w.kind === 'me' ? 'me' : '' })}>
+                {hm(w.from)}–{endHm(w.to)}<small>{w.kind === 'open' ? '待命 ' : ''}{dur(w.to - w.from)}</small>
               </button>
             ))}
             {wins.length === 0 && <span className="muted">呢日冇空檔</span>}
+            {total === 0 && wins.length > 0 && <span className="muted fc-hint">未有自由時間,撳灰色「待命」段可以劃做★私人時間</span>}
           </div>
         </section>
       )}
@@ -228,10 +247,10 @@ export default function Board() {
       {rows && view === 'list' && swaps.length > 0 && (
         <section className="swaps">
           <div className="agh">調配提示</div>
-          <div className="muted swnote">呢啲係你而家要做、但嗰個時間其他人有空嘅事。交出去,你嘅自由時間就連成更長一段。</div>
+          <div className="muted swnote">呢啲係你而家要做、但嗰個時間其他人有空嘅事。交出去,你就可以連成更長一段(包括待命時間),再劃做★私人時間。</div>
           {swaps.map((sw) => (
             <div key={sw.from + sw.task} className="sw">
-              <div className="sw-h"><b>{hm(sw.from)}–{endHm(sw.to)} {label(sw.task)}</b><span>交出後自由 {hm(sw.win.from)}–{endHm(sw.win.to)}<em>{dur(sw.slots)}</em></span></div>
+              <div className="sw-h"><b>{hm(sw.from)}–{endHm(sw.to)} {label(sw.task)}</b><span>交出後可連成 {hm(sw.win.from)}–{endHm(sw.win.to)}<em>{dur(sw.slots)}</em></span></div>
               <div className="sw-b">{sw.who.map((p) => <button key={p} onClick={() => reassign(sw, p)}>交畀{pname(p)}</button>)}</div>
             </div>
           ))}
@@ -272,7 +291,7 @@ function ListView({ grid, wins, onEdit }) {
       if (!m.has(id)) m.set(id, { ...s, people: [] })
       m.get(id).people.push(k)
     }))
-    if (who === 'all' || who === 'benny') wins.forEach((w) => m.set('free' + w.from, { from: w.from, to: w.to, task: '__free', people: ['benny'] }))
+    if (who === 'all' || who === 'benny') wins.forEach((w) => m.set('free' + w.from, { from: w.from, to: w.to, task: w.kind === 'me' ? '__free' : '__open', people: ['benny'] }))
     return [...m.values()].sort((a, b) => a.from - b.from || a.to - b.to)
   }, [grid, who, wins]) // eslint-disable-line react-hooks/exhaustive-deps
   const nm = (k) => TRACKS.find((t) => t.key === k)
@@ -292,6 +311,15 @@ function ListView({ grid, wins, onEdit }) {
             <div className="agh">{p.name}</div>
             <div className="agenda">
               {list.map((e) => {
+                if (e.task === '__open') {
+                  return (
+                    <button key={'o' + e.from} className="ag open" onClick={() => onEdit('benny', { from: e.from, to: e.to, task: '' })}>
+                      <span className="agt">{hm(e.from)}–{endHm(e.to)}</span>
+                      <span className="agb">待命 · 冇指定責任</span>
+                      <span className="agp"><em style={{ '--p': '#9aaabb' }}>{dur(e.to - e.from)}</em></span>
+                    </button>
+                  )
+                }
                 if (e.task === '__free') {
                   return (
                     <button key={'f' + e.from} className="ag free" onClick={() => onEdit('benny', { from: e.from, to: e.to, task: '' })}>
@@ -338,7 +366,7 @@ function DayView({ grid, onEdit }) {
               style={{ gridRow: `${s.from + 2} / ${s.to + 2}`, gridColumn: c + 2, ...(s.task ? style(s.task, t.key) : {}) }}
               onClick={() => onEdit(t.key, s)}
             >
-              {s.task ? label(s.task) : t.key === 'benny' && s.from >= WAKE_FROM && s.to <= WAKE_TO ? '★ 自由' : ''}
+              {s.task ? label(s.task) : t.key === 'benny' && s.from >= WAKE_FROM && s.to <= WAKE_TO ? '待命' : ''}
             </button>
           ))
         )}

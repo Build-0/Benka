@@ -334,3 +334,11 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .sw-b { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
 .sw-b button { border: 1px solid var(--accent); background: #fff; color: var(--accent); border-radius: 999px; padding: 0 14px; min-height: 40px; font: inherit; font-size: 14px; cursor: pointer; }
 .sw-b button:active { background: var(--accent-soft); }
+
+/* 待命(冇指定責任)同真自由分開 */
+.fw.standby { background: #f4f6f9; border: 1px dashed #b4c3d3; color: #5b6f86; }
+.fw.standby small { color: #8da2b8; }
+.fc-hint { font-size: 12px; align-self: center; }
+.ag.open { background: #f7f9fb; border-left-color: #c3cfdc; border-style: dashed; }
+.ag.open .agb { color: var(--muted); font-weight: 500; }
+.bdseg.bfree { background: #f4f6f9; color: #9aaabb; font-weight: 500; }
