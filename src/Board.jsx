@@ -14,7 +14,7 @@ const TRACKS = [
 ]
 const DAYS = [
   { key: 'wk', label: '平日' },
-  { key: 'off', label: 'Benny 休假' },
+  { key: 'off', label: '休息日(不固定)' },
   { key: 'sat', label: '週六' },
   { key: 'sun', label: '週日／公假' },
 ]
