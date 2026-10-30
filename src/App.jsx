@@ -51,7 +51,7 @@ export default function App() {
           <span>帳戶</span>
         </button>
       </nav>
-      <main className="main">
+      <main className={"main" + (tab === "board" ? " wide" : "")}>
         <div className="toprow">
           <VersionBadge />
           <button className="acct" onClick={() => setMenu(true)} aria-label="帳戶"><Icon n="user" /></button>

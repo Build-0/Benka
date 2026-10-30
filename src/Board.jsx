@@ -54,7 +54,6 @@ const defaultDay = () => {
   const w = new Date().getDay()
   return w === 0 ? 'sun' : w === 6 ? 'sat' : 'wk'
 }
-const nowSlot = () => { const d = new Date(); return d.getHours() * 2 + (d.getMinutes() >= 30 ? 1 : 0) }
 
 // 連續相同任務(包括空白)合併成一段
 const segsOf = (arr) => {
@@ -70,16 +69,10 @@ const segsOf = (arr) => {
 
 export default function Board() {
   const [day, setDay] = useState(() => cget('board-day') || defaultDay())
-  const [view, setView] = useState(() => cget('board-view') || 'now')
+  const [view, setView] = useState(() => (cget('board-view') === 'day' ? 'day' : 'list'))
   const [rows, setRows] = useState(() => cget('board')) // 全部日子嘅格
   const [err, setErr] = useState('')
   const [edit, setEdit] = useState(null)
-  const [now, setNow] = useState(nowSlot())
-
-  useEffect(() => {
-    const t = setInterval(() => setNow(nowSlot()), 30000)
-    return () => clearInterval(t)
-  }, [])
 
   const load = async () => {
     const { data, error } = await supabase.from('board_slots').select('day_type, track, slot, task').limit(2000)
@@ -131,11 +124,11 @@ export default function Board() {
   return (
     <>
       <Hero
+        compact
         title="24 小時看板"
         icon="calendar-time"
         sub={DAYS.find((d) => d.key === day).label + ' · 家庭分工'}
         stats={rows ? [
-          { n: hm(now), label: '而家' },
           { n: free ? `${Math.floor(freeMin / 60)}h${freeMin % 60 ? freeMin % 60 + 'm' : ''}` : '—', label: 'Benny 最長空檔' },
         ] : []}
       />
@@ -155,8 +148,8 @@ export default function Board() {
       </div>
 
       <div className="seg" role="tablist">
-        <button role="tab" aria-selected={view === 'now'} className={'sg' + (view === 'now' ? ' on' : '')} style={{ '--c': '#f2774b' }} onClick={() => pickView('now')}>而家</button>
-        <button role="tab" aria-selected={view === 'day'} className={'sg' + (view === 'day' ? ' on' : '')} style={{ '--c': '#2f4a6b' }} onClick={() => pickView('day')}>全日</button>
+        <button role="tab" aria-selected={view === 'list'} className={'sg' + (view === 'list' ? ' on' : '')} style={{ '--c': '#2f4a6b' }} onClick={() => pickView('list')}>時間表</button>
+                <button role="tab" aria-selected={view === 'day'} className={'sg' + (view === 'day' ? ' on' : '')} style={{ '--c': '#6a58a8' }} onClick={() => pickView('day')}>總表</button>
       </div>
 
       {free && (
@@ -166,8 +159,8 @@ export default function Board() {
         </div>
       )}
 
-      {rows && view === 'now' && <NowView grid={grid} now={now} onEdit={(track, i) => setEdit({ track, slot: i })} />}
-      {rows && view === 'day' && <DayView grid={grid} now={now} onEdit={(track, s) => setEdit({ track, ...s })} />}
+      {rows && view === 'list' && <ListView grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
+            {rows && view === 'day' && <DayView grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
 
       {edit && (
         <SlotEditor
@@ -181,38 +174,65 @@ export default function Board() {
   )
 }
 
-function NowView({ grid, now, onEdit }) {
+const PARTS = [
+  { from: 0, to: 12, name: '凌晨 00:00–06:00' },
+  { from: 12, to: 24, name: '上午 06:00–12:00' },
+  { from: 24, to: 36, name: '下午 12:00–18:00' },
+  { from: 36, to: 48, name: '晚上 18:00–24:00' },
+]
+
+function ListView({ grid, onEdit }) {
+  const [who, setWho] = useState('all')
+  const keys = who === 'all' ? ['benny', 'carol', 'popo', 'helper'] : [who]
+  // 同一時段、同一任務嘅人合併做一行
+  const events = useMemo(() => {
+    const m = new Map()
+    keys.forEach((k) => segsOf(grid[k]).forEach((s) => {
+      if (!s.task || s.task === 'sleep') return
+      const id = s.from + '-' + s.to + '-' + s.task
+      if (!m.has(id)) m.set(id, { ...s, people: [] })
+      m.get(id).people.push(k)
+    }))
+    return [...m.values()].sort((a, b) => a.from - b.from || a.to - b.to)
+  }, [grid, who]) // eslint-disable-line react-hooks/exhaustive-deps
+  const nm = (k) => TRACKS.find((t) => t.key === k)
   return (
-    <div className="nowgrid">
-      {TRACKS.map((t) => {
-        const arr = grid[t.key]
-        const cur = arr[now] || ''
-        let to = now + 1
-        while (to < 48 && (arr[to] || '') === cur) to++
-        const next = to < 48 ? arr[to] || '' : ''
+    <>
+      <div className="chips">
+        <button className={'chip' + (who === 'all' ? ' on' : '')} onClick={() => setWho('all')}>全部人</button>
+        {TRACKS.map((t) => (
+          <button key={t.key} className={'chip' + (who === t.key ? ' on' : '')} onClick={() => setWho(t.key)}>{t.name}</button>
+        ))}
+      </div>
+      {PARTS.map((p) => {
+        const list = events.filter((e) => e.from >= p.from && e.from < p.to)
+        if (!list.length) return null
         return (
-          <button key={t.key} className="nowcard" style={{ '--c': t.color }} onClick={() => onEdit(t.key, now)}>
-            <div className="nowname"><i />{t.name}</div>
-            <div className="nowtask" style={cur ? style(cur) : undefined}>{cur ? label(cur) : '自由／冇安排'}</div>
-            <div className="nownext">
-              {to < 48 ? <>至 {hm(to)} · 之後 {next ? label(next) : '冇安排'}</> : <>至全日完結</>}
+          <section key={p.name}>
+            <div className="agh">{p.name}</div>
+            <div className="agenda">
+              {list.map((e) => {
+                const t = TASK[e.task.split('+')[0]]
+                return (
+                  <button key={e.from + '-' + e.to + e.task} className="ag" onClick={() => onEdit(e.people[0], e)} style={{ '--c': t ? t.c : '#8da2b8' }}>
+                    <span className="agt">{e.to - e.from === 1 ? hm(e.from) : hm(e.from) + '–' + endHm(e.to)}</span>
+                    <span className="agb"><i />{label(e.task)}</span>
+                    <span className="agp">{who === 'all' ? e.people.map((k) => <em key={k} style={{ '--p': nm(k).color }}>{nm(k).name}</em>) : null}</span>
+                  </button>
+                )
+              })}
             </div>
-          </button>
+          </section>
         )
       })}
-    </div>
+      {events.length === 0 && <div className="empty muted">呢個日子類型未有安排。</div>}
+    </>
   )
 }
 
-function DayView({ grid, now, onEdit }) {
-  const wrap = useRef(null)
-  useEffect(() => {
-    // 開頁自動捲到「而家」前一個鐘
-    if (wrap.current) wrap.current.scrollTop = Math.max(0, (now - 2) * 30)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+function DayView({ grid, onEdit }) {
   return (
-    <div className="bdwrap" ref={wrap}>
+    <div className="bdwrap">
       <div className="bdgrid">
         <div className="bdh bdt" style={{ gridRow: 1, gridColumn: 1 }} />
         {TRACKS.map((t, c) => (
@@ -233,7 +253,6 @@ function DayView({ grid, now, onEdit }) {
             </button>
           ))
         )}
-        <div className="bdnow" style={{ gridRow: now + 2, gridColumn: '1 / -1' }} />
       </div>
     </div>
   )
