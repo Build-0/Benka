@@ -159,10 +159,7 @@ export default function Board() {
         compact
         title="24 小時看板"
         icon="calendar-time"
-        sub={DAYS.find((d) => d.key === day).label + ' · 家庭分工'}
-        stats={rows ? [
-          { n: total ? dur(total) : '—', label: '自由時間' },
-        ] : []}
+        sub="家庭分工 · 我嘅自由時間"
       />
 
       {err && (
@@ -177,11 +174,6 @@ export default function Board() {
         {DAYS.map((d) => (
           <button key={d.key} className={'chip daychip' + (day === d.key ? ' on' : '') + (d.key === bestDay ? ' best' : '')} onClick={() => pickDay(d.key)}>{d.label}<small>{dur(summary.find((s) => s.key === d.key).total)}{d.key === bestDay ? ' ★' : ''}</small></button>
         ))}
-      </div>
-
-      <div className="seg" role="tablist">
-        <button role="tab" aria-selected={view === 'list'} className={'sg' + (view === 'list' ? ' on' : '')} style={{ '--c': '#2f4a6b' }} onClick={() => pickView('list')}>時間表</button>
-                <button role="tab" aria-selected={view === 'day'} className={'sg' + (view === 'day' ? ' on' : '')} style={{ '--c': '#2f4a6b' }} onClick={() => pickView('day')}>總表</button>
       </div>
 
       {rows && (
@@ -202,8 +194,13 @@ export default function Board() {
         </section>
       )}
 
+      <div className="seg" role="tablist">
+        <button role="tab" aria-selected={view === 'list'} className={'sg' + (view === 'list' ? ' on' : '')} style={{ '--c': '#2f4a6b' }} onClick={() => pickView('list')}>時間表</button>
+        <button role="tab" aria-selected={view === 'day'} className={'sg' + (view === 'day' ? ' on' : '')} style={{ '--c': '#2f4a6b' }} onClick={() => pickView('day')}>總表</button>
+      </div>
+
       {rows && view === 'list' && <ListView grid={grid} wins={wins} onEdit={(track, s) => setEdit({ track, ...s })} />}
-            {rows && view === 'day' && <DayView grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
+      {rows && view === 'day' && <DayView grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
 
       {edit && (
         <SlotEditor
