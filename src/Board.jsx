@@ -14,6 +14,7 @@ const TRACKS = [
   { key: 'renren', name: '仁仁', color: '#8a9db3' },
   { key: 'dede', name: '德德', color: '#8a9db3' },
 ]
+const FACE = { benny: '👨', carol: '👩', popo: '👵', helper: '🙋', renren: '🧒', dede: '👶', all: '👨‍👩‍👧' }
 const DAYS = [
   { key: 'wk', label: '平日' },
   { key: 'sat', label: '週六' },
@@ -246,11 +247,13 @@ export default function Board() {
       {empty && <div className="card errbox">未有看板資料,請先執行 supabase/02_board.sql。</div>}
 
       {mode === 'all' && (
-        <div className="chips">
-          {TRACKS.map((t) => (
-            <button key={t.key} className={'chip' + (who === t.key ? ' on' : '')} onClick={() => pickWho(t.key)}>{t.name}</button>
+        <div className="people">
+          {[...TRACKS, { key: 'all', name: '全部人' }].map((t) => (
+            <button key={t.key} type="button" className={'pp' + (whoS === t.key ? ' on' : '')} onClick={() => pickWho(t.key)}>
+              <span className="pa">{FACE[t.key]}</span>
+              <span className="pn">{t.name}</span>
+            </button>
           ))}
-          <button className={'chip' + (who === 'all' ? ' on' : '')} onClick={() => pickWho('all')}>全部人</button>
         </div>
       )}
 
