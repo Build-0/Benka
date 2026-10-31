@@ -339,7 +339,7 @@ function ListView({ mode, who, grid, wins, onEdit }) {
                 const c = e.task.split('+').includes('me') ? '#f2774b' : e.people.includes('benny') ? '#2f4a6b' : '#c3cfdc'
                 return (
                   <button key={e.from + '-' + e.to + e.task} className="ag" onClick={() => onEdit(e.people[0], e)} style={{ '--c': c, ...(isFlex(e.task) ? { borderStyle: 'dashed' } : {}) }}>
-                    <span className="agt">{e.to - e.from === 1 ? hm(e.from) : hm(e.from) + '–' + endHm(e.to)}</span>
+                    <span className="agt">{hm(e.from)}–{endHm(e.to)}</span>
                     <span className="agb"><i />{label(e.task)}</span>
                     <span className="agp">{who === 'all' ? e.people.map((k) => <em key={k} style={{ '--p': nm(k).color }}>{nm(k).name}</em>) : null}</span>
                   </button>
