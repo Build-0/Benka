@@ -89,7 +89,7 @@ export default function Board() {
   const [viewS, setView] = useState(() => (['day', 'list'].includes(cget('board-view')) ? cget('board-view') : 'time'))
   // 「我嘅時間」永遠係 Benny、只有列表;「全貌」先有人物篩選同總表
   const who = mode === 'me' ? 'benny' : whoS
-  const view = mode === 'me' && viewS === 'day' ? 'time' : viewS
+  const view = (mode === 'me' || whoS !== 'all') && viewS === 'day' ? 'time' : viewS
   const [rows, setRows] = useState(() => cget('board')) // 全部日子嘅格
   const [err, setErr] = useState('')
   const [edit, setEdit] = useState(null)
@@ -288,7 +288,7 @@ export default function Board() {
           </label>
           <label>顯示
             <select value={view} onChange={(e) => pickView(e.target.value)}>
-              {mode === 'all' && <option value="day">總表</option>}
+              {mode === 'all' && who === 'all' && <option value="day">總表</option>}
               <option value="time">按時間</option>
               <option value="list">按類別</option>
             </select>
@@ -341,12 +341,19 @@ export default function Board() {
 }
 
 // 24 小時去向:一條橫棒 + 每項用幾耐(自由時間珊瑚色,其他按時間長短深淺)
-const SHADES = ['#2f4a6b', '#3f6490', '#5f84ad', '#86a3c4', '#aebfd6', '#cdd8e6']
+const PAL = ['#3b7dd8', '#2aa198', '#8e63c7', '#5aa65a', '#d9608c', '#a77b4f', '#4cc2e0', '#4b4bd6', '#b5c93a', '#7a8fa8']
+const barColor = (k) => {
+  if (k === 'me') return '#f2774b'
+  if (k === 'sleep') return '#c3cfdc'
+  if (k === '__standby' || k === '__blank') return '#e9eef4'
+  let i = pickableTasks().indexOf(k)
+  if (i < 0) i = [...k].reduce((a, c) => a + c.charCodeAt(0), 0)
+  return PAL[i % PAL.length]
+}
 function Breakdown({ items, title }) {
   const total = items.reduce((a, x) => a + x.n, 0) || 1
-  let rank = 0
   const rows = items.map((x) => {
-    const color = x.k === 'me' ? '#f2774b' : x.k === '__standby' || x.k === '__blank' ? '#e3eaf2' : SHADES[Math.min(rank++, SHADES.length - 1)]
+    const color = barColor(x.k)
     return { ...x, color, name: x.k === 'me' ? '自由時間' : x.k === '__standby' ? '待命(冇指定責任)' : x.k === '__blank' ? '冇安排' : tname(x.k), icon: x.k === 'me' ? '⭐' : x.k === '__standby' ? '⏳' : x.k === '__blank' ? '▫️' : ticon(x.k) }
   })
   return (
@@ -375,8 +382,7 @@ function FamilyBars({ items }) {
       <div className="bkd-title">全家 24 小時去咗邊</div>
       {items.map(({ t, items: its }) => {
         const total = its.reduce((a, x) => a + x.n, 0) || 1
-        let rank = 0
-        const rows = its.map((x) => ({ ...x, color: x.k === 'me' ? '#f2774b' : x.k === '__standby' || x.k === '__blank' ? '#e3eaf2' : SHADES[Math.min(rank++, SHADES.length - 1)] }))
+        const rows = its.map((x) => ({ ...x, color: barColor(x.k) }))
         const top = its.filter((x) => !x.k.startsWith('__') && x.k !== 'me').slice(0, 3).map((x) => tname(x.k) + ' ' + dur(x.n)).join(' · ')
         return (
           <div key={t.key} className="fb">
