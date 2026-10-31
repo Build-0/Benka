@@ -170,12 +170,12 @@ export default function Board() {
     return all
   }, [rows])
   // Benny 淨係分工作日 / 休息日(週末都返工);其他人先有週六日
-  const dayOpts = view !== 'day' && who === 'benny' ? BENNY_DAYS : view !== 'day' && who !== 'all' ? OTHER_DAYS : DAYS
+  const dayOpts = who === 'benny' ? BENNY_DAYS : who !== 'all' ? OTHER_DAYS : DAYS
   const day = (dayOpts.find((d) => d.key === dayRaw) || dayOpts[0]).key
   const grid = grids[day]
 
   const pickDay = (k) => { setDay(k); cset('board-day', k) }
-  const pickMode = (k) => { setMode(k); cset('board-mode', k); if (k === 'all') { setView('day'); cset('board-view', 'day') } }
+  const pickMode = (k) => { setMode(k); cset('board-mode', k); if (k === 'all') { setView('day'); cset('board-view', 'day'); setWho('all'); cset('board-who', 'all') } }
   const pickWho = (k) => { setWho(k); cset('board-who', k) }
   const pickView = (k) => { setView(k); cset('board-view', k) }
 
@@ -245,7 +245,7 @@ export default function Board() {
       )}
       {empty && <div className="card errbox">未有看板資料,請先執行 supabase/02_board.sql。</div>}
 
-      {mode === 'all' && view !== 'day' && (
+      {mode === 'all' && (
         <div className="chips">
           {TRACKS.map((t) => (
             <button key={t.key} className={'chip' + (who === t.key ? ' on' : '')} onClick={() => pickWho(t.key)}>{t.name}</button>
@@ -276,7 +276,7 @@ export default function Board() {
         <button className="fab bfab" onClick={() => setEdit({ track: who === 'all' ? 'benny' : who, from: 18, to: 19, task: '', isNew: true })} aria-label="新增安排"><Icon n="plus" /></button>
       )}
       {rows && view !== 'day' && <ListView mode={view} who={who} grid={grid} wins={wins} onEdit={(track, s) => setEdit({ track, ...s })} />}
-      {rows && view === 'day' && <DayView grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
+      {rows && view === 'day' && <DayView who={who} grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
 
       {edit && (
         <SlotEditor
@@ -389,18 +389,19 @@ function ListView({ mode, who, grid, wins, onEdit }) {
   )
 }
 
-function DayView({ grid, onEdit }) {
+function DayView({ who, grid, onEdit }) {
+  const tracks = who === 'all' ? TRACKS : TRACKS.filter((t) => t.key === who)
   return (
     <div className="bdwrap">
-      <div className="bdgrid">
+      <div className="bdgrid" style={{ '--n': tracks.length, ...(tracks.length === 1 ? { minWidth: 0 } : {}) }}>
         <div className="bdh bdt" style={{ gridRow: 1, gridColumn: 1 }} />
-        {TRACKS.map((t, c) => (
+        {tracks.map((t, c) => (
           <div key={t.key} className="bdh" style={{ gridRow: 1, gridColumn: c + 2, '--c': t.color }}>{t.name}</div>
         ))}
         {Array.from({ length: 48 }, (_, i) => (
           <div key={i} className={'bdt' + (i % 2 ? ' half' : '')} style={{ gridRow: i + 2, gridColumn: 1 }}>{i % 2 ? '' : hm(i)}</div>
         ))}
-        {TRACKS.map((t, c) =>
+        {tracks.map((t, c) =>
           segsOf(grid[t.key]).map((s) => (
             <button
               key={t.key + s.from}
