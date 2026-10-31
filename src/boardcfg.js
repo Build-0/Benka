@@ -27,7 +27,7 @@ export const TASKS = [
   { k: 'kid', l: '照顧(未指明)', c: '#7aa7c7', d: 1, old: 1 },
   { k: 'mass', l: '彌撒', c: '#6a58a8' },
   { k: 'sport', l: '運動', c: '#3a9e6a' },
-  { k: 'cate', l: '慕道班', c: '#a07fc0' },
+  { k: 'cate', l: '慕道班(逢週四)', c: '#a07fc0' },
   { k: 'offduty', l: '非當值', c: '#b4c3d3', d: 1 },
   { k: 'me', l: '★ 私人時間', c: '#f2774b' },
   { k: 'flex', l: '~ 大約／彈性', c: '#8da2b8', mod: 1 },
