@@ -4,7 +4,7 @@ import { cget, cset } from './cache.js'
 import Icon from './Icon.jsx'
 import Hero from './Hero.jsx'
 import TaskManager from './TaskManager.jsx'
-import { tname, ticon, tcolor, catList, catOf, pickableTasks, getCfg, setCfg, isCustomTask } from './boardcfg.js'
+import { tname, ticon, tcolor, catList, catOf, pickableTasks, tasksInCat, getCfg, setCfg } from './boardcfg.js'
 
 const TRACKS = [
   { key: 'benny', name: 'Benny', color: '#2f4a6b' },
@@ -93,14 +93,15 @@ export default function Board() {
     if (error) { setErr(error.message); setRows((r) => r || []) } else { setErr(''); setRows(data); cset('board', data) }
   }
   const loadCfg = async () => {
-    let r = await supabase.from('board_task_names').select('task, name, cat, icon')
-    if (r.error) r = await supabase.from('board_task_names').select('task, name, cat') // 未加 icon 欄
+    let r = await supabase.from('board_task_names').select('task, name, cat, icon, pos')
+    if (r.error) r = await supabase.from('board_task_names').select('task, name, cat, icon')
+    if (r.error) r = await supabase.from('board_task_names').select('task, name, cat')
     if (r.error) r = await supabase.from('board_task_names').select('task, name')
     if (r.error) return // 未建表:淨係用本機
     const next = { t: {}, c: {} }
     r.data.forEach((x) => {
-      if (x.task.startsWith('g:')) next.c[x.task.slice(2)] = { name: x.name, icon: x.icon || '' }
-      else next.t[x.task] = { name: x.name, ...(x.cat ? { cat: x.cat } : {}), ...(x.icon ? { icon: x.icon } : {}) }
+      if (x.task.startsWith('g:')) next.c[x.task.slice(2)] = { name: x.name, icon: x.icon || '', ...(x.pos != null ? { pos: x.pos } : {}) }
+      else next.t[x.task] = { name: x.name, ...(x.cat ? { cat: x.cat } : {}), ...(x.icon ? { icon: x.icon } : {}), ...(x.pos != null ? { pos: x.pos } : {}) }
     })
     setCfg(next)
     bump((n) => n + 1)
@@ -116,7 +117,7 @@ export default function Board() {
     setCfg({ ...c, t })
     bump((x) => x + 1)
     const { error } = patch
-      ? await supabase.from('board_task_names').upsert({ task: k, name: patch.name, cat: patch.cat || null, icon: patch.icon || null }, { onConflict: 'user_id,task' })
+      ? await supabase.from('board_task_names').upsert({ task: k, name: patch.name, cat: patch.cat || null, icon: patch.icon || null, pos: patch.pos ?? null }, { onConflict: 'user_id,task' })
       : await supabase.from('board_task_names').delete().eq('task', k)
     syncErr(error)
   }
@@ -127,8 +128,33 @@ export default function Board() {
     setCfg({ ...c, c: cc })
     bump((x) => x + 1)
     const { error } = patch
-      ? await supabase.from('board_task_names').upsert({ task: 'g:' + k, name: patch.name, icon: patch.icon || null }, { onConflict: 'user_id,task' })
+      ? await supabase.from('board_task_names').upsert({ task: 'g:' + k, name: patch.name, icon: patch.icon || null, pos: patch.pos ?? null }, { onConflict: 'user_id,task' })
       : await supabase.from('board_task_names').delete().eq('task', 'g:' + k)
+    syncErr(error)
+  }
+
+  // 重新排次序:kind 'task' = 一個分類入面嘅任務;'cat' = 分類(冇固定分類)
+  const reorder = async (kind, keys) => {
+    const c = getCfg()
+    const rows = []
+    if (kind === 'task') {
+      const t = { ...c.t }
+      keys.forEach((k, i) => {
+        t[k] = { ...(t[k] || {}), name: (t[k] && t[k].name) || tname(k), pos: i }
+        rows.push({ task: k, name: t[k].name, cat: t[k].cat || null, icon: t[k].icon || null, pos: i })
+      })
+      setCfg({ ...c, t })
+    } else {
+      const cc = { ...c.c }
+      const info = Object.fromEntries(catList().map((x) => [x.key, x]))
+      keys.forEach((k, i) => {
+        cc[k] = { name: info[k].n, icon: info[k].e, pos: i }
+        rows.push({ task: 'g:' + k, name: info[k].n, icon: info[k].e, pos: i })
+      })
+      setCfg({ ...c, c: cc })
+    }
+    bump((x) => x + 1)
+    const { error } = await supabase.from('board_task_names').upsert(rows, { onConflict: 'user_id,task' })
     syncErr(error)
   }
 
@@ -231,11 +257,11 @@ export default function Board() {
           init={edit}
           grid={grid}
           onClose={() => setEdit(null)}
-          onManage={(start) => setMgr({ start })}
+          onManage={(o) => setMgr(o || {})}
           onSave={async (v) => { const m = await saveRange(v); if (!m) setEdit(null); return m }}
         />
       )}
-      {mgr && <TaskManager start={mgr.start} onClose={() => setMgr(null)} onSaveTask={saveTask} onSaveCat={saveCat} />}
+      {mgr && <TaskManager start={mgr.start} focus={mgr.focus} onSaved={mgr.onSaved} onClose={() => setMgr(null)} onSaveTask={saveTask} onSaveCat={saveCat} onReorder={reorder} />}
     </>
   )
 }
@@ -406,7 +432,7 @@ function SlotEditor({ init, grid, onClose, onSave, onManage }) {
           </div>
           <div className="pickhead">
             <b>揀任務</b><span className="muted">最多兩個,一齊做嘅事</span>
-            <button type="button" className="rnbtn" onClick={() => onManage()}>⚙ 任務庫</button>
+            <button type="button" className="rnbtn" onClick={() => onManage({ focus: tab })}>⚙ 任務庫</button>
           </div>
           {picked.length > 0 && <div className="pickedline">已揀:{label(picked.join('+'))}</div>}
           <div className="cattabs">
@@ -415,15 +441,14 @@ function SlotEditor({ init, grid, onClose, onSave, onManage }) {
             ))}
           </div>
           <div className="tilegrid">
-            {[...pickableTasks(), ...picked.filter((k) => k !== 'flex' && !pickableTasks().includes(k))]
-              .filter((k) => catOf(k) === tab)
+            {[...tasksInCat(tab), ...picked.filter((k) => k !== 'flex' && !pickableTasks().includes(k) && catOf(k) === tab)]
               .map((k) => (
                 <button key={k} type="button" className={'tile' + (picked.includes(k) ? ' on' : '')} style={{ '--tc': tcolor(k) }} onClick={() => toggle(k)}>
                   <i>{ticon(k)}</i><span>{tname(k)}</span>
                 </button>
               ))}
             {picked.includes('flex') && <button type="button" className="tile on" style={{ '--tc': '#8da2b8' }} onClick={() => toggle('flex')}><i>〰️</i><span>取消「~ 大約」</span></button>}
-            <button type="button" className="tile addtile" onClick={() => onManage({ kind: 'task', key: 'x' + Date.now().toString(36), name: '', icon: '✨', cat: tab, isNew: true })}><i>＋</i><span>新任務</span></button>
+            <button type="button" className="tile addtile" onClick={() => onManage({ start: { kind: 'task', key: 'x' + Date.now().toString(36), name: '', icon: '✨', cat: tab, isNew: true }, onSaved: (k) => setPicked((p) => [...p.filter((x) => x !== 'flex'), k].slice(-2).concat(p.includes('flex') ? ['flex'] : [])) })}><i>＋</i><span>新任務</span></button>
           </div>
           {err && <div className="err">{err}</div>}
         </div>

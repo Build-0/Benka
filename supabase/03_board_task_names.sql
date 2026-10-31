@@ -11,3 +11,5 @@ alter table public.board_task_names enable row level security;
 drop policy if exists board_names_owner on public.board_task_names;
 create policy board_names_owner on public.board_task_names for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
+alter table public.board_task_names add column if not exists icon text;
+alter table public.board_task_names add column if not exists pos int;

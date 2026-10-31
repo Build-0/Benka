@@ -402,3 +402,15 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .em { aspect-ratio: 1; border: 1px solid transparent; background: var(--card); border-radius: 10px; font-size: 22px; cursor: pointer; padding: 0; }
 .em.on { border-color: var(--accent); background: var(--accent-soft); }
 .mgrback { z-index: 60; }
+
+.mgrbar { display: flex; align-items: center; gap: 10px; }
+.mgrbar .muted { flex: 1; font-size: 13px; }
+.mcatrow { display: flex; align-items: center; gap: 8px; }
+.mcatrow .mcathead { flex: 1; }
+.tilewrap { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.tilewrap .tile { width: 100%; }
+.mv { display: flex; gap: 6px; }
+.mv.h { justify-content: center; }
+.mv button { flex: 1; min-width: 40px; min-height: 36px; border: 1px solid var(--line); background: var(--card); color: var(--accent); border-radius: 10px; font: inherit; font-size: 15px; cursor: pointer; }
+.mv button:disabled { opacity: .3; }
+.mv button:active:not(:disabled) { background: var(--accent-soft); }

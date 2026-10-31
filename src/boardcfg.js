@@ -66,25 +66,38 @@ export const tname = (k) => (CFG.t[k] && CFG.t[k].name) || (TASK[k] ? TASK[k].l 
 export const ticon = (k) => (CFG.t[k] && CFG.t[k].icon) || TICON[k] || '✨'
 export const tcolor = (k) => (TASK[k] ? TASK[k].c : '#7a8fa8')
 
+const cpos = (k, i) => (CFG.c[k] && CFG.c[k].pos != null ? CFG.c[k].pos : i)
 export const catList = () => [
-  ...BASE_CATS.map((c) => ({ key: c.key, n: (CFG.c[c.key] && CFG.c[c.key].name) || c.n, e: (CFG.c[c.key] && CFG.c[c.key].icon) || c.e, custom: false })),
-  ...Object.keys(CFG.c).filter((k) => k[0] === 'g').sort().map((k) => ({ key: k, n: CFG.c[k].name, e: CFG.c[k].icon || '📁', custom: true })),
-  { key: 'other', n: '其他', e: '⋯', custom: false },
+  ...[
+    ...BASE_CATS.map((c, i) => ({ key: c.key, n: (CFG.c[c.key] && CFG.c[c.key].name) || c.n, e: (CFG.c[c.key] && CFG.c[c.key].icon) || c.e, custom: false, p: cpos(c.key, i) })),
+    ...Object.keys(CFG.c).filter((k) => k[0] === 'g' && !BASE_CATS.some((x) => x.key === k)).sort().map((k, i) => ({ key: k, n: CFG.c[k].name, e: CFG.c[k].icon || '📁', custom: true, p: cpos(k, 100 + i) })),
+  ].sort((a, b) => a.p - b.p),
 ]
 export const tcat = (k) => {
-  const c = (CFG.t[k] && CFG.t[k].cat) || DEFCAT[k] || 'other'
-  return catList().some((x) => x.key === c) ? c : 'other'
+  const c = (CFG.t[k] && CFG.t[k].cat) || DEFCAT[k]
+  const cats = catList()
+  return cats.some((x) => x.key === c) ? c : cats[0].key // 分類被刪走:歸去第一個分類
 }
 // 一段(可能 a+b)歸邊個分類:以第一個非彈性任務為準
 export const catOf = (task) => {
   const t = task.split('+').find((x) => x !== 'flex')
-  return t ? tcat(t) : 'other'
+  return t ? tcat(t) : catList()[0].key
 }
 // 揀得到嘅任務:內置(唔計舊資料同修飾)+ 自訂
 export const pickableTasks = () => [
   ...TASKS.filter((t) => !t.old && !t.mod).map((t) => t.k),
   ...Object.keys(CFG.t).filter((k) => isCustomTask(k) && CFG.t[k].name),
 ]
+
+// 某分類入面嘅任務,按自訂次序(未排過嘅喺最尾,保持預設次序)
+export const tasksInCat = (cat) => {
+  const all = pickableTasks()
+  return all
+    .map((k, i) => ({ k, p: CFG.t[k] && CFG.t[k].pos != null ? CFG.t[k].pos : 1000 + i }))
+    .filter((x) => tcat(x.k) === cat)
+    .sort((a, b) => a.p - b.p)
+    .map((x) => x.k)
+}
 
 // 常用 emoji,畀揀圖標
 export const EMOJIS = [
