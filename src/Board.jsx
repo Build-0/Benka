@@ -58,7 +58,10 @@ const endHm = (i) => (i >= 48 ? '24:00' : hm(i))
 const isFlex = (task) => task.split('+').includes('flex')
 // 自訂任務名(改名),優先過預設
 let NAMES = cget('board-names') || {}
-const tname = (k) => NAMES[k] || (TASK[k] ? TASK[k].l : k)
+// 自訂任務(key 以 x 開頭):CUSTOM[k] = { cat }
+let CUSTOM = cget('board-custom') || {}
+const isCustom = (k) => k[0] === 'x'
+const tname = (k) => NAMES[k] || (TASK[k] ? TASK[k].l : isCustom(k) ? '(已刪任務)' : k)
 const label = (task) => (isFlex(task) ? '~ ' : '') + task.split('+').filter((c) => c !== 'flex').map(tname).join(' ＋ ')
 const baseStyle = (task, track) => {
   const first = task.split('+')[0]
@@ -122,24 +125,33 @@ export default function Board() {
     if (error) { setErr(error.message); setRows((r) => r || []) } else { setErr(''); setRows(data); cset('board', data) }
   }
   const loadNames = async () => {
-    const { data, error } = await supabase.from('board_task_names').select('task, name')
-    if (error) return // 未建表:淨係用本機名
+    let { data, error } = await supabase.from('board_task_names').select('task, name, cat')
+    if (error) ({ data, error } = await supabase.from('board_task_names').select('task, name')) // 未加 cat 欄
+    if (error) return // 未建表:淨係用本機
     NAMES = Object.fromEntries(data.map((r) => [r.task, r.name]))
+    CUSTOM = Object.fromEntries(data.filter((r) => isCustom(r.task)).map((r) => [r.task, { cat: r.cat || 'other' }]))
     cset('board-names', NAMES)
+    cset('board-custom', CUSTOM)
     bump((n) => n + 1)
   }
   useEffect(() => { load(); loadNames() }, [])
 
-  const renameTask = async (k, name) => {
+  // 改名 / 新增 / 刪除任務(留空名 = 還原預設;自訂任務留空 = 刪除)
+  const saveTask = async (k, name, cat) => {
     const n = name.trim()
     NAMES = { ...NAMES }
-    if (n) NAMES[k] = n; else delete NAMES[k]
+    CUSTOM = { ...CUSTOM }
+    if (n) { NAMES[k] = n; if (isCustom(k)) CUSTOM[k] = { cat: cat || (CUSTOM[k] && CUSTOM[k].cat) || 'other' } }
+    else { delete NAMES[k]; delete CUSTOM[k] }
     cset('board-names', NAMES)
+    cset('board-custom', CUSTOM)
     bump((x) => x + 1)
+    const row = { task: k, name: n }
+    if (isCustom(k) && n) row.cat = CUSTOM[k].cat
     const { error } = n
-      ? await supabase.from('board_task_names').upsert({ task: k, name: n }, { onConflict: 'user_id,task' })
+      ? await supabase.from('board_task_names').upsert(row, { onConflict: 'user_id,task' })
       : await supabase.from('board_task_names').delete().eq('task', k)
-    if (error) setErr('改名只存咗喺呢部機(跨裝置同步要先喺 Supabase 跑 supabase/03_board_task_names.sql):' + error.message)
+    if (error) setErr('任務名稱只存咗喺呢部機(跨裝置同步要先喺 Supabase 跑 supabase/03_board_task_names.sql):' + error.message)
   }
 
   // 全部日子嘅格:grids[day][track][slot]
@@ -239,7 +251,7 @@ export default function Board() {
           init={edit}
           grid={grid}
           onClose={() => setEdit(null)}
-          onRename={renameTask}
+          onSaveTask={saveTask}
           onSave={async (v) => { const m = await saveRange(v); if (!m) setEdit(null); return m }}
         />
       )}
@@ -257,6 +269,7 @@ const CATS = [
 ]
 const catOf = (task) => {
   const t = task.split('+').find((x) => x !== 'flex')
+  if (t && isCustom(t)) return (CUSTOM[t] && CUSTOM[t].cat) || 'other'
   return (CATS.find((c) => c.tasks.includes(t)) || { key: 'other' }).key
 }
 
@@ -349,7 +362,10 @@ function DayView({ grid, onEdit }) {
   )
 }
 
-function SlotEditor({ init, grid, onClose, onSave, onRename }) {
+function SlotEditor({ init, grid, onClose, onSave, onSaveTask }) {
+  const [adding, setAdding] = useState(false)
+  const [newName, setNewName] = useState('')
+  const [newCat, setNewCat] = useState('care')
   const [renaming, setRenaming] = useState(false)
   const [track, setTrack] = useState(init.track)
   const tr = TRACKS.find((t) => t.key === track)
@@ -421,7 +437,7 @@ function SlotEditor({ init, grid, onClose, onSave, onRename }) {
             {renaming && <span className="muted">撳任務就可以改名,留空=還原預設</span>}
           </div>
           <div className="taskpick">
-            {TASKS.filter((t) => !t.old || picked.includes(t.k)).map((t) => (
+            {[...TASKS, ...Object.keys(CUSTOM).map((k) => ({ k, l: tname(k), c: '#7a8fa8' }))].filter((t) => !t.old || picked.includes(t.k)).map((t) => (
               <button
                 key={t.k}
                 type="button"
@@ -429,12 +445,31 @@ function SlotEditor({ init, grid, onClose, onSave, onRename }) {
                 style={{ '--tc': t.c }}
                 onClick={() => {
                   if (!renaming) return toggle(t.k)
-                  const v = window.prompt('任務名稱(留空=還原預設)', tname(t.k))
-                  if (v !== null) onRename(t.k, v)
+                  const v = window.prompt(isCustom(t.k) ? '任務名稱(留空=刪除呢個任務)' : '任務名稱(留空=還原預設)', tname(t.k))
+                  if (v === null) return
+                  if (!v.trim() && isCustom(t.k)) { if (window.confirm('刪除任務「' + tname(t.k) + '」?已用咗嘅時段會顯示做「(已刪任務)」')) { setPicked(picked.filter((x) => x !== t.k)); onSaveTask(t.k, '') } return }
+                  onSaveTask(t.k, v)
                 }}
               >{renaming ? '✎ ' : ''}{tname(t.k)}</button>
             ))}
+            <button type="button" className="tp addtask" onClick={() => setAdding(!adding)}>＋ 新任務</button>
           </div>
+          {adding && (
+            <div className="newtask">
+              <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="新任務名稱,例如:覆診" maxLength={20} />
+              <div className="chips">
+                {CATS.filter((c) => c.key !== 'free').concat([{ key: 'other', name: '其他' }]).map((c) => (
+                  <button key={c.key} type="button" className={'chip' + (newCat === c.key ? ' on' : '')} onClick={() => setNewCat(c.key)}>{c.name}</button>
+                ))}
+              </div>
+              <button type="button" className="primary" disabled={!newName.trim()} onClick={() => {
+                const k = 'x' + Date.now().toString(36)
+                onSaveTask(k, newName, newCat)
+                setPicked([...picked.filter((x) => x !== 'flex'), k].slice(-2).concat(picked.includes('flex') ? ['flex'] : []))
+                setNewName(''); setAdding(false)
+              }}>加入並揀咗佢</button>
+            </div>
+          )}
           {err && <div className="err">{err}</div>}
         </div>
         <div className="actions">
