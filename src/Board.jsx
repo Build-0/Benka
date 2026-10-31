@@ -114,7 +114,7 @@ const dur = (slots) => { const m = slots * 30; return m >= 60 ? `${Math.floor(m 
 export default function Board() {
   const [dayRaw, setDay] = useState(() => cget('board-day') || defaultDay())
   const [who, setWho] = useState(() => cget('board-who') || 'benny')
-  const [view, setView] = useState(() => (['day', 'time'].includes(cget('board-view')) ? cget('board-view') : 'list'))
+  const [view, setView] = useState(() => (['day', 'list'].includes(cget('board-view')) ? cget('board-view') : 'time'))
   const [rows, setRows] = useState(() => cget('board')) // 全部日子嘅格
   const [err, setErr] = useState('')
   const [edit, setEdit] = useState(null)
@@ -236,8 +236,8 @@ export default function Board() {
       </div>
 
       <div className="segc" role="tablist">
-        <button role="tab" aria-selected={view === 'list'} className={'segi' + (view === 'list' ? ' on' : '')} onClick={() => pickView('list')}>按類別</button>
         <button role="tab" aria-selected={view === 'time'} className={'segi' + (view === 'time' ? ' on' : '')} onClick={() => pickView('time')}>按時間</button>
+        <button role="tab" aria-selected={view === 'list'} className={'segi' + (view === 'list' ? ' on' : '')} onClick={() => pickView('list')}>按類別</button>
         <button role="tab" aria-selected={view === 'day'} className={'segi' + (view === 'day' ? ' on' : '')} onClick={() => pickView('day')}>總表</button>
       </div>
 
