@@ -80,8 +80,12 @@ const dur = (slots) => { const m = slots * 30; return m >= 60 ? `${Math.floor(m 
 
 export default function Board() {
   const [dayRaw, setDay] = useState(() => cget('board-day') || defaultDay())
-  const [who, setWho] = useState(() => cget('board-who') || 'benny')
-  const [view, setView] = useState(() => (['day', 'list'].includes(cget('board-view')) ? cget('board-view') : 'time'))
+  const [mode, setMode] = useState(() => (cget('board-mode') === 'all' ? 'all' : 'me')) // me = 我嘅時間;all = 全貌
+  const [whoS, setWho] = useState(() => cget('board-who') || 'benny')
+  const [viewS, setView] = useState(() => (['day', 'list'].includes(cget('board-view')) ? cget('board-view') : 'time'))
+  // 「我嘅時間」永遠係 Benny、只有列表;「全貌」先有人物篩選同總表
+  const who = mode === 'me' ? 'benny' : whoS
+  const view = mode === 'me' && viewS === 'day' ? 'time' : viewS
   const [rows, setRows] = useState(() => cget('board')) // 全部日子嘅格
   const [err, setErr] = useState('')
   const [edit, setEdit] = useState(null)
@@ -171,6 +175,7 @@ export default function Board() {
   const grid = grids[day]
 
   const pickDay = (k) => { setDay(k); cset('board-day', k) }
+  const pickMode = (k) => { setMode(k); cset('board-mode', k); if (k === 'all') { setView('day'); cset('board-view', 'day') } }
   const pickWho = (k) => { setWho(k); cset('board-who', k) }
   const pickView = (k) => { setView(k); cset('board-view', k) }
 
@@ -183,6 +188,18 @@ export default function Board() {
     const ws = freeWins(grids[d.key].benny).filter((w) => w.kind === 'me')
     return { key: d.key, total: ws.reduce((a, w) => a + w.to - w.from, 0) }
   }), [grids, dayOpts])
+  // 今日 24 小時去向(按任務計,Benny 軌道):自由 / 待命 / 各項任務
+  const breakdown = useMemo(() => {
+    const m = new Map()
+    grids[day === 'sat' || day === 'sun' ? 'wk' : day].benny.forEach((t, i) => {
+      let k
+      if (!t) k = i >= WAKE_FROM && i < WAKE_TO ? '__standby' : null
+      else if (t.split('+').includes('me')) k = 'me'
+      else k = t.split('+').find((x) => x !== 'flex')
+      if (k) m.set(k, (m.get(k) || 0) + 1)
+    })
+    return [...m].map(([k, n]) => ({ k, n })).sort((a, c) => (a.k === 'me' ? -1 : c.k === 'me' ? 1 : c.n - a.n))
+  }, [grids, day])
   const best = summary.reduce((a, s) => (s.total > a.total ? s : a), summary[0])
   const bestDay = best.total > 0 ? best.key : ''
 
@@ -214,6 +231,11 @@ export default function Board() {
         stats={rows ? [{ n: total ? dur(total) : '—', label: '我嘅自由時間' }] : []}
       />
 
+      <div className="segc modeseg" role="tablist">
+        <button role="tab" aria-selected={mode === 'me'} className={'segi' + (mode === 'me' ? ' on' : '')} onClick={() => pickMode('me')}>我嘅時間</button>
+        <button role="tab" aria-selected={mode === 'all'} className={'segi' + (mode === 'all' ? ' on' : '')} onClick={() => pickMode('all')}>全貌</button>
+      </div>
+
       {err && (
         <div className="card errbox">
           讀取失敗:{err}
@@ -222,7 +244,7 @@ export default function Board() {
       )}
       {empty && <div className="card errbox">未有看板資料,請先執行 supabase/02_board.sql。</div>}
 
-      {view !== 'day' && (
+      {mode === 'all' && view !== 'day' && (
         <div className="chips">
           {TRACKS.map((t) => (
             <button key={t.key} className={'chip' + (who === t.key ? ' on' : '')} onClick={() => pickWho(t.key)}>{t.name}</button>
@@ -240,12 +262,15 @@ export default function Board() {
         ))}
       </div>
 
+      {mode === 'me' && rows && <Breakdown items={breakdown} />}
+
       <div className="segc" role="tablist">
         <button role="tab" aria-selected={view === 'time'} className={'segi' + (view === 'time' ? ' on' : '')} onClick={() => pickView('time')}>按時間</button>
         <button role="tab" aria-selected={view === 'list'} className={'segi' + (view === 'list' ? ' on' : '')} onClick={() => pickView('list')}>按類別</button>
-        <button role="tab" aria-selected={view === 'day'} className={'segi' + (view === 'day' ? ' on' : '')} onClick={() => pickView('day')}>總表</button>
+        {mode === 'all' && <button role="tab" aria-selected={view === 'day'} className={'segi' + (view === 'day' ? ' on' : '')} onClick={() => pickView('day')}>總表</button>}
       </div>
 
+      {mode === 'me' && <div className="mebar"><button type="button" className="rnbtn" onClick={() => setMgr({})}>⚙ 任務庫</button></div>}
       {rows && view !== 'day' && (
         <button className="fab bfab" onClick={() => setEdit({ track: who === 'all' ? 'benny' : who, from: 18, to: 19, task: '', isNew: true })} aria-label="新增安排"><Icon n="plus" /></button>
       )}
@@ -263,6 +288,34 @@ export default function Board() {
       )}
       {mgr && <TaskManager start={mgr.start} focus={mgr.focus} onSaved={mgr.onSaved} onClose={() => setMgr(null)} onSaveTask={saveTask} onSaveCat={saveCat} onReorder={reorder} />}
     </>
+  )
+}
+
+// 24 小時去向:一條橫棒 + 每項用幾耐(自由時間珊瑚色,其他按時間長短深淺)
+const SHADES = ['#2f4a6b', '#3f6490', '#5f84ad', '#86a3c4', '#aebfd6', '#cdd8e6']
+function Breakdown({ items }) {
+  const total = items.reduce((a, x) => a + x.n, 0) || 1
+  let rank = 0
+  const rows = items.map((x) => {
+    const color = x.k === 'me' ? '#f2774b' : x.k === '__standby' ? '#e3eaf2' : SHADES[Math.min(rank++, SHADES.length - 1)]
+    return { ...x, color, name: x.k === 'me' ? '自由時間' : x.k === '__standby' ? '待命(冇指定責任)' : tname(x.k), icon: x.k === 'me' ? '⭐' : x.k === '__standby' ? '⏳' : ticon(x.k) }
+  })
+  return (
+    <section className="bkd">
+      <div className="bkd-title">呢一日 24 小時去咗邊</div>
+      <div className="bkd-bar">
+        {rows.map((r) => <span key={r.k} style={{ width: (r.n / total) * 100 + '%', background: r.color }} title={r.name} />)}
+      </div>
+      <div className="bkd-list">
+        {rows.map((r) => (
+          <div key={r.k} className={'bkd-row' + (r.k === 'me' ? ' free' : '')}>
+            <i style={{ background: r.color }} />
+            <span className="bkd-n">{r.icon} {r.name}</span>
+            <b>{dur(r.n)}</b>
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }
 
