@@ -3,6 +3,8 @@ import { supabase } from './supabase.js'
 import { cget, cset } from './cache.js'
 import Icon from './Icon.jsx'
 import Hero from './Hero.jsx'
+import TaskManager from './TaskManager.jsx'
+import { tname, ticon, tcolor, catList, catOf, pickableTasks, getCfg, setCfg, isCustomTask } from './boardcfg.js'
 
 const TRACKS = [
   { key: 'benny', name: 'Benny', color: '#2f4a6b' },
@@ -23,45 +25,10 @@ const BENNY_DAYS = [
   { key: 'off', label: '休息日' },
 ]
 const OTHER_DAYS = DAYS.filter((d) => d.key !== 'off')
-// d = 淺色底用深字
-const TASKS = [
-  { k: 'feed', l: '餵奶換片', c: '#3f7fbf' },
-  { k: 'pump', l: '泵奶', c: '#6a58a8' },
-  { k: 'wash', l: '洗奶樽', c: '#4a8fa8' },
-  { k: 'routine', l: '起身流程', c: '#6b9bd1', d: 1 },
-  { k: 'school', l: '學校接送', c: '#2f9e9a' },
-  { k: 'cookf', l: '煮飯', c: '#5a6fc0' },
-  { k: 'chore', l: '家務', c: '#5a6fc0' },
-  { k: 'cook', l: '煮飯家務(未分)', c: '#5a6fc0', old: 1 }, // 舊資料
-  { k: 'work', l: '返工', c: '#2f4a6b' },
-  { k: 'go', l: '通勤', c: '#8da2b8', d: 1 },
-  { k: 'rest', l: '休息', c: '#b4c3d3', d: 1 },
-  { k: 'nap', l: '午睡', c: '#7f8fd0' },
-  { k: 'bath', l: '沖涼', c: '#3aa0c8' },
-  { k: 'edu', l: '閱讀教育', c: '#2f9e7a' },
-  { k: 'screen', l: '屏幕', c: '#a07fc0' },
-  { k: 'play', l: '玩／活動', c: '#d9a441', d: 1 },
-  { k: 'class', l: '課外班', c: '#c0709a' },
-  { k: 'eat', l: '食飯', c: '#b08a5a' },
-  { k: 'bed', l: '陪睡', c: '#5b6aa8' },
-  { k: 'sleep', l: '睡眠', c: '#34456b' },
-  { k: 'kidr', l: '照顧仁仁', c: '#7aa7c7', d: 1 },
-  { k: 'kidd', l: '照顧德德', c: '#7aa7c7', d: 1 },
-  { k: 'kid', l: '照顧(未指明)', c: '#7aa7c7', d: 1, old: 1 }, // 舊資料,揀任務時唔再出現
-  { k: 'me', l: '★ 私人時間', c: '#f2774b' },
-  { k: 'flex', l: '~ 大約／彈性', c: '#8da2b8', mod: 1 }, // 修飾:時間唔固定
-]
-const TASK = Object.fromEntries(TASKS.map((t) => [t.k, t]))
 
 const hm = (i) => `${String(Math.floor(i / 2)).padStart(2, '0')}:${i % 2 ? '30' : '00'}`
 const endHm = (i) => (i >= 48 ? '24:00' : hm(i))
 const isFlex = (task) => task.split('+').includes('flex')
-// 自訂任務名(改名),優先過預設
-let NAMES = cget('board-names') || {}
-// 自訂任務(key 以 x 開頭):CUSTOM[k] = { cat }
-let CUSTOM = cget('board-custom') || {}
-const isCustom = (k) => k[0] === 'x'
-const tname = (k) => NAMES[k] || (TASK[k] ? TASK[k].l : isCustom(k) ? '(已刪任務)' : k)
 const label = (task) => (isFlex(task) ? '~ ' : '') + task.split('+').filter((c) => c !== 'flex').map(tname).join(' ＋ ')
 const baseStyle = (task, track) => {
   const first = task.split('+')[0]
@@ -119,39 +86,50 @@ export default function Board() {
   const [err, setErr] = useState('')
   const [edit, setEdit] = useState(null)
   const [, bump] = useState(0)
+  const [mgr, setMgr] = useState(null) // null | { start }
 
   const load = async () => {
     const { data, error } = await supabase.from('board_slots').select('day_type, track, slot, task').limit(2000)
     if (error) { setErr(error.message); setRows((r) => r || []) } else { setErr(''); setRows(data); cset('board', data) }
   }
-  const loadNames = async () => {
-    let { data, error } = await supabase.from('board_task_names').select('task, name, cat')
-    if (error) ({ data, error } = await supabase.from('board_task_names').select('task, name')) // 未加 cat 欄
-    if (error) return // 未建表:淨係用本機
-    NAMES = Object.fromEntries(data.map((r) => [r.task, r.name]))
-    CUSTOM = Object.fromEntries(data.filter((r) => isCustom(r.task)).map((r) => [r.task, { cat: r.cat || 'other' }]))
-    cset('board-names', NAMES)
-    cset('board-custom', CUSTOM)
+  const loadCfg = async () => {
+    let r = await supabase.from('board_task_names').select('task, name, cat, icon')
+    if (r.error) r = await supabase.from('board_task_names').select('task, name, cat') // 未加 icon 欄
+    if (r.error) r = await supabase.from('board_task_names').select('task, name')
+    if (r.error) return // 未建表:淨係用本機
+    const next = { t: {}, c: {} }
+    r.data.forEach((x) => {
+      if (x.task.startsWith('g:')) next.c[x.task.slice(2)] = { name: x.name, icon: x.icon || '' }
+      else next.t[x.task] = { name: x.name, ...(x.cat ? { cat: x.cat } : {}), ...(x.icon ? { icon: x.icon } : {}) }
+    })
+    setCfg(next)
     bump((n) => n + 1)
   }
-  useEffect(() => { load(); loadNames() }, [])
+  useEffect(() => { load(); loadCfg() }, [])
 
-  // 改名 / 新增 / 刪除任務(留空名 = 還原預設;自訂任務留空 = 刪除)
-  const saveTask = async (k, name, cat) => {
-    const n = name.trim()
-    NAMES = { ...NAMES }
-    CUSTOM = { ...CUSTOM }
-    if (n) { NAMES[k] = n; if (isCustom(k)) CUSTOM[k] = { cat: cat || (CUSTOM[k] && CUSTOM[k].cat) || 'other' } }
-    else { delete NAMES[k]; delete CUSTOM[k] }
-    cset('board-names', NAMES)
-    cset('board-custom', CUSTOM)
+  // 任務 / 分類設定:改名、圖標、歸類、新增、刪除(patch = null 即刪除 / 還原預設)
+  const syncErr = (error) => error && setErr('任務庫只存咗喺呢部機(跨裝置同步要先喺 Supabase 跑 supabase/03_board_task_names.sql):' + error.message)
+  const saveTask = async (k, patch) => {
+    const c = getCfg()
+    const t = { ...c.t }
+    if (patch) t[k] = patch; else delete t[k]
+    setCfg({ ...c, t })
     bump((x) => x + 1)
-    const row = { task: k, name: n }
-    if (isCustom(k) && n) row.cat = CUSTOM[k].cat
-    const { error } = n
-      ? await supabase.from('board_task_names').upsert(row, { onConflict: 'user_id,task' })
+    const { error } = patch
+      ? await supabase.from('board_task_names').upsert({ task: k, name: patch.name, cat: patch.cat || null, icon: patch.icon || null }, { onConflict: 'user_id,task' })
       : await supabase.from('board_task_names').delete().eq('task', k)
-    if (error) setErr('任務名稱只存咗喺呢部機(跨裝置同步要先喺 Supabase 跑 supabase/03_board_task_names.sql):' + error.message)
+    syncErr(error)
+  }
+  const saveCat = async (k, patch) => {
+    const c = getCfg()
+    const cc = { ...c.c }
+    if (patch) cc[k] = patch; else delete cc[k]
+    setCfg({ ...c, c: cc })
+    bump((x) => x + 1)
+    const { error } = patch
+      ? await supabase.from('board_task_names').upsert({ task: 'g:' + k, name: patch.name, icon: patch.icon || null }, { onConflict: 'user_id,task' })
+      : await supabase.from('board_task_names').delete().eq('task', 'g:' + k)
+    syncErr(error)
   }
 
   // 全部日子嘅格:grids[day][track][slot]
@@ -224,6 +202,7 @@ export default function Board() {
             <button key={t.key} className={'chip' + (who === t.key ? ' on' : '')} onClick={() => pickWho(t.key)}>{t.name}</button>
           ))}
           <button className={'chip' + (who === 'all' ? ' on' : '')} onClick={() => pickWho('all')}>全部人</button>
+          <button className="chip" onClick={() => setMgr({})}>⚙ 任務庫</button>
         </div>
       )}
 
@@ -252,10 +231,11 @@ export default function Board() {
           init={edit}
           grid={grid}
           onClose={() => setEdit(null)}
-          onSaveTask={saveTask}
+          onManage={(start) => setMgr({ start })}
           onSave={async (v) => { const m = await saveRange(v); if (!m) setEdit(null); return m }}
         />
       )}
+      {mgr && <TaskManager start={mgr.start} onClose={() => setMgr(null)} onSaveTask={saveTask} onSaveCat={saveCat} />}
     </>
   )
 }
@@ -267,31 +247,6 @@ const PARTS = [
   { key: 'p2', from: 24, to: 36, name: '下午 12:00–18:00' },
   { key: 'p3', from: 36, to: 48, name: '晚上 18:00–24:00' },
 ]
-// 分類:同一類嘅事放埋一齊,組內按時間排
-const CATS = [
-  { key: 'free', name: '★ 自由 / 待命', tasks: ['me', '__free', '__open'] },
-  { key: 'care', name: '🍼 照顧孩子', tasks: ['feed', 'pump', 'wash', 'bath', 'nap', 'bed', 'kid', 'kidr', 'kidd'] },
-  { key: 'school', name: '🎒 接送 · 學習 · 活動', tasks: ['school', 'class', 'edu', 'screen', 'play'] },
-  { key: 'home', name: '🏠 家務 · 日常', tasks: ['cookf', 'chore', 'cook', 'eat', 'routine', 'rest', 'sleep'] },
-  { key: 'work', name: '💼 返工 · 通勤', tasks: ['work', 'go'] },
-  { key: 'general', name: '🔁 通用', tasks: [] }, // 只有自訂任務會歸呢類
-]
-const TABS = [
-  { key: 'general', e: '🔁', n: '通用' },
-  { key: 'care', e: '🍼', n: '照顧' },
-  { key: 'school', e: '🎒', n: '接送學習' },
-  { key: 'home', e: '🏠', n: '家務日常' },
-  { key: 'work', e: '💼', n: '返工通勤' },
-  { key: 'other', e: '⋯', n: '其他' },
-]
-const TICON = { feed: '🍼', pump: '🥛', wash: '🫧', routine: '🌅', school: '🚌', cookf: '🍳', chore: '🧹', cook: '🍳', work: '💼', go: '🚇', rest: '🛋️', nap: '😴', bath: '🛁', edu: '📖', screen: '📺', play: '🧸', class: '🎨', eat: '🍚', bed: '🌙', sleep: '💤', kidr: '🧒', kidd: '👶', kid: '🧒', me: '⭐', flex: '〰️' }
-// 揀任務時,「通用」分頁額外包含嘅內置任務(任何類別都會用到)
-const GENERIC = ['me', 'rest', 'eat', 'go', 'routine', 'sleep']
-const catOf = (task) => {
-  const t = task.split('+').find((x) => x !== 'flex')
-  if (t && isCustom(t)) return (CUSTOM[t] && CUSTOM[t].cat) || 'other'
-  return (CATS.find((c) => c.tasks.includes(t)) || { key: 'other' }).key
-}
 
 function ListView({ mode, who, grid, wins, onEdit }) {
   const keys = who === 'all' ? TRACKS.map((t) => t.key) : [who]
@@ -310,8 +265,8 @@ function ListView({ mode, who, grid, wins, onEdit }) {
   const nm = (k) => TRACKS.find((t) => t.key === k)
   return (
     <>
-      {(mode === 'time' ? PARTS : [...CATS, { key: 'other', name: '其他', tasks: [] }]).map((p) => {
-        const list = mode === 'time' ? events.filter((e) => e.from >= p.from && e.from < p.to) : events.filter((e) => catOf(e.task) === p.key)
+      {(mode === 'time' ? PARTS : [{ key: 'free', name: '★ 自由 / 待命' }, ...catList().map((c) => ({ key: c.key, name: c.e + ' ' + c.n }))]).map((p) => {
+        const list = mode === 'time' ? events.filter((e) => e.from >= p.from && e.from < p.to) : events.filter((e) => (e.task === '__free' || e.task === '__open' ? 'free' : catOf(e.task)) === p.key)
         if (!list.length) return null
         return (
           <section key={p.key}>
@@ -382,12 +337,9 @@ function DayView({ grid, onEdit }) {
   )
 }
 
-function SlotEditor({ init, grid, onClose, onSave, onSaveTask }) {
-  const [adding, setAdding] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [newCat, setNewCat] = useState('care')
-  const [renaming, setRenaming] = useState(false)
-  const [tab, setTab] = useState(() => (init.task && init.task !== 'me' ? catOf(init.task) : 'general'))
+function SlotEditor({ init, grid, onClose, onSave, onManage }) {
+  const [tab, setTab] = useState(() => (init.task ? catOf(init.task) : 'general'))
+  const cats = catList()
   const [track, setTrack] = useState(init.track)
   const tr = TRACKS.find((t) => t.key === track)
   const cur = grid[init.track]
@@ -454,53 +406,25 @@ function SlotEditor({ init, grid, onClose, onSave, onSaveTask }) {
           </div>
           <div className="pickhead">
             <b>揀任務</b><span className="muted">最多兩個,一齊做嘅事</span>
-            <button type="button" className={'rnbtn' + (renaming ? ' on' : '')} onClick={() => setRenaming(!renaming)}>{renaming ? '完成' : '✎ 改名'}</button>
+            <button type="button" className="rnbtn" onClick={() => onManage()}>⚙ 任務庫</button>
           </div>
           {picked.length > 0 && <div className="pickedline">已揀:{label(picked.join('+'))}</div>}
           <div className="cattabs">
-            {TABS.map((c) => (
+            {cats.map((c) => (
               <button key={c.key} type="button" className={'ctab' + (tab === c.key ? ' on' : '')} onClick={() => setTab(c.key)}><i>{c.e}</i><span>{c.n}</span></button>
             ))}
           </div>
           <div className="tilegrid">
-            {[...TASKS, ...Object.keys(CUSTOM).map((k) => ({ k, l: tname(k), c: '#7a8fa8' }))]
-              .filter((t) => (!t.old || picked.includes(t.k)) && (t.mod || (tab === 'general' ? GENERIC.includes(t.k) || catOf(t.k) === 'general' : catOf(t.k) === tab)))
-              .map((t) => (
-                <button
-                  key={t.k}
-                  type="button"
-                  className={'tile' + (picked.includes(t.k) ? ' on' : '')}
-                  style={{ '--tc': t.c }}
-                  onClick={() => {
-                    if (!renaming) return toggle(t.k)
-                    const v = window.prompt(isCustom(t.k) ? '任務名稱(留空=刪除呢個任務)' : '任務名稱(留空=還原預設)', tname(t.k))
-                    if (v === null) return
-                    if (!v.trim() && isCustom(t.k)) { if (window.confirm('刪除任務「' + tname(t.k) + '」?已用咗嘅時段會顯示做「(已刪任務)」')) { setPicked(picked.filter((x) => x !== t.k)); onSaveTask(t.k, '') } return }
-                    onSaveTask(t.k, v)
-                  }}
-                >
-                  <i>{renaming ? '✎' : TICON[t.k] || '✨'}</i>
-                  <span>{tname(t.k)}</span>
+            {[...pickableTasks(), ...picked.filter((k) => k !== 'flex' && !pickableTasks().includes(k))]
+              .filter((k) => catOf(k) === tab)
+              .map((k) => (
+                <button key={k} type="button" className={'tile' + (picked.includes(k) ? ' on' : '')} style={{ '--tc': tcolor(k) }} onClick={() => toggle(k)}>
+                  <i>{ticon(k)}</i><span>{tname(k)}</span>
                 </button>
               ))}
-            <button type="button" className="tile addtile" onClick={() => { setNewCat(tab === 'general' ? 'general' : tab); setAdding(!adding) }}><i>＋</i><span>新任務</span></button>
+            {picked.includes('flex') && <button type="button" className="tile on" style={{ '--tc': '#8da2b8' }} onClick={() => toggle('flex')}><i>〰️</i><span>取消「~ 大約」</span></button>}
+            <button type="button" className="tile addtile" onClick={() => onManage({ kind: 'task', key: 'x' + Date.now().toString(36), name: '', icon: '✨', cat: tab, isNew: true })}><i>＋</i><span>新任務</span></button>
           </div>
-          {adding && (
-            <div className="newtask">
-              <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="新任務名稱,例如:覆診" maxLength={20} />
-              <div className="chips">
-                {CATS.filter((c) => c.key !== 'free').concat([{ key: 'other', name: '其他' }]).map((c) => (
-                  <button key={c.key} type="button" className={'chip' + (newCat === c.key ? ' on' : '')} onClick={() => setNewCat(c.key)}>{c.name}</button>
-                ))}
-              </div>
-              <button type="button" className="primary" disabled={!newName.trim()} onClick={() => {
-                const k = 'x' + Date.now().toString(36)
-                onSaveTask(k, newName, newCat)
-                setPicked([...picked.filter((x) => x !== 'flex'), k].slice(-2).concat(picked.includes('flex') ? ['flex'] : []))
-                setNewName(''); setAdding(false)
-              }}>加入並揀咗佢</button>
-            </div>
-          )}
           {err && <div className="err">{err}</div>}
         </div>
         <div className="actions">
