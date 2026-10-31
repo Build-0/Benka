@@ -377,3 +377,5 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .tile.on { background: var(--tc); border-color: var(--tc); color: #fff; box-shadow: 0 3px 10px color-mix(in srgb, var(--tc) 45%, transparent); }
 .tile.addtile { border-style: dashed; color: var(--accent); background: transparent; }
 .tile.addtile i { color: var(--accent); }
+.pickhead { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 8px; }
+.cattabs { padding-bottom: 12px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
