@@ -352,7 +352,11 @@ const barColor = (k) => {
   if (k === '__standby' || k === '__blank') return '#e9eef4'
   let i = pickableTasks().indexOf(k)
   if (i < 0) i = [...k].reduce((a, c) => a + c.charCodeAt(0), 0)
-  return PAL[i % PAL.length]
+  if (k === 'offduty') return '#b8b0a2'
+  // 黃金角分色相,每項任務一種獨一無二嘅顏色(唔會撞)
+  const h = (i * 137.5) % 360, l = i % 2 ? 0.5 : 0.6, s = 0.62
+  const f = (n) => { const q = (n + h / 30) % 12; const v = l - s * Math.min(l, 1 - l) * Math.max(-1, Math.min(q - 3, 9 - q, 1)); return Math.round(v * 255).toString(16).padStart(2, '0') }
+  return '#' + f(0) + f(8) + f(4)
 }
 function Breakdown({ items, title }) {
   const total = items.reduce((a, x) => a + x.n, 0) || 1
