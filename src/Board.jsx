@@ -4,7 +4,7 @@ import { cget, cset } from './cache.js'
 import Icon from './Icon.jsx'
 import Hero from './Hero.jsx'
 import TaskManager from './TaskManager.jsx'
-import { tname, ticon, tcolor, catList, catOf, pickableTasks, tasksInCat, getCfg, setCfg } from './boardcfg.js'
+import { tname, ticon, tcolor, catList, catOf, pickableTasks, tasksInCat, getCfg, setCfg, pface, FACES } from './boardcfg.js'
 
 const TRACKS = [
   { key: 'benny', name: 'Benny', color: '#2f4a6b' },
@@ -14,7 +14,8 @@ const TRACKS = [
   { key: 'renren', name: '仁仁', color: '#8a9db3' },
   { key: 'dede', name: '德德', color: '#8a9db3' },
 ]
-const FACE = { benny: '👨', carol: '👩', popo: '👵', helper: '🙋', renren: '🧒', dede: '👶', all: '👨‍👩‍👧' }
+// 人物頭像預設:字母 / 字 + 柔和底色;可自己揀 emoji 換
+const MONO = { benny: ['B', '#dbe6f3'], carol: ['C', '#fbe3ec'], popo: ['婆', '#f3ead7'], helper: ['工', '#dff0e6'], renren: ['仁', '#e5e0f5'], dede: ['德', '#fde9d9'], all: ['全', '#e7edf3'] }
 const DAYS = [
   { key: 'wk', label: '平日' },
   { key: 'sat', label: '週六' },
@@ -91,6 +92,7 @@ export default function Board() {
   const [err, setErr] = useState('')
   const [edit, setEdit] = useState(null)
   const [, bump] = useState(0)
+  const [facePick, setFacePick] = useState(null) // 改頭像:人物 key
   const [mgr, setMgr] = useState(null) // null | { start }
 
   const load = async () => {
@@ -103,9 +105,9 @@ export default function Board() {
     if (r.error) r = await supabase.from('board_task_names').select('task, name, cat')
     if (r.error) r = await supabase.from('board_task_names').select('task, name')
     if (r.error) return // 未建表:淨係用本機
-    const next = { t: {}, c: {} }
+    const next = { t: {}, c: {}, p: {} }
     r.data.forEach((x) => {
-      if (x.task.startsWith('g:')) next.c[x.task.slice(2)] = { name: x.name, icon: x.icon || '', ...(x.pos != null ? { pos: x.pos } : {}) }
+      if (x.task.startsWith('p:')) { if (x.icon) next.p[x.task.slice(2)] = x.icon } else if (x.task.startsWith('g:')) next.c[x.task.slice(2)] = { name: x.name, icon: x.icon || '', ...(x.pos != null ? { pos: x.pos } : {}) }
       else next.t[x.task] = { name: x.name, ...(x.cat ? { cat: x.cat } : {}), ...(x.icon ? { icon: x.icon } : {}), ...(x.pos != null ? { pos: x.pos } : {}) }
     })
     setCfg(next)
@@ -135,6 +137,18 @@ export default function Board() {
     const { error } = patch
       ? await supabase.from('board_task_names').upsert({ task: 'g:' + k, name: patch.name, icon: patch.icon || null, pos: patch.pos ?? null }, { onConflict: 'user_id,task' })
       : await supabase.from('board_task_names').delete().eq('task', 'g:' + k)
+    syncErr(error)
+  }
+
+  const savePerson = async (key, icon) => {
+    const c = getCfg()
+    const p = { ...(c.p || {}) }
+    if (icon) p[key] = icon; else delete p[key]
+    setCfg({ ...c, p })
+    bump((x) => x + 1)
+    const { error } = icon
+      ? await supabase.from('board_task_names').upsert({ task: 'p:' + key, name: key, icon }, { onConflict: 'user_id,task' })
+      : await supabase.from('board_task_names').delete().eq('task', 'p:' + key)
     syncErr(error)
   }
 
@@ -249,8 +263,8 @@ export default function Board() {
       {mode === 'all' && (
         <div className="people">
           {[...TRACKS, { key: 'all', name: '全部人' }].map((t) => (
-            <button key={t.key} type="button" className={'pp' + (whoS === t.key ? ' on' : '')} onClick={() => pickWho(t.key)}>
-              <span className="pa">{FACE[t.key]}</span>
+            <button key={t.key} type="button" className={'pp' + (whoS === t.key ? ' on' : '')} onClick={() => (whoS === t.key ? setFacePick(t.key) : pickWho(t.key))}>
+              <span className="pa" style={pface(t.key) ? undefined : { background: MONO[t.key][1] }}>{pface(t.key) || <b>{MONO[t.key][0]}</b>}</span>
               <span className="pn">{t.name}</span>
             </button>
           ))}
@@ -303,6 +317,24 @@ export default function Board() {
           onManage={(o) => setMgr(o || {})}
           onSave={async (v) => { const m = await saveRange(v); if (!m) setEdit(null); return m }}
         />
+      )}
+      {facePick && (
+        <div className="backdrop mgrback" onMouseDown={(e) => e.target === e.currentTarget && setFacePick(null)}>
+          <div className="sheet">
+            <div className="sheet-head">
+              <h2>揀{TRACKS.find((t) => t.key === facePick)?.name || '全部人'}嘅頭像</h2>
+              <button type="button" className="x" onClick={() => setFacePick(null)} aria-label="關閉"><Icon n="x" /></button>
+            </div>
+            <div className="sheet-body">
+              <div className="emojigrid face">
+                {FACES.map((em) => (
+                  <button key={em} type="button" className={'em' + (pface(facePick) === em ? ' on' : '')} onClick={() => { savePerson(facePick, em); setFacePick(null) }}>{em}</button>
+                ))}
+              </div>
+              <button type="button" className="newcat" onClick={() => { savePerson(facePick, ''); setFacePick(null) }}>用返字母頭像</button>
+            </div>
+          </div>
+        </div>
       )}
       {mgr && <TaskManager start={mgr.start} focus={mgr.focus} onSaved={mgr.onSaved} onClose={() => setMgr(null)} onSaveTask={saveTask} onSaveCat={saveCat} onReorder={reorder} />}
     </>

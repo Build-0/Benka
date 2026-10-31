@@ -63,6 +63,7 @@ if (!CFG) {
   Object.keys(names).forEach((k) => { CFG.t[k] = { name: names[k], ...(custom[k] ? { cat: custom[k].cat } : {}) } })
 }
 export const getCfg = () => CFG
+export const pface = (key) => (CFG.p && CFG.p[key]) || ''
 export const setCfg = (c) => { CFG = c; cset('board-cfg', c) }
 
 export const isCustomTask = (k) => k[0] === 'x'
@@ -102,6 +103,13 @@ export const tasksInCat = (cat) => {
     .sort((a, b) => a.p - b.p)
     .map((x) => x.k)
 }
+
+// 人物頭像可揀嘅 emoji(偏可愛、少真人樣)
+export const FACES = [
+  '🐻', '🐱', '🐶', '🦊', '🐰', '🐼', '🐨', '🦁', '🐯', '🐸', '🐧', '🦉',
+  '🌳', '🌸', '🌻', '🍀', '🌙', '☀️', '⭐', '🌈', '🍎', '🍋', '🎈', '🎵',
+  '👨', '👩', '👵', '👴', '🧑', '👧', '👦', '🧒', '👶', '🦸', '🧙', '🧚',
+]
 
 // 常用 emoji,畀揀圖標
 export const EMOJIS = [

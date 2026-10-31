@@ -455,3 +455,6 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .pp.on .pa { background: #dbe6f3; border-color: #2f4a6b; box-shadow: 0 2px 8px rgba(47, 74, 107, .3); }
 .pp.on .pn { color: #2f4a6b; font-weight: 800; }
 @media (min-width: 800px) { .people { max-width: 520px; } }
+
+.pp .pa b { font-size: 20px; font-weight: 800; color: #2f4a6b; }
+.emojigrid.face { grid-template-columns: repeat(6, 1fr); }
