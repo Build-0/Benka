@@ -114,7 +114,7 @@ const dur = (slots) => { const m = slots * 30; return m >= 60 ? `${Math.floor(m 
 export default function Board() {
   const [dayRaw, setDay] = useState(() => cget('board-day') || defaultDay())
   const [who, setWho] = useState(() => cget('board-who') || 'benny')
-  const [view, setView] = useState(() => (cget('board-view') === 'day' ? 'day' : 'list'))
+  const [view, setView] = useState(() => (['day', 'time'].includes(cget('board-view')) ? cget('board-view') : 'list'))
   const [rows, setRows] = useState(() => cget('board')) // 全部日子嘅格
   const [err, setErr] = useState('')
   const [edit, setEdit] = useState(null)
@@ -162,7 +162,7 @@ export default function Board() {
     return all
   }, [rows])
   // Benny 淨係分工作日 / 休息日(週末都返工);其他人先有週六日
-  const dayOpts = view === 'list' && who === 'benny' ? BENNY_DAYS : view === 'list' && who !== 'all' ? OTHER_DAYS : DAYS
+  const dayOpts = view !== 'day' && who === 'benny' ? BENNY_DAYS : view !== 'day' && who !== 'all' ? OTHER_DAYS : DAYS
   const day = (dayOpts.find((d) => d.key === dayRaw) || dayOpts[0]).key
   const grid = grids[day]
 
@@ -218,7 +218,7 @@ export default function Board() {
       )}
       {empty && <div className="card errbox">未有看板資料,請先執行 supabase/02_board.sql。</div>}
 
-      {view === 'list' && (
+      {view !== 'day' && (
         <div className="chips">
           {TRACKS.map((t) => (
             <button key={t.key} className={'chip' + (who === t.key ? ' on' : '')} onClick={() => pickWho(t.key)}>{t.name}</button>
@@ -236,14 +236,15 @@ export default function Board() {
       </div>
 
       <div className="segc" role="tablist">
-        <button role="tab" aria-selected={view === 'list'} className={'segi' + (view === 'list' ? ' on' : '')} onClick={() => pickView('list')}>時間表</button>
+        <button role="tab" aria-selected={view === 'list'} className={'segi' + (view === 'list' ? ' on' : '')} onClick={() => pickView('list')}>按類別</button>
+        <button role="tab" aria-selected={view === 'time'} className={'segi' + (view === 'time' ? ' on' : '')} onClick={() => pickView('time')}>按時間</button>
         <button role="tab" aria-selected={view === 'day'} className={'segi' + (view === 'day' ? ' on' : '')} onClick={() => pickView('day')}>總表</button>
       </div>
 
-      {rows && view === 'list' && (
+      {rows && view !== 'day' && (
         <button className="fab bfab" onClick={() => setEdit({ track: who === 'all' ? 'benny' : who, from: 18, to: 19, task: '', isNew: true })} aria-label="新增安排"><Icon n="plus" /></button>
       )}
-      {rows && view === 'list' && <ListView who={who} grid={grid} wins={wins} onEdit={(track, s) => setEdit({ track, ...s })} />}
+      {rows && view !== 'day' && <ListView mode={view} who={who} grid={grid} wins={wins} onEdit={(track, s) => setEdit({ track, ...s })} />}
       {rows && view === 'day' && <DayView grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
 
       {edit && (
@@ -259,6 +260,13 @@ export default function Board() {
   )
 }
 
+// 按時間線:四個時段
+const PARTS = [
+  { key: 'p0', from: 0, to: 12, name: '凌晨 00:00–06:00' },
+  { key: 'p1', from: 12, to: 24, name: '上午 06:00–12:00' },
+  { key: 'p2', from: 24, to: 36, name: '下午 12:00–18:00' },
+  { key: 'p3', from: 36, to: 48, name: '晚上 18:00–24:00' },
+]
 // 分類:同一類嘅事放埋一齊,組內按時間排
 const CATS = [
   { key: 'free', name: '★ 自由 / 待命', tasks: ['me', '__free', '__open'] },
@@ -273,7 +281,7 @@ const catOf = (task) => {
   return (CATS.find((c) => c.tasks.includes(t)) || { key: 'other' }).key
 }
 
-function ListView({ who, grid, wins, onEdit }) {
+function ListView({ mode, who, grid, wins, onEdit }) {
   const keys = who === 'all' ? ['benny', 'carol', 'popo', 'helper'] : [who]
   // 同一時段、同一任務嘅人合併做一行
   const events = useMemo(() => {
@@ -290,8 +298,8 @@ function ListView({ who, grid, wins, onEdit }) {
   const nm = (k) => TRACKS.find((t) => t.key === k)
   return (
     <>
-      {[...CATS, { key: 'other', name: '其他', tasks: [] }].map((p) => {
-        const list = events.filter((e) => catOf(e.task) === p.key)
+      {(mode === 'time' ? PARTS : [...CATS, { key: 'other', name: '其他', tasks: [] }]).map((p) => {
+        const list = mode === 'time' ? events.filter((e) => e.from >= p.from && e.from < p.to) : events.filter((e) => catOf(e.task) === p.key)
         if (!list.length) return null
         return (
           <section key={p.key}>
