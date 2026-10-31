@@ -15,6 +15,8 @@ const TRACKS = [
   { key: 'dede', name: '德德', color: '#8a9db3' },
 ]
 // 人物頭像預設:字母 / 字 + 柔和底色;可自己揀 emoji 換
+// 有相嘅人用相做頭像(public 資料夾)
+const PHOTO = { dede: 'face-dede.png' }
 const MONO = { benny: ['B', '#dbe6f3'], carol: ['C', '#fbe3ec'], popo: ['婆', '#f3ead7'], helper: ['工', '#dff0e6'], renren: ['仁', '#e5e0f5'], dede: ['德', '#fde9d9'], all: ['全', '#e7edf3'] }
 const DAYS = [
   { key: 'wk', label: '平日' },
@@ -270,7 +272,7 @@ export default function Board() {
         <div className="people">
           {[...TRACKS, { key: 'all', name: '全部人' }].map((t) => (
             <button key={t.key} type="button" className={'pp' + (whoS === t.key ? ' on' : '')} onClick={() => (whoS === t.key ? setFacePick(t.key) : pickWho(t.key))}>
-              <span className="pa" style={pface(t.key) ? undefined : { background: MONO[t.key][1] }}>{pface(t.key) || <b>{MONO[t.key][0]}</b>}</span>
+              <span className="pa" style={pface(t.key) || PHOTO[t.key] ? undefined : { background: MONO[t.key][1] }}>{pface(t.key) || (PHOTO[t.key] ? <img src={import.meta.env.BASE_URL + PHOTO[t.key]} alt={t.name} /> : <b>{MONO[t.key][0]}</b>)}</span>
               <span className="pn">{t.name}</span>
             </button>
           ))}
