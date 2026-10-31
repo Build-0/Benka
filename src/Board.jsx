@@ -223,14 +223,14 @@ export default function Board() {
 
   return (
     <>
-      <Hero
+      {mode === 'me' && <Hero
         compact
         tone={mode}
         title="24 小時看板"
         icon="calendar-time"
-        sub={mode === 'all' ? '全家 6 個人嘅一日總覽' : rows ? `最長連續 ${dur(longest)}${standby ? ` · 待命 ${dur(standby)}` : ''}` : '我嘅時間'}
-        stats={mode === 'me' && rows ? [{ n: total ? dur(total) : '—', label: '我嘅自由時間' }] : []}
-      />
+        sub={rows ? `最長連續 ${dur(longest)}${standby ? ` · 待命 ${dur(standby)}` : ''}` : '我嘅時間'}
+        stats={rows ? [{ n: total ? dur(total) : '—', label: '我嘅自由時間' }] : []}
+      />}
 
       <div className="modeseg" role="tablist">
         <button role="tab" aria-selected={mode === 'me'} className={'mode me' + (mode === 'me' ? ' on' : '')} onClick={() => pickMode('me')}><i>👤</i>我嘅時間</button>
@@ -254,23 +254,38 @@ export default function Board() {
         </div>
       )}
 
-      <div className="segc" role="tablist">
+      {mode === 'all' && (
+        <div className="filters">
+          <label>日子
+            <select value={day} onChange={(e) => pickDay(e.target.value)}>
+              {dayOpts.map((d) => <option key={d.key} value={d.key}>{d.label}</option>)}
+            </select>
+          </label>
+          <label>顯示
+            <select value={view} onChange={(e) => pickView(e.target.value)}>
+              <option value="day">總表</option>
+              <option value="time">按時間</option>
+              <option value="list">按類別</option>
+            </select>
+          </label>
+        </div>
+      )}
+
+      {mode === 'me' && <div className="segc" role="tablist">
         {dayOpts.map((d) => (
           <button key={d.key} role="tab" aria-selected={day === d.key} className={'segi' + (day === d.key ? ' on' : '')} onClick={() => pickDay(d.key)}>
             {d.label}<small>{dur(summary.find((s) => s.key === d.key).total)}{d.key === bestDay ? ' ★' : ''}</small>
           </button>
         ))}
-      </div>
+      </div>}
 
       {mode === 'me' && rows && <Breakdown items={breakdown} />}
 
-      <div className="segc" role="tablist">
+      {mode === 'me' && <div className="segc" role="tablist">
         <button role="tab" aria-selected={view === 'time'} className={'segi' + (view === 'time' ? ' on' : '')} onClick={() => pickView('time')}>按時間</button>
         <button role="tab" aria-selected={view === 'list'} className={'segi' + (view === 'list' ? ' on' : '')} onClick={() => pickView('list')}>按類別</button>
-        {mode === 'all' && <button role="tab" aria-selected={view === 'day'} className={'segi' + (view === 'day' ? ' on' : '')} onClick={() => pickView('day')}>總表</button>}
-      </div>
+      </div>}
 
-      <div className="mebar"><button type="button" className="rnbtn" onClick={() => setMgr({})}>⚙ 任務庫</button></div>
       {rows && view !== 'day' && (
         <button className="fab bfab" onClick={() => setEdit({ track: who === 'all' ? 'benny' : who, from: 18, to: 19, task: '', isNew: true })} aria-label="新增安排"><Icon n="plus" /></button>
       )}
