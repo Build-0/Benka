@@ -238,14 +238,14 @@ export default function Board() {
 
   return (
     <>
-      {mode === 'me' && <Hero
+      <Hero
         compact
         tone={mode}
         title="24 小時看板"
         icon="calendar-time"
-        sub={rows ? `最長連續 ${dur(longest)}${standby ? ` · 待命 ${dur(standby)}` : ''}` : '我嘅時間'}
-        stats={rows ? [{ n: total ? dur(total) : '—', label: '我嘅自由時間' }] : []}
-      />}
+        sub={mode === 'all' ? '全家 6 個人嘅一日總覽' : rows ? `最長連續 ${dur(longest)}${standby ? ` · 待命 ${dur(standby)}` : ''}` : '我嘅時間'}
+        stats={mode === 'me' && rows ? [{ n: total ? dur(total) : '—', label: '我嘅自由時間' }] : []}
+      />
 
       <div className="modeseg" role="tablist">
         <button role="tab" aria-selected={mode === 'me'} className={'mode me' + (mode === 'me' ? ' on' : '')} onClick={() => pickMode('me')}><i>👤</i>我嘅時間</button>
