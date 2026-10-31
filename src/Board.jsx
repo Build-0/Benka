@@ -272,7 +272,7 @@ const CATS = [
   { key: 'free', name: '★ 自由 / 待命', tasks: ['me', '__free', '__open'] },
   { key: 'care', name: '🍼 照顧孩子', tasks: ['feed', 'pump', 'wash', 'bath', 'nap', 'bed', 'kid', 'kidr', 'kidd'] },
   { key: 'school', name: '🎒 接送 · 學習 · 活動', tasks: ['school', 'class', 'edu', 'screen', 'play'] },
-  { key: 'home', name: '🏠 家務 · 日常', tasks: ['cookf', 'chore', 'cook', 'eat', 'routine', 'rest'] },
+  { key: 'home', name: '🏠 家務 · 日常', tasks: ['cookf', 'chore', 'cook', 'eat', 'routine', 'rest', 'sleep'] },
   { key: 'work', name: '💼 返工 · 通勤', tasks: ['work', 'go'] },
   { key: 'general', name: '🔁 通用', tasks: [] }, // 只有自訂任務會歸呢類
 ]
@@ -299,7 +299,7 @@ function ListView({ mode, who, grid, wins, onEdit }) {
   const events = useMemo(() => {
     const m = new Map()
     keys.forEach((k) => segsOf(grid[k]).forEach((s) => {
-      if (!s.task || s.task === 'sleep') return
+      if (!s.task) return
       const id = s.from + '-' + s.to + '-' + s.task
       if (!m.has(id)) m.set(id, { ...s, people: [] })
       m.get(id).people.push(k)
