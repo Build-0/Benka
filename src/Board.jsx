@@ -34,15 +34,19 @@ const hm = (i) => `${String(Math.floor(i / 2)).padStart(2, '0')}:${i % 2 ? '30' 
 const endHm = (i) => (i >= 48 ? '24:00' : hm(i))
 const isFlex = (task) => task.split('+').includes('flex')
 const label = (task) => (isFlex(task) ? '~ ' : '') + task.split('+').filter((c) => c !== 'flex').map(tname).join(' ＋ ')
-const baseStyle = (task, track) => {
-  const first = task.split('+')[0]
-  if (first === 'sleep') return { background: '#eef2f7', color: '#8da2b8' }
-  if (task.split('+').includes('me')) return { background: '#f2774b', color: '#fff' }
-  if (track === 'benny') return { background: '#2f4a6b', color: '#fff' }
-  return { background: '#e3eaf2', color: '#3b4f66' }
+// 總表格仔:同橫棒、卡片同一種顏色(淺色底用深字)
+const textOn = (hex) => {
+  const n = parseInt(hex.slice(1), 16)
+  const lum = 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)
+  return lum > 150 ? '#2b3a4a' : '#fff'
+}
+const baseStyle = (task) => {
+  const first = task.split('+').includes('me') ? 'me' : task.split('+').find((x) => x !== 'flex')
+  const c = barColor(first)
+  return { background: c, color: first === 'sleep' ? '#6b7f99' : textOn(c) }
 }
 const style = (task, track) => {
-  const s = baseStyle(task, track)
+  const s = baseStyle(task)
   return isFlex(task) ? { ...s, opacity: 0.75, outline: '1.5px dashed currentColor', outlineOffset: -4 } : s
 }
 const defaultDay = () => {
@@ -193,7 +197,7 @@ export default function Board() {
 
   const pickDay = (k) => { setDay(k); cset('board-day', k) }
   const pickMode = (k) => { setMode(k); cset('board-mode', k); if (k === 'all') { setView('day'); cset('board-view', 'day'); setWho('all'); cset('board-who', 'all') } }
-  const pickWho = (k) => { setWho(k); cset('board-who', k) }
+  const pickWho = (k) => { setWho(k); cset('board-who', k); if (k === 'all') { setView('day'); cset('board-view', 'day') } } // 揀全部人即刻睇總表
   const pickView = (k) => { setView(k); cset('board-view', k) }
 
   const wins = useMemo(() => freeWins(grid.benny), [grid])
