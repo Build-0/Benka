@@ -379,3 +379,7 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .tile.addtile i { color: var(--accent); }
 .pickhead { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 8px; }
 .cattabs { padding-bottom: 12px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+/* 分隔線加深加粗 */
+.pickhead { border-top: 2px solid #9fb0c4; padding-top: 14px; margin-top: 12px; }
+.cattabs { padding-bottom: 14px; border-bottom: 2px solid #9fb0c4; margin-bottom: 8px; }
+.tile.addtile { border: 2px dashed var(--accent); }
