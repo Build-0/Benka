@@ -294,12 +294,12 @@ const catOf = (task) => {
 }
 
 function ListView({ mode, who, grid, wins, onEdit }) {
-  const keys = who === 'all' ? ['benny', 'carol', 'popo', 'helper'] : [who]
+  const keys = who === 'all' ? TRACKS.map((t) => t.key) : [who]
   // 同一時段、同一任務嘅人合併做一行
   const events = useMemo(() => {
     const m = new Map()
     keys.forEach((k) => segsOf(grid[k]).forEach((s) => {
-      if (!s.task) return
+      if (!s.task || s.task === 'me') return // 純私人時間由「★ 自由時間」嗰行代表
       const id = s.from + '-' + s.to + '-' + s.task
       if (!m.has(id)) m.set(id, { ...s, people: [] })
       m.get(id).people.push(k)
