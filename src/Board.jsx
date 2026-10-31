@@ -274,7 +274,10 @@ const CATS = [
   { key: 'school', name: '🎒 接送 · 學習 · 活動', tasks: ['school', 'class', 'edu', 'screen', 'play'] },
   { key: 'home', name: '🏠 家務 · 日常', tasks: ['cookf', 'chore', 'cook', 'eat', 'routine', 'rest'] },
   { key: 'work', name: '💼 返工 · 通勤', tasks: ['work', 'go'] },
+  { key: 'general', name: '🔁 通用', tasks: [] }, // 只有自訂任務會歸呢類
 ]
+// 揀任務時,「通用」分頁額外包含嘅內置任務(任何類別都會用到)
+const GENERIC = ['me', 'rest', 'eat', 'go', 'routine', 'sleep']
 const catOf = (task) => {
   const t = task.split('+').find((x) => x !== 'flex')
   if (t && isCustom(t)) return (CUSTOM[t] && CUSTOM[t].cat) || 'other'
@@ -375,6 +378,7 @@ function SlotEditor({ init, grid, onClose, onSave, onSaveTask }) {
   const [newName, setNewName] = useState('')
   const [newCat, setNewCat] = useState('care')
   const [renaming, setRenaming] = useState(false)
+  const [tab, setTab] = useState(() => (init.task && init.task !== 'me' ? catOf(init.task) : 'general'))
   const [track, setTrack] = useState(init.track)
   const tr = TRACKS.find((t) => t.key === track)
   const cur = grid[init.track]
@@ -444,8 +448,16 @@ function SlotEditor({ init, grid, onClose, onSave, onSaveTask }) {
             <button type="button" className={'rnbtn' + (renaming ? ' on' : '')} onClick={() => setRenaming(!renaming)}>{renaming ? '完成改名' : '✎ 改任務名'}</button>
             {renaming && <span className="muted">撳任務就可以改名,留空=還原預設</span>}
           </div>
+          {picked.length > 0 && <div className="pickedline">已揀:{label(picked.join('+'))}</div>}
+          <div className="chips tabchips">
+            {CATS.filter((c) => c.key !== 'free').concat([{ key: 'other', name: '其他' }]).map((c) => (
+              <button key={c.key} type="button" className={'chip' + (tab === c.key ? ' on' : '')} onClick={() => setTab(c.key)}>{c.name}</button>
+            ))}
+          </div>
           <div className="taskpick">
-            {[...TASKS, ...Object.keys(CUSTOM).map((k) => ({ k, l: tname(k), c: '#7a8fa8' }))].filter((t) => !t.old || picked.includes(t.k)).map((t) => (
+            {[...TASKS, ...Object.keys(CUSTOM).map((k) => ({ k, l: tname(k), c: '#7a8fa8' }))]
+              .filter((t) => (!t.old || picked.includes(t.k)) && (t.mod || (tab === 'general' ? GENERIC.includes(t.k) || catOf(t.k) === 'general' : catOf(t.k) === tab)))
+              .map((t) => (
               <button
                 key={t.k}
                 type="button"
@@ -460,7 +472,7 @@ function SlotEditor({ init, grid, onClose, onSave, onSaveTask }) {
                 }}
               >{renaming ? '✎ ' : ''}{tname(t.k)}</button>
             ))}
-            <button type="button" className="tp addtask" onClick={() => setAdding(!adding)}>＋ 新任務</button>
+            <button type="button" className="tp addtask" onClick={() => { setNewCat(tab === 'general' ? 'general' : tab); setAdding(!adding) }}>＋ 新任務</button>
           </div>
           {adding && (
             <div className="newtask">

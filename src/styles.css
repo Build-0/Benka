@@ -358,3 +358,5 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .tp.addtask { border-style: dashed; color: var(--accent); background: transparent; }
 .newtask { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
 .newtask input { font: inherit; font-size: 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; min-height: 44px; }
+.tabchips { margin: 0 0 8px; }
+.pickedline { font-size: 13px; font-weight: 600; color: var(--accent); margin: 0 0 6px; }
