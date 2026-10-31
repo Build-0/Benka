@@ -251,7 +251,6 @@ export default function Board() {
             <button key={t.key} className={'chip' + (who === t.key ? ' on' : '')} onClick={() => pickWho(t.key)}>{t.name}</button>
           ))}
           <button className={'chip' + (who === 'all' ? ' on' : '')} onClick={() => pickWho('all')}>全部人</button>
-          <button className="chip" onClick={() => setMgr({})}>⚙ 任務庫</button>
         </div>
       )}
 
@@ -271,7 +270,7 @@ export default function Board() {
         {mode === 'all' && <button role="tab" aria-selected={view === 'day'} className={'segi' + (view === 'day' ? ' on' : '')} onClick={() => pickView('day')}>總表</button>}
       </div>
 
-      {mode === 'me' && <div className="mebar"><button type="button" className="rnbtn" onClick={() => setMgr({})}>⚙ 任務庫</button></div>}
+      <div className="mebar"><button type="button" className="rnbtn" onClick={() => setMgr({})}>⚙ 任務庫</button></div>
       {rows && view !== 'day' && (
         <button className="fab bfab" onClick={() => setEdit({ track: who === 'all' ? 'benny' : who, from: 18, to: 19, task: '', isNew: true })} aria-label="新增安排"><Icon n="plus" /></button>
       )}
