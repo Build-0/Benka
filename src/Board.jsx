@@ -219,14 +219,20 @@ export default function Board() {
   const bestDay = best.total > 0 ? best.key : ''
 
 
+  // 由 from 到 to(to 細過 from = 跨過午夜,例如 22:00 → 07:00 瞓覺)
   const saveRange = async ({ track, from, to, task, oldFrom = from, oldTo = to }) => {
-    // 連同原本嗰段一齊清走,縮短時段先會真係縮短
-    const base = supabase.from('board_slots').delete().eq('day_type', day).eq('track', track).gte('slot', Math.min(from, oldFrom)).lt('slot', Math.max(to, oldTo))
-    const { error: e1 } = await base
+    const span = (f, t) => {
+      const a = []
+      if (f < t) for (let i = f; i < t; i++) a.push(i)
+      else { for (let i = f; i < 48; i++) a.push(i); for (let i = 0; i < t; i++) a.push(i) }
+      return a
+    }
+    const fresh = span(from, to)
+    const del = [...new Set([...fresh, ...span(oldFrom, oldTo)])]
+    const { error: e1 } = await supabase.from('board_slots').delete().eq('day_type', day).eq('track', track).in('slot', del)
     if (e1) return e1.message
     if (task) {
-      const ins = []
-      for (let s = from; s < to; s++) ins.push({ day_type: day, track, slot: s, task })
+      const ins = fresh.map((s) => ({ day_type: day, track, slot: s, task }))
       const { error: e2 } = await supabase.from('board_slots').insert(ins)
       if (e2) return e2.message
     }
@@ -518,7 +524,7 @@ function SlotEditor({ init, grid, onClose, onSave, onManage }) {
     else setPicked([...picked.filter((x) => x !== 'flex'), k].slice(-2).concat(picked.includes('flex') ? ['flex'] : [])) // 最多同時兩件事(彈性標記唔計,永遠排最尾)
   }
   const save = async (clearIt) => {
-    if (to <= from) { setErr('「至」要遲過「由」'); return }
+    if (to === from) { setErr('「由」同「至」唔可以一樣'); return }
     setBusy(true); setErr('')
     const m = await onSave({ track, from, to, task: clearIt ? '' : picked.join('+'), oldFrom: init.isNew ? from : seg.from, oldTo: init.isNew ? to : seg.to })
     setBusy(false)
@@ -548,6 +554,7 @@ function SlotEditor({ init, grid, onClose, onSave, onManage }) {
               {Array.from({ length: 48 }, (_, i) => i + 1).map((i) => <option key={i} value={i}>{endHm(i)}</option>)}
             </select></label>
           </div>
+          {to < from && <div className="overnight">跨過午夜:{hm(from)} → 第二日 {endHm(to)}</div>}
           <div className="pickhead">
             <b>揀任務</b><span className="muted">最多兩個,一齊做嘅事</span>
             <button type="button" className="rnbtn" onClick={() => onManage({ focus: tab })}>⚙ 任務庫</button>

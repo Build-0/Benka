@@ -464,3 +464,5 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .fb-h b { font-size: 14px; min-width: 44px; }
 .fb-h span { font-size: 12px; color: var(--muted); }
 .bkd-bar.slim { height: 16px; border-radius: 6px; }
+
+.overnight { font-size: 13px; font-weight: 600; color: #3f6490; background: #e7eef7; border-radius: 10px; padding: 8px 12px; margin: 2px 0 6px; }
