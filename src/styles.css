@@ -458,3 +458,9 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 
 .pp .pa b { font-size: 20px; font-weight: 800; color: #2f4a6b; }
 .emojigrid.face { grid-template-columns: repeat(6, 1fr); }
+
+.fb { margin-top: 10px; }
+.fb-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+.fb-h b { font-size: 14px; min-width: 44px; }
+.fb-h span { font-size: 12px; color: var(--muted); }
+.bkd-bar.slim { height: 16px; border-radius: 6px; }

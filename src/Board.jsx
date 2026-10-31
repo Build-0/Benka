@@ -204,17 +204,17 @@ export default function Board() {
     return { key: d.key, total: ws.reduce((a, w) => a + w.to - w.from, 0) }
   }), [grids, dayOpts])
   // 今日 24 小時去向(按任務計,Benny 軌道):自由 / 待命 / 各項任務
-  const breakdown = useMemo(() => {
+  const breakdownOf = (track) => {
     const m = new Map()
-    grids[day === 'sat' || day === 'sun' ? 'wk' : day].benny.forEach((t, i) => {
+    grids[day][track].forEach((t, i) => {
       let k
-      if (!t) k = i >= WAKE_FROM && i < WAKE_TO ? '__standby' : null
+      if (!t) k = track === 'benny' ? (i >= WAKE_FROM && i < WAKE_TO ? '__standby' : null) : '__blank'
       else if (t.split('+').includes('me')) k = 'me'
       else k = t.split('+').find((x) => x !== 'flex')
       if (k) m.set(k, (m.get(k) || 0) + 1)
     })
-    return [...m].map(([k, n]) => ({ k, n })).sort((a, c) => (a.k === 'me' ? -1 : c.k === 'me' ? 1 : c.n - a.n))
-  }, [grids, day])
+    return [...m].map(([k, n]) => ({ k, n })).sort((a, c) => (a.k === 'me' ? -1 : c.k === 'me' ? 1 : a.k === '__blank' ? 1 : c.k === '__blank' ? -1 : c.n - a.n))
+  }
   const best = summary.reduce((a, s) => (s.total > a.total ? s : a), summary[0])
   const bestDay = best.total > 0 ? best.key : ''
 
@@ -296,7 +296,9 @@ export default function Board() {
         ))}
       </div>}
 
-      {mode === 'me' && rows && <Breakdown items={breakdown} />}
+      {mode === 'me' && rows && <Breakdown items={breakdownOf('benny')} />}
+      {mode === 'all' && rows && who !== 'all' && <Breakdown items={breakdownOf(who)} title={TRACKS.find((t) => t.key === who).name + ' 呢一日 24 小時去咗邊'} />}
+      {mode === 'all' && rows && who === 'all' && <FamilyBars items={TRACKS.map((t) => ({ t, items: breakdownOf(t.key) }))} />}
 
       {mode === 'me' && <div className="segc" role="tablist">
         <button role="tab" aria-selected={view === 'time'} className={'segi' + (view === 'time' ? ' on' : '')} onClick={() => pickView('time')}>按時間</button>
@@ -343,16 +345,16 @@ export default function Board() {
 
 // 24 小時去向:一條橫棒 + 每項用幾耐(自由時間珊瑚色,其他按時間長短深淺)
 const SHADES = ['#2f4a6b', '#3f6490', '#5f84ad', '#86a3c4', '#aebfd6', '#cdd8e6']
-function Breakdown({ items }) {
+function Breakdown({ items, title }) {
   const total = items.reduce((a, x) => a + x.n, 0) || 1
   let rank = 0
   const rows = items.map((x) => {
-    const color = x.k === 'me' ? '#f2774b' : x.k === '__standby' ? '#e3eaf2' : SHADES[Math.min(rank++, SHADES.length - 1)]
-    return { ...x, color, name: x.k === 'me' ? '自由時間' : x.k === '__standby' ? '待命(冇指定責任)' : tname(x.k), icon: x.k === 'me' ? '⭐' : x.k === '__standby' ? '⏳' : ticon(x.k) }
+    const color = x.k === 'me' ? '#f2774b' : x.k === '__standby' || x.k === '__blank' ? '#e3eaf2' : SHADES[Math.min(rank++, SHADES.length - 1)]
+    return { ...x, color, name: x.k === 'me' ? '自由時間' : x.k === '__standby' ? '待命(冇指定責任)' : x.k === '__blank' ? '冇安排' : tname(x.k), icon: x.k === 'me' ? '⭐' : x.k === '__standby' ? '⏳' : x.k === '__blank' ? '▫️' : ticon(x.k) }
   })
   return (
     <section className="bkd">
-      <div className="bkd-title">呢一日 24 小時去咗邊</div>
+      <div className="bkd-title">{title || '呢一日 24 小時去咗邊'}</div>
       <div className="bkd-bar">
         {rows.map((r) => <span key={r.k} style={{ width: (r.n / total) * 100 + '%', background: r.color }} title={r.name} />)}
       </div>
@@ -365,6 +367,29 @@ function Breakdown({ items }) {
           </div>
         ))}
       </div>
+    </section>
+  )
+}
+
+// 全部人:每人一條橫棒 + 最大三項
+function FamilyBars({ items }) {
+  return (
+    <section className="bkd">
+      <div className="bkd-title">全家 24 小時去咗邊</div>
+      {items.map(({ t, items: its }) => {
+        const total = its.reduce((a, x) => a + x.n, 0) || 1
+        let rank = 0
+        const rows = its.map((x) => ({ ...x, color: x.k === 'me' ? '#f2774b' : x.k === '__standby' || x.k === '__blank' ? '#e3eaf2' : SHADES[Math.min(rank++, SHADES.length - 1)] }))
+        const top = its.filter((x) => !x.k.startsWith('__') && x.k !== 'me').slice(0, 3).map((x) => tname(x.k) + ' ' + dur(x.n)).join(' · ')
+        return (
+          <div key={t.key} className="fb">
+            <div className="fb-h"><b>{t.name}</b><span>{top}</span></div>
+            <div className="bkd-bar slim">
+              {rows.map((r) => <span key={r.k} style={{ width: (r.n / total) * 100 + '%', background: r.color }} />)}
+            </div>
+          </div>
+        )
+      })}
     </section>
   )
 }
