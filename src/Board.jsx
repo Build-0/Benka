@@ -225,15 +225,16 @@ export default function Board() {
     <>
       <Hero
         compact
+        tone={mode}
         title="24 小時看板"
         icon="calendar-time"
-        sub={rows ? `最長連續 ${dur(longest)}${standby ? ` · 待命 ${dur(standby)}` : ''}` : '家庭分工'}
-        stats={rows ? [{ n: total ? dur(total) : '—', label: '我嘅自由時間' }] : []}
+        sub={mode === 'all' ? '全家 6 個人嘅一日總覽' : rows ? `最長連續 ${dur(longest)}${standby ? ` · 待命 ${dur(standby)}` : ''}` : '我嘅時間'}
+        stats={mode === 'me' && rows ? [{ n: total ? dur(total) : '—', label: '我嘅自由時間' }] : []}
       />
 
-      <div className="segc modeseg" role="tablist">
-        <button role="tab" aria-selected={mode === 'me'} className={'segi' + (mode === 'me' ? ' on' : '')} onClick={() => pickMode('me')}>我嘅時間</button>
-        <button role="tab" aria-selected={mode === 'all'} className={'segi' + (mode === 'all' ? ' on' : '')} onClick={() => pickMode('all')}>全貌</button>
+      <div className="modeseg" role="tablist">
+        <button role="tab" aria-selected={mode === 'me'} className={'mode me' + (mode === 'me' ? ' on' : '')} onClick={() => pickMode('me')}><i>👤</i>我嘅時間</button>
+        <button role="tab" aria-selected={mode === 'all'} className={'mode all' + (mode === 'all' ? ' on' : '')} onClick={() => pickMode('all')}><i>👨‍👩‍👧</i>全貌</button>
       </div>
 
       {err && (

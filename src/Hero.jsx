@@ -1,9 +1,9 @@
 import Icon from './Icon.jsx'
 
 // 頁頂漸變橫幅:標題、副題、數據小格,右上角淡色大圖示做點綴
-export default function Hero({ title, sub, icon, stats = [], action, compact }) {
+export default function Hero({ title, sub, icon, stats = [], action, compact, tone }) {
   return (
-    <header className={"hero" + (compact ? " compact" : "")}>
+    <header className={"hero" + (compact ? " compact" : "") + (tone ? " tone-" + tone : "")}>
       <Icon n={icon} className="deco" />
       <div className="hero-top">
         <div>

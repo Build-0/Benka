@@ -430,3 +430,14 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .bkd-row b { font-weight: 700; font-variant-numeric: tabular-nums; }
 .bkd-row.free { color: #d4561f; font-weight: 700; }
 @media (min-width: 800px) { .bkd-list { grid-template-columns: 1fr 1fr; column-gap: 24px; } }
+
+/* 頂層模式掣:同下面細嘅分段控制器明顯分開 */
+.modeseg { display: flex; gap: 10px; margin: 0 0 14px; background: transparent; padding: 0; }
+.modeseg .mode { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; border-radius: 16px; border: 2px solid var(--line); background: var(--card); color: var(--ink); font: inherit; font-size: 18px; font-weight: 700; cursor: pointer; }
+.modeseg .mode i { font-style: normal; font-size: 22px; }
+.modeseg .mode.me.on { background: #f2774b; border-color: #f2774b; color: #fff; box-shadow: 0 4px 12px rgba(242, 119, 75, .4); }
+.modeseg .mode.all.on { background: #2f4a6b; border-color: #2f4a6b; color: #fff; box-shadow: 0 4px 12px rgba(47, 74, 107, .4); }
+.hero.tone-me { background: linear-gradient(135deg, #f58a5c, #d4561f); }
+/* 下面兩行分段控制器縮細,層次更清楚 */
+.segc .segi { min-height: 34px; font-size: 13px; padding: 4px 2px; }
+.segc .segi small { font-size: 10px; }
