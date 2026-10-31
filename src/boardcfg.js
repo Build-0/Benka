@@ -28,16 +28,17 @@ export const TASKS = [
   { k: 'mass', l: '彌撒', c: '#6a58a8' },
   { k: 'sport', l: '運動', c: '#3a9e6a' },
   { k: 'cate', l: '慕道班', c: '#a07fc0' },
+  { k: 'offduty', l: '非當值', c: '#b4c3d3', d: 1 },
   { k: 'me', l: '★ 私人時間', c: '#f2774b' },
   { k: 'flex', l: '~ 大約／彈性', c: '#8da2b8', mod: 1 },
 ]
 export const TASK = Object.fromEntries(TASKS.map((t) => [t.k, t]))
 
-const TICON = { feed: '🍼', pump: '🥛', wash: '🫧', routine: '🌅', school: '🚌', cookf: '🍳', chore: '🧹', cook: '🍳', work: '💼', go: '🚇', rest: '🛋️', nap: '😴', bath: '🛁', edu: '📖', screen: '📺', play: '🧸', class: '🎨', eat: '🍚', bed: '🌙', sleep: '💤', kidr: '🧒', kidd: '👶', kid: '🧒', mass: '⛪', sport: '🏃', cate: '✝️', me: '⭐', flex: '〰️' }
+const TICON = { feed: '🍼', pump: '🥛', wash: '🫧', routine: '🌅', school: '🚌', cookf: '🍳', chore: '🧹', cook: '🍳', work: '💼', go: '🚇', rest: '🛋️', nap: '😴', bath: '🛁', edu: '📖', screen: '📺', play: '🧸', class: '🎨', eat: '🍚', bed: '🌙', sleep: '💤', kidr: '🧒', kidd: '👶', kid: '🧒', offduty: '🚪', mass: '⛪', sport: '🏃', cate: '✝️', me: '⭐', flex: '〰️' }
 
 // 內置任務預設所屬分類
 const DEFCAT = {
-  me: 'general', mass: 'general', sport: 'general', cate: 'general', sleep: 'general', rest: 'general', eat: 'general', go: 'general', routine: 'general',
+  me: 'general', offduty: 'general', mass: 'general', sport: 'general', cate: 'general', sleep: 'general', rest: 'general', eat: 'general', go: 'general', routine: 'general',
   feed: 'care', pump: 'care', wash: 'care', bath: 'care', nap: 'care', bed: 'care', kid: 'care', kidr: 'care', kidd: 'care',
   school: 'school', class: 'school', edu: 'school', screen: 'school', play: 'school',
   cookf: 'home', chore: 'home', cook: 'home',
