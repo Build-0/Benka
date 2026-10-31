@@ -276,6 +276,15 @@ const CATS = [
   { key: 'work', name: '💼 返工 · 通勤', tasks: ['work', 'go'] },
   { key: 'general', name: '🔁 通用', tasks: [] }, // 只有自訂任務會歸呢類
 ]
+const TABS = [
+  { key: 'general', e: '🔁', n: '通用' },
+  { key: 'care', e: '🍼', n: '照顧' },
+  { key: 'school', e: '🎒', n: '接送學習' },
+  { key: 'home', e: '🏠', n: '家務日常' },
+  { key: 'work', e: '💼', n: '返工通勤' },
+  { key: 'other', e: '⋯', n: '其他' },
+]
+const TICON = { feed: '🍼', pump: '🥛', wash: '🫧', routine: '🌅', school: '🚌', cookf: '🍳', chore: '🧹', cook: '🍳', work: '💼', go: '🚇', rest: '🛋️', nap: '😴', bath: '🛁', edu: '📖', screen: '📺', play: '🧸', class: '🎨', eat: '🍚', bed: '🌙', sleep: '💤', kidr: '🧒', kidd: '👶', kid: '🧒', me: '⭐', flex: '〰️' }
 // 揀任務時,「通用」分頁額外包含嘅內置任務(任何類別都會用到)
 const GENERIC = ['me', 'rest', 'eat', 'go', 'routine', 'sleep']
 const catOf = (task) => {
@@ -443,36 +452,38 @@ function SlotEditor({ init, grid, onClose, onSave, onSaveTask }) {
               {Array.from({ length: 48 }, (_, i) => i + 1).map((i) => <option key={i} value={i}>{endHm(i)}</option>)}
             </select></label>
           </div>
-          <div className="muted" style={{ fontSize: 13 }}>揀任務(最多兩個,一齊做嘅事)</div>
-          <div className="rnbar">
-            <button type="button" className={'rnbtn' + (renaming ? ' on' : '')} onClick={() => setRenaming(!renaming)}>{renaming ? '完成改名' : '✎ 改任務名'}</button>
-            {renaming && <span className="muted">撳任務就可以改名,留空=還原預設</span>}
+          <div className="pickhead">
+            <b>揀任務</b><span className="muted">最多兩個,一齊做嘅事</span>
+            <button type="button" className={'rnbtn' + (renaming ? ' on' : '')} onClick={() => setRenaming(!renaming)}>{renaming ? '完成' : '✎ 改名'}</button>
           </div>
           {picked.length > 0 && <div className="pickedline">已揀:{label(picked.join('+'))}</div>}
-          <div className="chips tabchips">
-            {CATS.filter((c) => c.key !== 'free').concat([{ key: 'other', name: '其他' }]).map((c) => (
-              <button key={c.key} type="button" className={'chip' + (tab === c.key ? ' on' : '')} onClick={() => setTab(c.key)}>{c.name}</button>
+          <div className="cattabs">
+            {TABS.map((c) => (
+              <button key={c.key} type="button" className={'ctab' + (tab === c.key ? ' on' : '')} onClick={() => setTab(c.key)}><i>{c.e}</i><span>{c.n}</span></button>
             ))}
           </div>
-          <div className="taskpick">
+          <div className="tilegrid">
             {[...TASKS, ...Object.keys(CUSTOM).map((k) => ({ k, l: tname(k), c: '#7a8fa8' }))]
               .filter((t) => (!t.old || picked.includes(t.k)) && (t.mod || (tab === 'general' ? GENERIC.includes(t.k) || catOf(t.k) === 'general' : catOf(t.k) === tab)))
               .map((t) => (
-              <button
-                key={t.k}
-                type="button"
-                className={'tp' + (picked.includes(t.k) ? ' on' : '')}
-                style={{ '--tc': t.c }}
-                onClick={() => {
-                  if (!renaming) return toggle(t.k)
-                  const v = window.prompt(isCustom(t.k) ? '任務名稱(留空=刪除呢個任務)' : '任務名稱(留空=還原預設)', tname(t.k))
-                  if (v === null) return
-                  if (!v.trim() && isCustom(t.k)) { if (window.confirm('刪除任務「' + tname(t.k) + '」?已用咗嘅時段會顯示做「(已刪任務)」')) { setPicked(picked.filter((x) => x !== t.k)); onSaveTask(t.k, '') } return }
-                  onSaveTask(t.k, v)
-                }}
-              >{renaming ? '✎ ' : ''}{tname(t.k)}</button>
-            ))}
-            <button type="button" className="tp addtask" onClick={() => { setNewCat(tab === 'general' ? 'general' : tab); setAdding(!adding) }}>＋ 新任務</button>
+                <button
+                  key={t.k}
+                  type="button"
+                  className={'tile' + (picked.includes(t.k) ? ' on' : '')}
+                  style={{ '--tc': t.c }}
+                  onClick={() => {
+                    if (!renaming) return toggle(t.k)
+                    const v = window.prompt(isCustom(t.k) ? '任務名稱(留空=刪除呢個任務)' : '任務名稱(留空=還原預設)', tname(t.k))
+                    if (v === null) return
+                    if (!v.trim() && isCustom(t.k)) { if (window.confirm('刪除任務「' + tname(t.k) + '」?已用咗嘅時段會顯示做「(已刪任務)」')) { setPicked(picked.filter((x) => x !== t.k)); onSaveTask(t.k, '') } return }
+                    onSaveTask(t.k, v)
+                  }}
+                >
+                  <i>{renaming ? '✎' : TICON[t.k] || '✨'}</i>
+                  <span>{tname(t.k)}</span>
+                </button>
+              ))}
+            <button type="button" className="tile addtile" onClick={() => { setNewCat(tab === 'general' ? 'general' : tab); setAdding(!adding) }}><i>＋</i><span>新任務</span></button>
           </div>
           {adding && (
             <div className="newtask">

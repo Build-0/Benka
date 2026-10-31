@@ -360,3 +360,20 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .newtask input { font: inherit; font-size: 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; min-height: 44px; }
 .tabchips { margin: 0 0 8px; }
 .pickedline { font-size: 13px; font-weight: 600; color: var(--accent); margin: 0 0 6px; }
+
+/* 揀任務:大圖示格仔 */
+.sheet .chips { flex-wrap: wrap; overflow: visible; }
+.pickhead { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.pickhead b { font-size: 16px; }
+.pickhead .muted { font-size: 12px; flex: 1; }
+.cattabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.ctab { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; border: 1px solid var(--line); background: var(--card); border-radius: 12px; font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; }
+.ctab i { font-style: normal; font-size: 18px; }
+.ctab.on { background: #2f4a6b; color: #fff; border-color: #2f4a6b; }
+.tilegrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 76px; padding: 8px 4px; border: 1.5px solid var(--line); background: var(--card); border-radius: 14px; font: inherit; color: var(--ink); cursor: pointer; text-align: center; }
+.tile i { font-style: normal; font-size: 26px; line-height: 1; }
+.tile span { font-size: 13px; font-weight: 600; line-height: 1.2; }
+.tile.on { background: var(--tc); border-color: var(--tc); color: #fff; box-shadow: 0 3px 10px color-mix(in srgb, var(--tc) 45%, transparent); }
+.tile.addtile { border-style: dashed; color: var(--accent); background: transparent; }
+.tile.addtile i { color: var(--accent); }
