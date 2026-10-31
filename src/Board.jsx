@@ -271,16 +271,16 @@ export default function Board() {
         </div>
       )}
 
-      {mode === 'all' && (
+      {(
         <div className="filters">
           <label>日子
             <select value={day} onChange={(e) => pickDay(e.target.value)}>
-              {dayOpts.map((d) => <option key={d.key} value={d.key}>{d.label}</option>)}
+              {dayOpts.map((d) => <option key={d.key} value={d.key}>{d.label}{mode === 'me' ? '(自由 ' + dur(summary.find((s) => s.key === d.key).total) + ')' : ''}</option>)}
             </select>
           </label>
           <label>顯示
             <select value={view} onChange={(e) => pickView(e.target.value)}>
-              <option value="day">總表</option>
+              {mode === 'all' && <option value="day">總表</option>}
               <option value="time">按時間</option>
               <option value="list">按類別</option>
             </select>
@@ -288,22 +288,11 @@ export default function Board() {
         </div>
       )}
 
-      {mode === 'me' && <div className="segc" role="tablist">
-        {dayOpts.map((d) => (
-          <button key={d.key} role="tab" aria-selected={day === d.key} className={'segi' + (day === d.key ? ' on' : '')} onClick={() => pickDay(d.key)}>
-            {d.label}<small>{dur(summary.find((s) => s.key === d.key).total)}{d.key === bestDay ? ' ★' : ''}</small>
-          </button>
-        ))}
-      </div>}
 
       {mode === 'me' && rows && <Breakdown items={breakdownOf('benny')} />}
       {mode === 'all' && rows && who !== 'all' && <Breakdown items={breakdownOf(who)} title={TRACKS.find((t) => t.key === who).name + ' 呢一日 24 小時去咗邊'} />}
       {mode === 'all' && rows && who === 'all' && <FamilyBars items={TRACKS.map((t) => ({ t, items: breakdownOf(t.key) }))} />}
 
-      {mode === 'me' && <div className="segc" role="tablist">
-        <button role="tab" aria-selected={view === 'time'} className={'segi' + (view === 'time' ? ' on' : '')} onClick={() => pickView('time')}>按時間</button>
-        <button role="tab" aria-selected={view === 'list'} className={'segi' + (view === 'list' ? ' on' : '')} onClick={() => pickView('list')}>按類別</button>
-      </div>}
 
       {rows && view !== 'day' && (
         <button className="fab bfab" onClick={() => setEdit({ track: who === 'all' ? 'benny' : who, from: 18, to: 19, task: '', isNew: true })} aria-label="新增安排"><Icon n="plus" /></button>
