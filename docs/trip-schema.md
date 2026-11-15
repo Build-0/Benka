@@ -9,7 +9,7 @@
 
 ## 結構
 ```
-cover: { image, credit, pos, ogPos, subtitle, tags[] }       // pos = object-position,例如 "35% 50%";ogPos 係預覽卡裁切
+cover: { image, credit, pos, ogPos, subtitle, tags[], accent, dark }   // accent/dark = 主色/深色(#rrggbb,選填)       // pos = object-position,例如 "35% 50%";ogPos 係預覽卡裁切
 summary: [{label, value}]
 checks: [待確認事項]                                          // 收埋喺頂部一行,可展開
 days: [{
@@ -36,3 +36,9 @@ tips[], links[], sources: [{label,url}]
 ## 相片規則
 只用有授權嘅真實相(Wikimedia Commons、自己拍、官方授權)。`credit` 要寫作者 + 授權。
 相片唔係該地點本身時,`credit` 要寫明(例如「鄰近海灘」「示意相片」)。唔用 AI 圖。
+
+## 版面規則(自動)
+- 頁面層次:第一層「旅程一覽」(每日主題 + 主要安排 + 酒店/交通/預算,純文字)→ 第二層每日行程 + 酒店 + 交通 + 預算 → 第三層「詳細資訊」(待確認、小提醒、連結、資料來源,全部收埋)。
+- 同一張相只顯示一次(重複嘅自動拎走);冇指定 pos 時,直幅相放入橫框會取偏上位置。
+- 標題用「｜」分隔會變成小標 + 主標。
+- 桌面闊畫面每日會左右分欄(左邊標題/相貼頂,右邊行程)。

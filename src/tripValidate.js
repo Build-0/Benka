@@ -31,6 +31,9 @@ export function validateTrip(raw) {
     else if (!/(CC|公有領域|Public Domain|PD|授權|licen|Unsplash|Pexels|Pixabay|官方|official|自攝|自己拍)/i.test(n.credit)) warnings.push(`${where}:credit 未見授權資訊(例如 CC BY-SA 4.0)`)
   }
   if (!data.cover?.image) warnings.push('冇封面相 cover.image,會用漸變色封面')
+  const seen = new Set()
+  for (const { n, where } of imgs) { if (seen.has(n.image)) warnings.push(`${where}:同一張相出現多次,頁面只會顯示第一次`); seen.add(n.image) }
+  if (data.cover?.accent && !/^#[0-9a-f]{6}$/i.test(data.cover.accent)) errors.push('cover.accent 要係 #rrggbb 顏色')
 
   ;(data.days || []).forEach((d, i) => {
     const w = `days[${i}]`
