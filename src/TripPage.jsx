@@ -93,7 +93,7 @@ const Links = ({ item }) => {
 }
 
 // 「詳細」:較長介紹、注意事項、連結全部收埋,撳開先見
-const SHORT = 22
+const SHORT = 44
 function Detail({ text, tips, item }) {
   const mu = mapUrl(item.map)
   const ls = item.links || []
@@ -122,13 +122,15 @@ const importanceOf = (it) => {
 function Row({ it }) {
   const imp = importanceOf(it)
   const k = it.kind || 'core'
+  const mu = mapUrl(it.map)
+  // 冇提示、說明唔長 → 直接顯示(地圖連結接喺句尾),唔使撳「詳細」
+  const inline = !!it.text && it.text.length <= SHORT && !(it.tips && it.tips.length)
   return (
     <li className={'tp-row k-' + k + ' i' + imp}>
-      <span className="tp-rt">{it.time}{it.end && <small>– {it.end}</small>}</span>
+      <span className="tp-rt">{it.time}{it.end && <small>– {it.end}</small>}{it.verify && <em className="tp-verify">待確認</em>}</span>
       <div className="tp-rb">
-        <h3>{it.icon && <i>{it.icon}</i>}{it.title}<Verify show={it.verify} /></h3>
-        {it.text && it.text.length <= SHORT && <p>{it.text}</p>}
-        <Detail text={it.text && it.text.length > SHORT ? it.text : ''} tips={it.tips} item={it} />
+        <h3>{it.icon && <i>{it.icon}</i>}{it.title}</h3>
+        {inline ? <p>{it.text}{mu && <> <a className="tp-ilink" href={mu} target="_blank" rel="noopener noreferrer">地圖 ↗</a></>}{(it.links || []).map((l, i) => <a key={i} className="tp-ilink" href={l.url} target="_blank" rel="noopener noreferrer"> {l.label} ↗</a>)}</p> : <Detail text={it.text && it.text.length > SHORT ? it.text : ''} tips={it.tips} item={it} />}
       </div>
       {it.image && imp >= 2 && <Pic src={it.image} alt={it.title} cls="tp-th" ratio="1 / 1" pos={it.pos} />}
     </li>
@@ -338,7 +340,7 @@ export default function TripPage({ slug }) {
             <h2 className="tp-h">酒店</h2>
             <div className={'tp-hotel' + (d.hotel.image ? ' has-img' : '')}>
               <div>
-                <h3>{d.hotel.name}<Verify show={d.hotel.verify} /></h3>
+                {(() => { const m = d.hotel.name.match(/^(.*?)\s+([A-Za-z].*)$/); return <h3>{m ? m[1] : d.hotel.name}<Verify show={d.hotel.verify} />{m && <small className="tp-en">{m[2]}</small>}</h3> })()}
                 {d.hotel.text && <p>{d.hotel.text}</p>}
               </div>
               {d.hotel.image && <Pic src={d.hotel.image} alt={d.hotel.name} cls="tp-th" ratio="4 / 3" pos={d.hotel.pos} />}
