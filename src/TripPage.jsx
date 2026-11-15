@@ -154,25 +154,24 @@ function Summary({ d }) {
   const days = d.days || []
   const sights = []
   days.forEach((day, i) => (day.items || []).forEach((x) => { if (importanceOf(x) >= 3 || (x.kind === 'core' && importanceOf(x) >= 2 && !['入住'].some((w) => x.title.startsWith(w)))) sights.push({ t: x.title, d: i + 1 }) }))
-  const trans = (d.transport || []).map((t) => t.title)
-  const rows = [
-    ...(d.hotel ? [{ id: 'tp-hotel', k: '住宿', t: d.hotel.name, s: (d.hotel.highlights || [])[0] || '' }] : []),
-    ...(sights.length ? [{ id: 'tp-d' + sights[0].d, k: '景點', t: sights.map((x) => x.t).join('、'), s: '' }] : []),
-    ...(trans.length ? [{ id: 'tp-tr', k: '交通', t: trans.join(';'), s: '' }] : []),
+  const trans = (d.transport || []).map((t) => t.title.replace(/\(.*?\)/g, '').trim())
+  // 三格並排:優先用 cover.tiles([{k,t,to}]),冇寫就自動由酒店/景點/交通拎
+  const auto = [
+    ...(d.hotel ? [{ id: 'tp-hotel', k: '住宿', t: d.hotel.name.replace(/\s*[A-Za-z][A-Za-z\s.&-]*$/, '').trim() || d.hotel.name }] : []),
+    ...(sights.length ? [{ id: 'tp-d' + sights[0].d, k: '景點', t: sights.map((x) => x.t).join('、') }] : []),
+    ...(trans.length ? [{ id: 'tp-tr', k: '交通', t: trans.join('、') }] : []),
   ]
+  const rows = (d.cover?.tiles || []).length ? d.cover.tiles.map((x) => ({ id: x.to || 'tp-top', k: x.k, t: x.t })) : auto
   if (!rows.length) return null
   return (
-    <ul className="tp-sum">
+    <div className="tp-tiles">
       {rows.map((r) => (
-        <li key={r.k}>
-          <button type="button" onClick={() => go(r.id)}>
-            <span className="tp-sum-k">{r.k}</span>
-            <span className="tp-sum-t"><b>{r.t}</b>{r.s && <small>{r.s}</small>}</span>
-            <i>›</i>
-          </button>
-        </li>
+        <button key={r.k} type="button" onClick={() => go(r.id)}>
+          <span className="tp-tile-k">{r.k}</span>
+          <b>{r.t}</b>
+        </button>
       ))}
-    </ul>
+    </div>
   )
 }
 
@@ -297,7 +296,7 @@ export default function TripPage({ slug }) {
           </div>
           <h1>{tparts.length > 1 && <small className="tp-kicker">{tparts[0]}</small>}<span>{tparts.length > 1 ? tparts.slice(1).join(' · ') : trip.title}</span></h1>
           {cov.subtitle && <p className="tp-sub1">{cov.subtitle}</p>}
-          {cov.image && <Pic src={cov.image} alt={trip.title} cls="tp-cover" ratio="16 / 9" pos={cov.pos} credit={cov.credit} />}
+          {cov.image && <Pic src={cov.image} alt={trip.title} cls="tp-cover" ratio="2 / 1" pos={cov.pos} credit={cov.credit} />}
           {factsShown.length > 0 && (
             <dl className="tp-facts">
               {factsShown.map((s, i) => <div key={i}><dt>{s.label}</dt><dd>{s.value}</dd></div>)}

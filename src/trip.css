@@ -35,7 +35,7 @@
 .tp-kicker { display: block; font-family: inherit; font-size: 15px; font-weight: 700; letter-spacing: .08em; color: var(--mute); margin-bottom: 2px; }
 .tp-sub1 { margin-top: 8px !important; font-size: 16px; color: var(--soft); line-height: 1.6; }
 .tp-cover { margin-top: 14px; }
-.tp-cover .tp-img { border-radius: 12px; max-height: 160px; }
+.tp-cover .tp-img { border-radius: 12px; }
 .tp-cover figcaption { margin-top: 5px; }
 
 /* 概要資料 + 三行摘要 */
@@ -43,13 +43,10 @@
 .tp-facts div { display: flex; gap: 6px; align-items: baseline; }
 .tp-facts dt { font-size: 13.5px; color: var(--mute); }
 .tp-facts dd { margin: 0; font-weight: 700; font-size: 15.5px; }
-.tp-sum { list-style: none; margin: 14px 0 0; padding: 0; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
-.tp-sum li + li { border-top: 1px solid var(--line); }
-.tp-sum button { width: 100%; display: grid; grid-template-columns: 44px 1fr 14px; gap: 0 8px; align-items: start; padding: 11px 14px; border: 0; background: none; font: inherit; text-align: left; color: var(--ink); cursor: pointer; }
-.tp-sum-k { font-size: 13.5px; font-weight: 800; color: var(--coral); letter-spacing: .08em; padding-top: 2px; }
-.tp-sum-t b { display: block; font-size: 15.5px; line-height: 1.5; font-weight: 700; }
-.tp-sum-t small { display: block; font-size: 13.5px; color: var(--soft); line-height: 1.45; margin-top: 1px; }
-.tp-sum button i { font-style: normal; font-size: 20px; line-height: 1.3; color: var(--mute); }
+.tp-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+.tp-tiles button { display: block; text-align: left; border: 0; background: #efebe1; border-radius: 12px; padding: 10px 11px 11px; font: inherit; color: var(--ink); cursor: pointer; min-width: 0; }
+.tp-tile-k { display: block; font-size: 12.5px; font-weight: 800; letter-spacing: .08em; color: var(--coral); margin-bottom: 2px; }
+.tp-tiles b { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 15px; line-height: 1.4; font-weight: 700; }
 
 /* 導航:貼頂 */
 .tp-nav { position: sticky; top: 0; z-index: 10; display: flex; gap: 20px; overflow-x: auto; padding: 0 18px; margin-top: 14px; background: rgba(248, 245, 239, .96); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); scrollbar-width: none; }
@@ -153,7 +150,6 @@
 /* 平板/桌面:同一個單欄手冊,放寬少少 */
 @media (min-width: 700px) {
   .tp-head h1 { font-size: 34px; }
-  .tp-cover .tp-img { max-height: 280px; }
   .tp-day-th { width: 120px; }
   .tp-map { height: 240px; }
 }
