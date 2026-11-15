@@ -16,6 +16,14 @@ const mapUrl = (m) => {
   return q ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q) : ''
 }
 
+// 有座標就用 OpenStreetMap 內嵌小地圖(免金鑰,所有手機都開到)
+const osmEmbed = (m) => {
+  if (!m || m.lat == null || m.lng == null) return ''
+  const d = 0.007
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${m.lng - d},${m.lat - d * 0.7},${m.lng + d},${m.lat + d * 0.7}&layer=mapnik&marker=${m.lat},${m.lng}`
+}
+const isTbd = (v) => /待定|待確認|待查/.test(String(v))
+
 const go = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
 const BASE = window.location.origin + window.location.pathname.replace(/[^/]*$/, '')
@@ -354,7 +362,7 @@ export default function TripPage({ slug }) {
       <div className="tp-wrap">
         {d.summary && (
           <dl className="tp-facts">
-            {d.summary.map((s, i) => <div key={i}><dt>{s.label}</dt><dd>{s.value}</dd></div>)}
+            {d.summary.map((s, i) => <div key={i}><dt>{s.label}</dt><dd className={isTbd(s.value) ? 'tbd' : ''}>{s.value}</dd></div>)}
           </dl>
         )}
         <Overview d={d} total={total} />
@@ -373,6 +381,7 @@ export default function TripPage({ slug }) {
               {d.hotel.image && <Pic src={d.hotel.image} alt={d.hotel.name} credit={d.hotel.credit} ratio="16 / 10" pos={d.hotel.pos} />}
               {d.hotel.text && <p className="tp-lead">{d.hotel.text}</p>}
               <Links item={{ map: d.hotel.map, links: d.hotel.links }} />
+              {osmEmbed(d.hotel.map) && <iframe className="tp-map" title="酒店位置" loading="lazy" src={osmEmbed(d.hotel.map)} />}
             </div>
             {d.hotel.highlights && d.hotel.highlights.length > 0 && (
               <ul className="tp-tiles">{d.hotel.highlights.map((h, i) => <li key={i}><span>{String(i + 1).padStart(2, '0')}</span>{h}</li>)}</ul>
@@ -399,18 +408,24 @@ export default function TripPage({ slug }) {
 
         {d.budget && (
           <section id="tp-budget" className="tp-sec">
-            <h2 className="tp-h">預算</h2>
-            <table className="tp-table">
-              <tbody>
-                {d.budget.items.map((x, i) => (
-                  <tr key={i}>
-                    <td>{x.label}{x.note && <small>{x.note}</small>}</td>
-                    <td className={x.amount == null ? 'na' : ''}>{money(x.amount, d.budget.currency)}</td>
-                  </tr>
-                ))}
-                {total > 0 && <tr className="sum"><td>已知小計{unknown ? '(未計「待查」項目)' : ''}</td><td>{money(total, d.budget.currency)}</td></tr>}
-              </tbody>
-            </table>
+            <h2 className="tp-h">預算{d.budget.items.every((x) => x.amount == null) ? '(價格待核實)' : ''}</h2>
+            {d.budget.items.every((x) => x.amount == null) ? (
+              <ul className="tp-bud">
+                {d.budget.items.map((x, i) => <li key={i}><span>{x.label}</span>{x.note && <small>{x.note}</small>}</li>)}
+              </ul>
+            ) : (
+              <table className="tp-table">
+                <tbody>
+                  {d.budget.items.map((x, i) => (
+                    <tr key={i}>
+                      <td>{x.label}{x.note && <small>{x.note}</small>}</td>
+                      <td className={x.amount == null ? 'na' : ''}>{money(x.amount, d.budget.currency)}</td>
+                    </tr>
+                  ))}
+                  {total > 0 && <tr className="sum"><td>已知小計{unknown ? '(未計「待查」項目)' : ''}</td><td>{money(total, d.budget.currency)}</td></tr>}
+                </tbody>
+              </table>
+            )}
             {d.budget.note && <p className="tp-note">{d.budget.note}</p>}
           </section>
         )}
