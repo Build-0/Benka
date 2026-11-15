@@ -32,6 +32,9 @@ function Pic({ src, alt, credit, cls = '', ratio, pos }) {
   )
 }
 
+const RATIOS = { wide: '16 / 9', standard: '3 / 2', square: '1 / 1', tall: '4 / 5' }
+const ratioOf = (r, d) => RATIOS[r] || r || d
+
 const Verify = ({ show }) => (show ? <em className="tp-verify">待確認</em> : null)
 
 const Links = ({ item }) => {
@@ -54,17 +57,34 @@ const Detail = ({ tips }) =>
     </details>
   ) : null
 
-// 重點項目:有圖 → 大圖 + 簡介;冇圖 → 文字重點
+// 核心體驗(importance 3):大圖 + 簡介
 function Feature({ it }) {
   return (
     <article className={'tp-feat' + (it.image ? ' has-img' : '')}>
-      <Pic src={it.image} alt={it.title} credit={it.credit} ratio="4 / 3" pos={it.pos} />
+      <Pic src={it.image} alt={it.title} credit={it.credit} ratio={ratioOf(it.ratio, '3 / 2')} pos={it.pos} />
       <div className="tp-feat-b">
         <span className="tp-when">{it.time}{it.end ? ' – ' + it.end : ''}</span>
         <h3>{it.title}<Verify show={it.verify} /></h3>
         {it.text && <p>{it.text}</p>}
         <Links item={it} />
         <Detail tips={it.tips} />
+      </div>
+    </article>
+  )
+}
+
+// 次重點(importance 2):小圖喺左、文字喺右,唔佔成個畫面
+function Compact({ it }) {
+  return (
+    <article className={'tp-cmp' + (it.image ? ' has-img' : '')}>
+      {it.image && <Pic src={it.image} alt={it.title} ratio={ratioOf(it.ratio, '1 / 1')} pos={it.pos} />}
+      <div className="tp-cmp-b">
+        <span className="tp-when">{it.time}{it.end ? ' – ' + it.end : ''}</span>
+        <h3>{it.title}<Verify show={it.verify} /></h3>
+        {it.text && <p>{it.text}</p>}
+        <Links item={it} />
+        <Detail tips={it.tips} />
+        {it.image && it.credit && <small className="tp-cmp-c">相片:{it.credit}</small>}
       </div>
     </article>
   )
@@ -89,17 +109,26 @@ function Timeline({ items }) {
   )
 }
 
-const levelOf = (it) => it.level || (it.image ? 'feature' : 'minor')
+// kind: core 核心體驗 | transport 交通 | meal 餐飲 | note 注意事項
+// importance: 3 大圖 | 2 小圖並排 | 1 精簡時間軸(冇寫就按 level / kind / 有冇相自動揀)
+const importanceOf = (it) => {
+  if (it.importance) return it.importance
+  if (it.level === 'feature') return 3
+  if (it.level === 'minor') return 1
+  if (['transport', 'meal', 'note'].includes(it.kind)) return 1
+  return it.image ? 3 : 1
+}
 
-// 連續嘅同類項目歸做一組,保持原本次序
+// 連續嘅精簡項目歸做一組,保持原本次序
 const groupItems = (items) => {
   const out = []
   for (const it of items) {
-    const feat = levelOf(it) === 'feature'
+    const imp = importanceOf(it)
     const last = out[out.length - 1]
-    if (feat) out.push({ feat: true, it })
-    else if (last && !last.feat) last.items.push(it)
-    else out.push({ feat: false, items: [it] })
+    if (imp >= 3) out.push({ kind: 'feat', it })
+    else if (imp === 2) out.push({ kind: 'cmp', it })
+    else if (last && last.kind === 'tl') last.items.push(it)
+    else out.push({ kind: 'tl', items: [it] })
   }
   return out
 }
@@ -114,7 +143,7 @@ function Day({ day, n, id }) {
   return (
     <section id={id} className="tp-day">
       <div className={'tp-dayhero' + (img ? '' : ' plain')}>
-        {img && <Pic src={img} alt={day.title} ratio="4 / 5" pos={day.image ? day.pos : heroItem?.pos} />}
+        {img && <Pic src={img} alt={day.title} ratio={ratioOf(day.ratio, '4 / 3')} pos={day.image ? day.pos : heroItem?.pos} />}
         <div className="tp-dayhero-t">
           <span>DAY {String(n).padStart(2, '0')}{day.date ? ' · ' + day.date : ''}</span>
           <h2>{day.theme || day.title}</h2>
@@ -130,7 +159,7 @@ function Day({ day, n, id }) {
         </div>
       )}
       <div className="tp-flow">
-        {groupItems(items).map((g, i) => (g.feat ? <Feature key={i} it={g.it} /> : <Timeline key={i} items={g.items} />))}
+        {groupItems(items).map((g, i) => (g.kind === 'feat' ? <Feature key={i} it={g.it} /> : g.kind === 'cmp' ? <Compact key={i} it={g.it} /> : <Timeline key={i} items={g.items} />))}
       </div>
     </section>
   )

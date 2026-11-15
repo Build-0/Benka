@@ -163,3 +163,41 @@
   .tp-feat.has-img .tp-fig { margin: 0; }
   .tp-hotel { margin: 40px 0 0; padding: 40px 32px; border-radius: 6px; }
 }
+
+/* ── 第二版微調:收緊內文字級同行距,保留標題同重點嘅視覺;內文圖唔再佔滿畫面 ── */
+.trip { font-size: 16px; line-height: 1.7; }
+.tp-lead { font-size: 17.5px; line-height: 1.8; }
+.tp-dayhero .tp-img { aspect-ratio: auto; height: auto; max-height: 360px; }
+.tp-dayhero .tp-img img { aspect-ratio: inherit; }
+.tp-feat { margin-top: 26px; }
+.tp-feat h3 { font-size: 22px; }
+.tp-feat p { font-size: 15.5px; line-height: 1.7; }
+.tp-feat.has-img .tp-img { max-height: 300px; }
+.tp-when { font-size: 12.5px; }
+.tp-tl { margin-top: 20px; }
+.tp-tl li { padding: 11px 0; }
+.tp-tl b { font-size: 16px; }
+.tp-tl p { font-size: 14.5px; line-height: 1.6; }
+.tp-tl-t { font-size: 13px; }
+.tp-act { font-size: 14px; }
+.tp-more { font-size: 14px; }
+.tp-more ul { line-height: 1.6; }
+.tp-acc summary { font-size: 16.5px; padding: 13px 0; }
+.tp-acc > div { font-size: 14.5px; line-height: 1.65; }
+.tp-table td { padding: 11px 0; font-size: 15px; }
+.tp-hi li { padding: 8px 0 8px 18px; font-size: 15px; line-height: 1.6; }
+.tp-hi li::before { top: 17px; }
+.tp-pending { font-size: 14px; }
+.tp-pending ul { line-height: 1.6; }
+.tp-hotel h2 { font-size: 24px; }
+.tp-hl-row button { width: 124px; }
+
+/* 次重點:小圖 + 文字並排 */
+.tp-cmp { display: block; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+.tp-cmp.has-img { display: grid; grid-template-columns: 112px 1fr; gap: 0 14px; align-items: start; }
+.tp-cmp .tp-img { border-radius: 3px; }
+.tp-cmp h3 { font-size: 18.5px; line-height: 1.4; margin-bottom: 3px; }
+.tp-cmp p { font-size: 14.5px; line-height: 1.65; color: var(--soft); }
+.tp-cmp-c { display: block; margin-top: 4px; font-size: 11.5px; color: var(--mute); line-height: 1.4; }
+.tp-cmp:not(.has-img) { border-left: 3px solid var(--coral); padding: 2px 0 2px 16px; border-top: 0; }
+@media (min-width: 700px) { .tp-dayhero .tp-img { max-height: 440px; } .tp-feat.has-img .tp-img { max-height: 380px; } }

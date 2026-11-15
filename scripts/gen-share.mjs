@@ -22,9 +22,13 @@ async function makeOg(url, pos, out) {
 }
 
 try {
-  const { supabase } = await import('../src/supabase.js')
-  const { data, error } = await supabase.from('trips').select('slug,title,data').eq('published', true)
-  if (error) throw error
+  // 直接用 REST(建置機 Node 20 冇原生 WebSocket,唔用 supabase-js)
+  const src = fs.readFileSync('src/supabase.js', 'utf8')
+  const url = src.match(/SUPABASE_URL\s*=\s*'([^']+)'/)[1]
+  const key = src.match(/SUPABASE_ANON_KEY\s*=\s*'([^']+)'/)[1]
+  const r = await fetch(`${url}/rest/v1/trips?select=slug,title,data&published=eq.true`, { headers: { apikey: key, Authorization: `Bearer ${key}` } })
+  if (!r.ok) throw new Error('trips ' + r.status)
+  const data = await r.json()
   for (const t of data || []) {
     const dir = path.join('dist', 't', t.slug)
     fs.mkdirSync(dir, { recursive: true })
