@@ -18,24 +18,31 @@ const mapUrl = (m) => {
 
 const go = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
-// 圖片:載入失敗就顯示柔和底色 + 標題;相片來源放喺圖下面,唔遮住畫面
+const BASE = window.location.origin + window.location.pathname.replace(/[^/]*$/, '')
+let IMGMAP = {}
+let mapP
+// 建置時 gen-share.mjs 會將行程相片鏡像到 trip-img/,map.json 係「原網址 → 本站副本」
+const loadImgMap = () => (mapP ||= fetch(BASE + 'trip-img/map.json').then((r) => (r.ok ? r.json() : {})).catch(() => ({})).then((m) => { IMGMAP = m }))
+
+// 圖片:先用本站副本 → 失敗退返原網址 → 再失敗顯示柔和底色 + 標題;相片來源放喺圖下面,唔遮住畫面
 function Pic({ src, alt, credit, cls = '', ratio, pos }) {
   const [bad, setBad] = useState(false)
+  const [cur, setCur] = useState(() => (src && IMGMAP[src] ? BASE + IMGMAP[src] : src))
   if (!src) return null
   return (
     <figure className={'tp-fig ' + cls}>
       <div className="tp-img" style={ratio ? { aspectRatio: ratio } : undefined}>
-        {bad ? <div className="tp-ph"><span>{alt}</span></div> : <img src={src} alt={alt || ''} loading="lazy" referrerPolicy="no-referrer" style={pos ? { objectPosition: pos } : undefined} onError={() => setBad(true)} />}
+        {bad ? <div className="tp-ph"><span>{alt}</span></div> : <img src={cur} alt={alt || ''} loading="lazy" referrerPolicy="no-referrer" style={pos ? { objectPosition: pos } : undefined} onError={() => (cur !== src ? setCur(src) : setBad(true))} />}
       </div>
       {credit && !bad && <figcaption>{credit}</figcaption>}
     </figure>
   )
 }
 
+const Verify = ({ show }) => (show ? <em className="tp-verify">待確認</em> : null)
+
 const RATIOS = { wide: '16 / 9', standard: '3 / 2', square: '1 / 1', tall: '4 / 5' }
 const ratioOf = (r, d) => RATIOS[r] || r || d
-
-const Verify = ({ show }) => (show ? <em className="tp-verify">待確認</em> : null)
 
 const Links = ({ item }) => {
   const mu = mapUrl(item.map)
@@ -137,9 +144,12 @@ const dayImage = (day) => day.image || (day.items || []).find((x) => x.image)?.i
 
 function Day({ day, n, id }) {
   const img = dayImage(day)
-  const heroItem = !day.image ? (day.items || []).find((x) => x.image) : null
+  const all = day.items || []
+  // 冇指定 day.image 時,借第一個有圖項目嘅相做每日封面;項目本身照常顯示(時間、介紹、地圖),只係唔再重複放同一張圖
+  const heroItem = !day.image ? all.find((x) => x.image) : null
+  const heroCredit = day.image ? day.credit : heroItem?.credit
   const gal = (day.gallery || []).filter((g) => g.image)
-  const items = (day.items || []).filter((x) => !(heroItem && x === heroItem && !x.level))
+  const items = all.map((x) => (x === heroItem ? { ...x, importance: importanceOf(x), image: undefined, credit: undefined } : x))
   return (
     <section id={id} className="tp-day">
       <div className={'tp-dayhero' + (img ? '' : ' plain')}>
@@ -150,7 +160,7 @@ function Day({ day, n, id }) {
           {day.theme && <small>{day.title}</small>}
         </div>
       </div>
-      {(day.credit || (img && heroItem?.credit) || (day.image && day.credit)) && <p className="tp-cred">相片:{day.credit || heroItem?.credit}</p>}
+      {img && heroCredit && <p className="tp-cred">相片:{heroCredit}</p>}
       {day.intro && <p className="tp-lead">{day.intro}</p>}
       {gal.length > 0 && (
         <div className={'tp-mosaic m' + Math.min(gal.length, 3)}>
@@ -168,20 +178,45 @@ function Day({ day, n, id }) {
 const money = (n, cur) => (n == null ? '待查' : (cur || '¥') + n.toLocaleString())
 
 export default function TripPage({ slug }) {
-  const [trip, setTrip] = useState(undefined)
+  const [st, setSt] = useState({ s: 'loading' }) // loading | ok | missing | error
+  const [tick, setTick] = useState(0)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     let alive = true
-    supabase.from('trips').select('slug,title,data,updated_at').eq('slug', slug).eq('published', true).maybeSingle()
-      .then(({ data }) => { if (alive) setTrip(data || null) })
+    setSt({ s: 'loading' })
+    ;(async () => {
+      let last = ''
+      for (let a = 0; a < 3; a++) {
+        try {
+          // 匿名用戶只見到已發布行程;登入嘅主人亦見到自己嘅草稿(RLS 控制)
+          const [{ data, error }] = await Promise.all([
+            supabase.from('trips').select('slug,title,data,updated_at,published').eq('slug', slug).maybeSingle(),
+            loadImgMap(),
+          ])
+          if (!alive) return
+          if (!error) { setSt(data ? { s: 'ok', trip: data } : { s: 'missing' }); return }
+          last = error.message
+        } catch (e) { last = e.message }
+        if (a < 2) await new Promise((r) => setTimeout(r, 900 * (a + 1)))
+      }
+      if (alive) setSt({ s: 'error', msg: last })
+    })()
     return () => { alive = false }
-  }, [slug])
+  }, [slug, tick])
 
+  const trip = st.s === 'ok' ? st.trip : null
   useEffect(() => { if (trip) document.title = trip.title }, [trip])
 
-  if (trip === undefined) return <div className="tp-center">載入行程中…</div>
-  if (trip === null) return <div className="tp-center">搵唔到呢個行程,或者未發布。</div>
+  if (st.s === 'loading') return <div className="tp-center">載入行程中…</div>
+  if (st.s === 'missing') return <div className="tp-center"><div><p>搵唔到呢個行程。</p><p className="tp-sub">網址可能有誤,或者行程仲未公開。</p></div></div>
+  if (st.s === 'error') return (
+    <div className="tp-center"><div>
+      <p>載入行程失敗,可能係網絡問題。</p>
+      <p className="tp-sub">{st.msg}</p>
+      <button type="button" className="tp-retry" onClick={() => setTick((x) => x + 1)}>重試</button>
+    </div></div>
+  )
 
   const d = trip.data || {}
   const cov = d.cover || {}
@@ -210,6 +245,7 @@ export default function TripPage({ slug }) {
 
   return (
     <div className="trip">
+      {trip.published === false && <div className="tp-draft">草稿預覽 · 未公開,只有你登入後睇到</div>}
       <header className={'tp-cover' + (cov.image ? '' : ' plain')}>
         {cov.image && <Pic src={cov.image} alt={trip.title} cls="tp-cover-img" pos={cov.pos} />}
         <div className="tp-cover-shade" />

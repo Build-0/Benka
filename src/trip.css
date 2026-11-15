@@ -215,3 +215,8 @@
 .tp-verify { font-size: 13px; }
 .tp-h { font-size: 13.5px !important; }
 .tp-facts dt { font-size: 13px; }
+
+.tp-center p { margin: 0 0 6px; font-size: 17px; }
+.tp-center .tp-sub { font-size: 13.5px; color: #8a97a6; word-break: break-word; }
+.tp-retry { margin-top: 10px; border: 0; border-radius: 99px; padding: 11px 28px; font: inherit; font-size: 16px; font-weight: 700; background: #14283f; color: #fff; cursor: pointer; }
+.tp-draft { position: sticky; top: 0; z-index: 20; text-align: center; font-size: 14px; font-weight: 700; padding: 8px 12px; background: #e0922f; color: #fff; }

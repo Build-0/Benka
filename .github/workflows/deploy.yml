@@ -4,19 +4,42 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # 每 15 分鐘睇一次行程有冇改過(標題、封面、相片、內容…),有改先重新建置,令 WhatsApp 預覽卡同鏡像相片自動同步
+  schedule:
+    - cron: '*/15 * * * *'
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.c.outputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: c
+        run: |
+          # push / 手動觸發:一定建置
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ]; then echo "build=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          URL=$(grep -oP "SUPABASE_URL\s*=\s*'\K[^']+" src/supabase.js)
+          KEY=$(grep -oP "SUPABASE_ANON_KEY\s*=\s*'\K[^']+" src/supabase.js)
+          NEW=$(curl -fsS "$URL/rest/v1/trips?select=slug,title,data,updated_at&published=eq.true&order=slug" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" | sha256sum | cut -c1-16) || NEW=""
+          OLD=$(curl -fsS "https://build-0.github.io/Benka/share-manifest.json" | jq -r .hash 2>/dev/null) || OLD="none"
+          echo "live=$OLD now=$NEW"
+          # 查詢失敗就唔建置(下一輪再試);hash 唔同先建置
+          if [ -n "$NEW" ] && [ "$NEW" != "$OLD" ]; then echo "build=true" >> "$GITHUB_OUTPUT"; else echo "build=false" >> "$GITHUB_OUTPUT"; fi
+
+  build:
+    needs: check
+    if: needs.check.outputs.build == 'true'
+    runs-on: ubuntu-latest
+    # 唔取消進行中嘅部署,排隊等(避免定時任務打斷 push 部署)
+    concurrency:
+      group: pages-build
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
