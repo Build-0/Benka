@@ -2,14 +2,13 @@
 // + og.jpg(1200×630 封面)。真人打開會即刻跳去 #/t/<slug>。失敗唔影響建置。
 import fs from 'node:fs'
 import path from 'node:path'
-import sharp from 'sharp'
-import { supabase } from '../src/supabase.js'
 
 const SITE = process.env.SITE_URL || 'https://build-0.github.io/Benka/'
 const UA = 'benka-trips/1.0 (https://build-0.github.io/Benka/)'
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 async function makeOg(url, pos, out) {
+  const sharp = (await import('sharp')).default
   const res = await fetch(url, { headers: { 'User-Agent': UA }, redirect: 'follow' })
   if (!res.ok) throw new Error('image ' + res.status)
   const buf = Buffer.from(await res.arrayBuffer())
@@ -23,6 +22,7 @@ async function makeOg(url, pos, out) {
 }
 
 try {
+  const { supabase } = await import('../src/supabase.js')
   const { data, error } = await supabase.from('trips').select('slug,title,data').eq('published', true)
   if (error) throw error
   for (const t of data || []) {
@@ -31,7 +31,7 @@ try {
     const cov = t.data?.cover || {}
     let og = ''
     if (cov.image) {
-      try { await makeOg(cov.image, cov.ogPos || cov.pos, path.join(dir, 'og.jpg')); og = `${SITE}t/${t.slug}/og.jpg` } catch (e) { console.warn('og image skipped:', t.slug, e.message) }
+      try { await makeOg(cov.image, cov.ogPos || cov.pos, path.join(dir, 'og.jpg')); og = `${SITE}t/${t.slug}/og.jpg` } catch (e) { console.warn('og image fallback to original:', t.slug, e.message); og = cov.image }
     }
     const desc = [cov.subtitle, (cov.tags || []).join(' · ')].filter(Boolean).join('\n')
     const page = `${SITE}t/${t.slug}/`
@@ -58,3 +58,4 @@ ${og ? `<meta property="og:image" content="${esc(og)}">
 } catch (e) {
   console.warn('gen-share skipped:', e.message)
 }
+process.exit(0)
