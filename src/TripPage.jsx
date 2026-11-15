@@ -22,6 +22,8 @@ const osmEmbed = (m) => {
   const d = 0.007
   return `https://www.openstreetmap.org/export/embed.html?bbox=${m.lng - d},${m.lat - d * 0.7},${m.lng + d},${m.lat + d * 0.7}&layer=mapnik&marker=${m.lat},${m.lng}`
 }
+// 圖下面嘅相片說明用精簡版;完整來源(連同「Wikimedia Commons」等)集中放喺詳細資訊
+const shortCredit = (c) => String(c || '').replace(/\s*\/\s*(Wikimedia Commons|Pexels|Unsplash|Pixabay)/i, '')
 const isTbd = (v) => /待定|待確認|待查/.test(String(v))
 
 const go = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -70,7 +72,7 @@ function Pic({ src, alt, credit, cls = '', ratio, pos }) {
       <div className="tp-img" style={ratio ? { aspectRatio: ratio } : undefined}>
         {bad ? <div className="tp-ph"><span>{alt}</span></div> : <img src={cur} alt={alt || ''} loading="lazy" referrerPolicy="no-referrer" style={pos || auto ? { objectPosition: pos || auto } : undefined} onLoad={onLoad} onError={() => (cur !== src ? setCur(src) : setBad(true))} />}
       </div>
-      {credit && !bad && <figcaption>{credit}</figcaption>}
+      {credit && !bad && <figcaption>{shortCredit(credit)}</figcaption>}
     </figure>
   )
 }
@@ -127,7 +129,7 @@ function Compact({ it }) {
         {it.text && <p>{it.text}</p>}
         <Links item={it} />
         <Detail tips={it.tips} />
-        {it.image && it.credit && <small className="tp-cmp-c">相片:{it.credit}</small>}
+        {it.image && it.credit && <small className="tp-cmp-c">相片:{shortCredit(it.credit)}</small>}
       </div>
     </article>
   )
@@ -199,12 +201,12 @@ function Day({ day, n, id }) {
             {day.theme && <small>{day.title}</small>}
           </div>
         </div>
-        {img && heroCredit && <p className="tp-cred">相片:{heroCredit}</p>}
+        {img && heroCredit && <p className="tp-cred">相片:{shortCredit(heroCredit)}</p>}
         {day.intro && <p className="tp-lead">{day.intro}</p>}
         {gal.length > 0 && (
           <div className={'tp-mosaic m' + Math.min(gal.length, 3)}>
             {gal.slice(0, 3).map((g, i) => <Pic key={i} src={g.image} alt={g.caption || day.title} pos={g.pos} />)}
-            <p className="tp-cred">{gal.slice(0, 3).map((g) => g.credit).filter(Boolean).join(' ‧ ')}</p>
+            <p className="tp-cred">{gal.slice(0, 3).map((g) => shortCredit(g.credit)).filter(Boolean).join(' ‧ ')}</p>
           </div>
         )}
       </div>
@@ -218,14 +220,12 @@ function Day({ day, n, id }) {
 const money = (n, cur) => (n == null ? '待查' : (cur || '¥') + n.toLocaleString())
 
 // 第一層:一頁睇晒全程(每日主題 + 主要安排、酒店、交通、預算),每行撳入去跳到該位置。純文字,唔重複放相
-function Overview({ d, total }) {
+function Overview({ d }) {
   const days = d.days || []
   const keyTitles = (day) => (day.items || []).filter((x) => importanceOf(x) >= 2).map((x) => x.title).slice(0, 3).join(' · ')
   const rows = [
     ...days.map((day, i) => ({ id: 'tp-d' + (i + 1), k: String(i + 1).padStart(2, '0'), t: day.theme || day.title, s: keyTitles(day) || day.title })),
     ...(d.hotel ? [{ id: 'tp-hotel', k: '宿', t: d.hotel.name, s: (d.hotel.highlights || [])[0] || d.hotel.text || '' }] : []),
-    ...((d.transport || []).length ? [{ id: 'tp-tr', k: '行', t: d.transport[0].title, s: d.transport.length > 1 ? '另有 ' + (d.transport.length - 1) + ' 項交通資料' : '' }] : []),
-    ...(d.budget ? [{ id: 'tp-budget', k: '$', t: '預算', s: total > 0 ? '已知小計 ' + money(total, d.budget.currency) : '價錢待查' }] : []),
   ]
   return (
     <section id="tp-ov" className="tp-ov">
@@ -328,7 +328,15 @@ export default function TripPage({ slug }) {
   }
   const total = (d.budget?.items || []).reduce((a, x) => a + (x.amount || 0), 0)
   const unknown = (d.budget?.items || []).some((x) => x.amount == null)
-  const pending = d.checks || []
+  const factsShown = (d.summary || []).filter((s) => !isTbd(s.value))
+  const pending = [...(d.checks || []), ...(d.summary || []).filter((s) => isTbd(s.value)).map((s) => `${s.label}:${s.value}`)]
+  // 相片來源清單(完整授權資訊),收埋喺詳細資訊
+  const credits = []
+  const addCr = (where, o) => { if (o && o.image && o.credit) credits.push({ where, credit: o.credit }) }
+  addCr('封面', cov)
+  days.forEach((day, i) => { addCr(`Day ${i + 1}`, day); (day.gallery || []).forEach((g) => addCr(`Day ${i + 1}`, g)); (day.items || []).forEach((it) => addCr(`Day ${i + 1}・${it.title}`, it)) })
+  addCr('酒店', d.hotel)
+  ;(d.transport || []).forEach((t) => addCr(`交通・${t.title}`, t))
   const navItems = [
     { id: 'tp-ov', label: '一覽' },
     ...days.map((_, i) => ({ id: 'tp-d' + (i + 1), label: 'Day ' + (i + 1) })),
@@ -357,15 +365,15 @@ export default function TripPage({ slug }) {
           {cov.subtitle && <p>{cov.subtitle}</p>}
         </div>
       </header>
-      {cov.image && cov.credit && <p className="tp-cred tp-cred-cover">相片:{cov.credit}</p>}
+      {cov.image && cov.credit && <p className="tp-cred tp-cred-cover">相片:{shortCredit(cov.credit)}</p>}
 
       <div className="tp-wrap">
-        {d.summary && (
+        {factsShown.length > 0 && (
           <dl className="tp-facts">
-            {d.summary.map((s, i) => <div key={i}><dt>{s.label}</dt><dd className={isTbd(s.value) ? 'tbd' : ''}>{s.value}</dd></div>)}
+            {factsShown.map((s, i) => <div key={i}><dt>{s.label}</dt><dd>{s.value}</dd></div>)}
           </dl>
         )}
-        <Overview d={d} total={total} />
+        <Overview d={d} />
       </div>
 
       <Nav items={navItems} />
@@ -431,7 +439,7 @@ export default function TripPage({ slug }) {
         )}
 
         {/* 第三層:詳細資訊全部收埋,要睇先展開 */}
-        {(pending.length > 0 || (d.tips || []).length > 0 || (d.links || []).length > 0 || (d.sources || []).length > 0) && (
+        {(pending.length > 0 || (d.tips || []).length > 0 || (d.links || []).length > 0 || (d.sources || []).length > 0 || credits.length > 0) && (
           <section className="tp-sec tp-l3">
             <h2 className="tp-h">詳細資訊</h2>
             {pending.length > 0 && (
@@ -442,6 +450,9 @@ export default function TripPage({ slug }) {
             )}
             {(d.links || []).length > 0 && (
               <details className="tp-acc"><summary>有用連結<em className="tp-count">{d.links.length}</em></summary><div><p className="tp-act">{d.links.map((l, i) => <a key={i} href={l.url} target="_blank" rel="noopener noreferrer">{l.label} ↗</a>)}</p></div></details>
+            )}
+            {credits.length > 0 && (
+              <details className="tp-acc"><summary>相片來源<em className="tp-count">{credits.length}</em></summary><div><ul>{credits.map((c, i) => <li key={i}><b>{c.where}</b>:{c.credit}</li>)}</ul></div></details>
             )}
             {(d.sources || []).length > 0 && (
               <details className="tp-acc"><summary>資料來源<em className="tp-count">{d.sources.length}</em></summary><div><ul>{d.sources.map((s, i) => <li key={i}><a href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a></li>)}</ul></div></details>
