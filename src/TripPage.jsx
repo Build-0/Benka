@@ -92,13 +92,21 @@ const Links = ({ item }) => {
   )
 }
 
-const Detail = ({ tips }) =>
-  tips && tips.length ? (
+// 「詳細」:較長介紹、注意事項、連結全部收埋,撳開先見
+const SHORT = 22
+function Detail({ text, tips, item }) {
+  const mu = mapUrl(item.map)
+  const ls = item.links || []
+  if (!text && !(tips && tips.length) && !mu && !ls.length) return null
+  return (
     <details className="tp-more">
       <summary>詳細</summary>
-      <ul>{tips.map((t, i) => <li key={i}>{t}</li>)}</ul>
+      {text && <p>{text}</p>}
+      {tips && tips.length > 0 && <ul>{tips.map((t, i) => <li key={i}>{t}</li>)}</ul>}
+      <Links item={item} />
     </details>
-  ) : null
+  )
+}
 
 // kind: core 核心體驗 | transport 交通 | meal 餐飲 | note 注意事項
 // importance: 3 主要(粗體 + 有相就顯示縮圖) | 2 次要(有相就顯示縮圖) | 1 一般
@@ -119,9 +127,8 @@ function Row({ it }) {
       <span className="tp-rt">{it.time}{it.end && <small>– {it.end}</small>}</span>
       <div className="tp-rb">
         <h3>{it.icon && <i>{it.icon}</i>}{it.title}<Verify show={it.verify} /></h3>
-        {it.text && <p>{it.text}</p>}
-        <Links item={it} />
-        <Detail tips={it.tips} />
+        {it.text && it.text.length <= SHORT && <p>{it.text}</p>}
+        <Detail text={it.text && it.text.length > SHORT ? it.text : ''} tips={it.tips} item={it} />
       </div>
       {it.image && imp >= 2 && <Pic src={it.image} alt={it.title} cls="tp-th" ratio="1 / 1" pos={it.pos} />}
     </li>
@@ -313,7 +320,7 @@ export default function TripPage({ slug }) {
 
         {d.transport && d.transport.length > 0 && (
           <section id="tp-tr" className="tp-sec">
-            <h2 className="tp-h">交通安排與地圖</h2>
+            <h2 className="tp-h">交通安排</h2>
             {d.transport.map((t, i) => (
               <div key={i} className={"tp-tr" + (t.image ? " has-img" : "")}>
                 <div className="tp-tr-b"><h3>{t.title}<Verify show={t.verify} /></h3>
@@ -323,12 +330,6 @@ export default function TripPage({ slug }) {
                 {t.image && <Pic src={t.image} alt={t.title} cls="tp-th" ratio="4 / 3" pos={t.pos} />}
               </div>
             ))}
-            {osmEmbed(d.hotel?.map) && (
-              <>
-                <iframe className="tp-map" title="酒店位置" loading="lazy" src={osmEmbed(d.hotel.map)} />
-                <p className="tp-cap">地圖:{d.hotel.name}(© OpenStreetMap)</p>
-              </>
-            )}
           </section>
         )}
 
@@ -345,7 +346,9 @@ export default function TripPage({ slug }) {
             {d.hotel.highlights && d.hotel.highlights.length > 0 && (
               <ul className="tp-bul">{d.hotel.highlights.map((h, i) => <li key={i}>{h}</li>)}</ul>
             )}
+            {osmEmbed(d.hotel.map) && <iframe className="tp-map" title="酒店位置" loading="lazy" src={osmEmbed(d.hotel.map)} />}
             <Links item={{ map: d.hotel.map, links: d.hotel.links }} />
+            {osmEmbed(d.hotel.map) && <p className="tp-cap">地圖 © OpenStreetMap</p>}
           </section>
         )}
 
