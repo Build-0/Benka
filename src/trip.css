@@ -4,196 +4,156 @@
 .tp-retry { margin-top: 10px; border: 0; border-radius: 99px; padding: 11px 28px; font: inherit; font-size: 16px; font-weight: 700; background: #14283f; color: #fff; cursor: pointer; }
 .tp-draft { position: sticky; top: 0; z-index: 30; text-align: center; font-size: 14px; font-weight: 700; padding: 8px 12px; background: #e0922f; color: #fff; }
 
-/* ── 基調:暖紙色、深海軍藍文字、一點主色(coral,每個行程可用 cover.accent 改);標題用襯線字 ── */
+/* ── 定位:資訊清晰嘅數碼旅行手冊。暖紙色、深色文字、一點主色;相片只係細縮圖點綴 ── */
 .trip {
-  --ink: #1d2a3a; --soft: #566679; --mute: #8190a0; --paper: #f7f4ee; --line: #e1dccf; --navy: #14283f; --coral: #d9582b;
+  --ink: #1d2a3a; --soft: #4f5f71; --mute: #7d8b9a; --paper: #f8f5ef; --card: #fff; --line: #e4dfd2; --navy: #14283f; --coral: #c9502a;
   --serif: 'Noto Serif TC', 'Source Han Serif TC', 'Songti TC', 'PMingLiU', 'Georgia', serif;
-  background: var(--paper); color: var(--ink); min-height: 100vh; padding-bottom: calc(48px + env(safe-area-inset-bottom));
-  font-size: 16px; line-height: 1.75; -webkit-text-size-adjust: 100%;
+  background: var(--paper); color: var(--ink); min-height: 100vh; padding-bottom: calc(40px + env(safe-area-inset-bottom));
+  font-size: 16px; line-height: 1.6; -webkit-text-size-adjust: 100%;
 }
 .trip * { box-sizing: border-box; }
 .trip h1, .trip h2, .trip h3 { font-family: var(--serif); font-weight: 800; letter-spacing: .01em; margin: 0; }
 .trip p { margin: 0; }
-.tp-wrap { max-width: 680px; margin: 0 auto; padding: 0 20px; }
+.tp-wrap { max-width: 720px; margin: 0 auto; padding: 0 18px; }
 
-/* 圖片 */
+/* 圖片(全部係細圖,有固定比例) */
 .tp-fig { margin: 0; }
-.tp-img { position: relative; overflow: hidden; background: #e4e0d6; }
+.tp-img { position: relative; overflow: hidden; background: #e4e0d6; border-radius: 10px; }
 .tp-img img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.tp-ph { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(135deg, #cfd9e4, #e8dfd0); color: #6b7a8c; font-family: var(--serif); font-size: 17px; padding: 16px; text-align: center; }
-.tp-fig figcaption, .tp-cred { font-size: 12px; line-height: 1.5; color: var(--mute); margin-top: 5px; }
-.tp-cred { max-width: 680px; margin-left: auto; margin-right: auto; padding: 0 20px; }
-.tp-cred-cover { margin-top: 6px; }
+.tp-ph { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(135deg, #cfd9e4, #e8dfd0); color: #6b7a8c; font-family: var(--serif); font-size: 13px; padding: 6px; text-align: center; line-height: 1.3; }
+.tp-fig figcaption, .tp-cap { font-size: 12px; line-height: 1.5; color: var(--mute); margin-top: 4px; }
 
-/* 封面 */
-.tp-cover { position: relative; min-height: 80svh; max-height: 760px; display: flex; align-items: flex-end; background: var(--navy); color: #fff; overflow: hidden; }
-.tp-cover-img { position: absolute; inset: 0; }
-.tp-cover-img .tp-img { height: 100%; aspect-ratio: auto !important; }
-.tp-cover-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 20, 34, .4) 0%, rgba(8, 20, 34, 0) 26%, rgba(8, 20, 34, 0) 46%, rgba(8, 20, 34, .84) 100%); }
-.tp-cover.plain { background: linear-gradient(160deg, var(--navy), #2c5a7a 60%, var(--coral)); }
-.tp-cover-top { position: absolute; top: calc(14px + env(safe-area-inset-top)); right: 14px; display: flex; gap: 8px; z-index: 2; }
-.tp-cover-top button { border: 0; font: inherit; font-size: 15px; font-weight: 700; color: #fff; background: rgba(20, 40, 63, .5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 9px 16px; border-radius: 99px; cursor: pointer; }
-.tp-cover-t { position: relative; z-index: 1; width: 100%; max-width: 680px; margin: 0 auto; padding: 0 20px 36px; }
-.tp-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-.tp-tags span { font-size: 13px; font-weight: 700; letter-spacing: .06em; border: 1px solid rgba(255, 255, 255, .7); padding: 3px 11px; border-radius: 99px; }
-.tp-cover-t h1 { font-size: 31px; line-height: 1.3; text-wrap: balance; text-shadow: 0 2px 18px rgba(0, 0, 0, .35); }
-.tp-cover-t p { margin-top: 10px; font-size: 17px; opacity: .94; line-height: 1.6; }
+/* 標題區:先見到名稱、一句介紹,封面相係中等大小(16:9,唔係全螢幕) */
+.tp-head { padding: 14px 0 6px; }
+.tp-head-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.tp-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tp-tags span { font-size: 13px; font-weight: 700; color: var(--coral); border: 1px solid currentColor; padding: 1px 10px; border-radius: 99px; }
+.tp-share { display: flex; gap: 6px; flex: none; }
+.tp-share button { border: 1px solid var(--line); background: var(--card); font: inherit; font-size: 14px; font-weight: 700; color: var(--soft); padding: 6px 12px; border-radius: 99px; cursor: pointer; }
+.tp-head h1 { font-size: 27px; line-height: 1.3; text-wrap: balance; }
+.tp-head h1 span { display: block; word-break: keep-all; overflow-wrap: anywhere; }
+.tp-kicker { display: block; font-family: inherit; font-size: 15px; font-weight: 700; letter-spacing: .08em; color: var(--mute); margin-bottom: 2px; }
+.tp-sub1 { margin-top: 8px !important; font-size: 16px; color: var(--soft); line-height: 1.6; }
+.tp-cover { margin-top: 14px; }
+.tp-cover .tp-img { border-radius: 12px; max-height: 160px; }
+.tp-cover figcaption { margin-top: 5px; }
 
-/* 第一層:概要 + 旅程一覽 */
-.tp-facts { display: grid; grid-template-columns: repeat(2, 1fr); margin: 22px 0 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.tp-facts div { padding: 12px 0; }
-.tp-facts div:nth-child(odd) { padding-right: 12px; }
-.tp-facts div:nth-child(n+3) { border-top: 1px solid var(--line); }
-.tp-facts dt { font-size: 13px; letter-spacing: .12em; color: var(--mute); }
-.tp-facts dd { margin: 0; font-weight: 700; font-size: 17px; }
-.tp-h { font-size: 13.5px !important; letter-spacing: .22em; color: var(--mute); text-transform: uppercase; font-family: inherit !important; font-weight: 700 !important; margin: 0 0 10px !important; }
-.tp-ov { margin-top: 30px; scroll-margin-top: 58px; }
-.tp-ov ol { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
-.tp-ov li { border-bottom: 1px solid var(--line); }
-.tp-ov button { width: 100%; display: grid; grid-template-columns: 38px 1fr 16px; align-items: center; gap: 0 6px; padding: 14px 0; border: 0; background: none; font: inherit; text-align: left; color: var(--ink); cursor: pointer; }
-.tp-ov-k { font-family: var(--serif); font-weight: 800; font-size: 19px; color: var(--coral); }
-.tp-ov-t b { display: block; font-size: 17px; line-height: 1.4; }
-.tp-ov-t small { display: block; font-size: 14px; color: var(--soft); line-height: 1.5; margin-top: 2px; }
-.tp-ov button i { font-style: normal; font-size: 22px; color: var(--mute); }
+/* 概要資料 + 三行摘要 */
+.tp-facts { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 14px 0 0; }
+.tp-facts div { display: flex; gap: 6px; align-items: baseline; }
+.tp-facts dt { font-size: 13.5px; color: var(--mute); }
+.tp-facts dd { margin: 0; font-weight: 700; font-size: 15.5px; }
+.tp-sum { list-style: none; margin: 14px 0 0; padding: 0; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+.tp-sum li + li { border-top: 1px solid var(--line); }
+.tp-sum button { width: 100%; display: grid; grid-template-columns: 44px 1fr 14px; gap: 0 8px; align-items: start; padding: 11px 14px; border: 0; background: none; font: inherit; text-align: left; color: var(--ink); cursor: pointer; }
+.tp-sum-k { font-size: 13.5px; font-weight: 800; color: var(--coral); letter-spacing: .08em; padding-top: 2px; }
+.tp-sum-t b { display: block; font-size: 15.5px; line-height: 1.5; font-weight: 700; }
+.tp-sum-t small { display: block; font-size: 13.5px; color: var(--soft); line-height: 1.45; margin-top: 1px; }
+.tp-sum button i { font-style: normal; font-size: 20px; line-height: 1.3; color: var(--mute); }
 
-/* 導航:貼頂,標示而家喺邊 */
-.tp-nav { position: sticky; top: 0; z-index: 10; display: flex; gap: 24px; overflow-x: auto; padding: 0 20px; margin-top: 26px; background: rgba(247, 244, 238, .94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); scrollbar-width: none; }
+/* 導航:貼頂 */
+.tp-nav { position: sticky; top: 0; z-index: 10; display: flex; gap: 20px; overflow-x: auto; padding: 0 18px; margin-top: 14px; background: rgba(248, 245, 239, .96); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); scrollbar-width: none; }
 .tp-nav::-webkit-scrollbar { display: none; }
-.tp-nav button { flex: none; border: 0; border-bottom: 3px solid transparent; background: none; font: inherit; font-size: 17px; font-weight: 700; color: var(--mute); padding: 14px 0 11px; cursor: pointer; }
+.tp-nav button { flex: none; border: 0; border-bottom: 3px solid transparent; background: none; font: inherit; font-size: 16px; font-weight: 700; color: var(--mute); padding: 11px 0 8px; cursor: pointer; }
 .tp-nav button.on { color: var(--ink); border-bottom-color: var(--coral); }
 
-/* 每日 */
-.tp-day { margin-top: 60px; scroll-margin-top: 54px; }
-.tp-dayhero { position: relative; color: #fff; }
-.tp-dayhero .tp-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 20, 34, 0) 35%, rgba(8, 20, 34, .82)); }
-.tp-dayhero-t { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 20px 20px; max-width: 680px; margin: 0 auto; z-index: 1; }
-.tp-daynum { display: block; font-family: var(--serif); font-weight: 800; font-size: 54px; line-height: 1; opacity: .95; }
-.tp-daydate { display: block; font-size: 13px; font-weight: 700; letter-spacing: .22em; margin: 4px 0 6px; }
-.tp-dayhero-t h2 { font-size: 29px; line-height: 1.25; text-shadow: 0 2px 14px rgba(0, 0, 0, .4); }
-.tp-dayhero-t small { font-size: 15px; opacity: .9; }
-.tp-dayhero.plain { color: var(--ink); }
-.tp-dayhero.plain .tp-dayhero-t { position: static; padding-top: 4px; }
-.tp-dayhero.plain .tp-daynum { color: var(--coral); }
-.tp-lead { font-family: var(--serif); font-size: 17.5px; line-height: 1.85; color: var(--ink); max-width: 680px; margin: 22px auto 0 !important; padding: 0 20px; }
-.tp-mosaic { display: grid; gap: 4px; margin: 20px auto 0; max-width: 680px; }
-.tp-mosaic .tp-cred { grid-column: 1 / -1; padding: 0 20px; margin: 4px 0 0; }
-.tp-mosaic.m3, .tp-mosaic.m2 { grid-template-columns: 1fr 1fr; }
-.tp-mosaic.m3 .tp-fig:first-child { grid-column: 1 / -1; }
-.tp-mosaic.m3 .tp-fig:first-child .tp-img { aspect-ratio: 16 / 9; }
-.tp-mosaic.m3 .tp-fig:not(:first-child) .tp-img, .tp-mosaic.m2 .tp-img { aspect-ratio: 1; }
-.tp-mosaic.m1 .tp-img { aspect-ratio: 16 / 9; }
+/* 每日:標題 + 細代表圖,然後係時間表 */
+.tp-day { margin-top: 28px; scroll-margin-top: 48px; }
+.tp-day-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.tp-daydate { display: block; font-size: 13px; font-weight: 800; letter-spacing: .16em; color: var(--coral); }
+.tp-day h2 { font-size: 23px; line-height: 1.3; margin-top: 1px; }
+.tp-day-t small { display: block; font-size: 14.5px; color: var(--mute); margin-top: 1px; }
+.tp-day-th { flex: none; width: 92px; }
+.tp-day-th .tp-img { border-radius: 8px; }
+.tp-dayintro { margin-top: 10px !important; font-size: 15px; line-height: 1.65; color: var(--soft); }
 
-/* 行程編排:核心大圖(全幅/縮入交替)+ 次重點小圖 + 精簡時間軸 */
-.tp-flow { max-width: 680px; margin: 8px auto 0; padding: 0 20px; }
-.tp-feat { margin-top: 30px; }
-.tp-feat.has-img .tp-fig { margin: 0 -20px; }
-.tp-feat.has-img .tp-fig figcaption { padding: 0 20px; }
-.tp-feat.inset .tp-fig { margin: 0 -20px 0 auto; width: 84%; }
-.tp-feat.inset .tp-fig figcaption { padding: 0 20px 0 0; text-align: right; }
-.tp-feat-b { padding-top: 14px; }
-.tp-feat:not(.has-img) .tp-feat-b { border-left: 3px solid var(--coral); padding: 2px 0 2px 16px; }
-.tp-when { display: block; font-size: 13.5px; font-weight: 700; letter-spacing: .18em; color: var(--coral); margin-bottom: 2px; }
-.tp-feat h3 { font-size: 22px; line-height: 1.4; margin-bottom: 6px; }
-.tp-feat p { color: var(--soft); font-size: 16px; line-height: 1.75; }
-.tp-cmp { display: block; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
-.tp-cmp.has-img { display: grid; grid-template-columns: 112px 1fr; gap: 0 14px; align-items: start; }
-.tp-cmp .tp-img { border-radius: 3px; }
-.tp-cmp h3 { font-size: 19px; line-height: 1.4; margin-bottom: 3px; }
-.tp-cmp p { font-size: 15px; line-height: 1.7; color: var(--soft); }
-.tp-cmp-c { display: block; margin-top: 4px; font-size: 12px; color: var(--mute); line-height: 1.4; }
-.tp-cmp:not(.has-img) { border-left: 3px solid var(--coral); padding: 2px 0 2px 16px; border-top: 0; }
-.tp-tl { list-style: none; margin: 22px 0 0; padding: 0; border-top: 1px solid var(--line); }
-.tp-tl li { display: grid; grid-template-columns: 54px 1fr; gap: 0 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
-.tp-tl-t { font-size: 14px; font-weight: 700; color: var(--mute); padding-top: 2px; }
-.tp-tl b { font-size: 16.5px; }
-.tp-tl b i { font-style: normal; margin-right: 6px; }
-.tp-tl p { color: var(--soft); font-size: 15px; line-height: 1.65; margin-top: 2px; }
+/* 時間表:每行 = 時間 | 內容 | (細縮圖)。掃一眼就見時間、活動、交通 */
+.tp-sched { list-style: none; margin: 12px 0 0; padding: 0; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+.tp-row { display: grid; grid-template-columns: 52px 1fr; gap: 0 10px; padding: 11px 14px; align-items: start; }
+.tp-row + .tp-row { border-top: 1px solid var(--line); }
+.tp-row:has(.tp-th) { grid-template-columns: 52px 1fr 72px; }
+.tp-rt { font-size: 14.5px; font-weight: 800; color: var(--coral); line-height: 1.5; padding-top: 1px; }
+.tp-rt small { display: block; font-size: 12.5px; font-weight: 600; color: var(--mute); }
+.tp-rb h3 { font-size: 16.5px; line-height: 1.45; }
+.tp-rb h3 i { font-style: normal; margin-right: 5px; }
+.tp-rb p { font-size: 14.5px; line-height: 1.55; color: var(--soft); margin-top: 2px; }
+.tp-row.i3 .tp-rb h3 { font-size: 17.5px; }
+.tp-row.i1 .tp-rb h3 { font-size: 15.5px; font-weight: 700; }
+.tp-row.k-transport, .tp-row.k-meal { background: #faf8f3; }
+.tp-row.k-transport:first-child { border-radius: 12px 12px 0 0; }
+.tp-row:last-child { border-radius: 0 0 12px 12px; }
+.tp-kind { text-decoration: none; font-family: inherit; font-size: 12px; font-weight: 700; color: var(--soft); background: #ece7da; padding: 0 7px; border-radius: 99px; margin-left: 7px; vertical-align: 2px; }
+.tp-row .tp-th { width: 72px; }
+.tp-row .tp-th .tp-img { border-radius: 8px; }
 
 /* 連結、展開 */
-.tp-act { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 8px !important; font-size: 15.5px; }
-.tp-act a { color: #2a6aa8; font-weight: 700; text-decoration: none; border-bottom: 1px solid rgba(42, 106, 168, .35); }
-.tp-more { margin-top: 8px; font-size: 15.5px; }
+.tp-act { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 5px !important; font-size: 14.5px; }
+.tp-act a { color: #2a6aa8; font-weight: 700; text-decoration: none; }
+.tp-more { margin-top: 4px; font-size: 14px; }
 .tp-more summary { cursor: pointer; font-weight: 700; color: var(--soft); list-style: none; }
 .tp-more summary::before { content: '+ '; color: var(--coral); }
 .tp-more[open] summary::before { content: '– '; }
-.tp-more ul { margin: 6px 0 0; padding-left: 18px; color: var(--soft); line-height: 1.65; font-size: 15px; }
-.tp-verify { font-style: normal; font-weight: 600; font-family: inherit; font-size: 13px; color: #9a5a14; margin-left: 8px; padding: 1px 8px; border: 1px solid #e8c89a; border-radius: 99px; vertical-align: middle; white-space: nowrap; }
+.tp-more ul { margin: 4px 0 0; padding-left: 18px; color: var(--soft); line-height: 1.55; font-size: 14px; }
+.tp-verify { font-style: normal; font-weight: 600; font-family: inherit; font-size: 12px; color: #9a5a14; margin-left: 6px; padding: 0 7px; border: 1px solid #e8c89a; border-radius: 99px; vertical-align: 1px; white-space: nowrap; }
 
-/* 酒店:深色區塊;亮點用編號格仔 */
-.tp-hotel { margin: 52px -20px 0; padding: 36px 20px 32px; background: var(--navy); color: #fff; scroll-margin-top: 54px; }
-.tp-hotel h2 { font-size: 25px; line-height: 1.35; margin: 4px 0 14px; }
-.tp-hotel .tp-lead { color: rgba(255, 255, 255, .9); margin: 14px 0 0 !important; padding: 0; }
-.tp-hotel .tp-fig figcaption { color: rgba(255, 255, 255, .6); }
-.tp-hotel .tp-verify { color: #f4c585; border-color: rgba(244, 197, 133, .5); }
-.tp-hotel .tp-act a { color: #9cc8f0; border-color: rgba(156, 200, 240, .4); }
-.tp-kick { font-size: 13px; font-weight: 700; letter-spacing: .3em; color: #f4a07e; }
-.tp-tiles { list-style: none; margin: 22px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
-.tp-tiles li { border-top: 1px solid rgba(255, 255, 255, .22); padding: 12px 0 14px; font-size: 15.5px; line-height: 1.6; color: rgba(255, 255, 255, .92); }
-.tp-tiles li span { display: block; font-family: var(--serif); font-weight: 800; font-size: 15px; color: #f4a07e; margin-bottom: 2px; }
+/* 區塊標題 */
+.tp-sec { margin-top: 30px; scroll-margin-top: 48px; }
+.tp-h { font-size: 20px !important; line-height: 1.3; margin: 0 0 10px !important; }
+.tp-h::before { content: ''; display: inline-block; width: 4px; height: 17px; background: var(--coral); border-radius: 2px; margin-right: 9px; vertical-align: -2px; }
 
-/* 第二層其餘:交通、預算;第三層:詳細資訊(全部收埋) */
-.tp-sec { margin-top: 42px; scroll-margin-top: 54px; }
+/* 交通 + 地圖 */
+.tp-tr { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
+.tp-tr h3 { font-size: 16.5px; line-height: 1.45; }
+.tp-tr p { font-size: 14.5px; color: var(--soft); margin-top: 3px; }
+.tp-tr ol { margin: 6px 0 0; padding-left: 20px; font-size: 14.5px; color: var(--soft); line-height: 1.6; }
+.tp-tr li { margin-bottom: 2px; }
+.tp-tr.has-img { display: grid; grid-template-columns: 1fr 92px; gap: 0 12px; align-items: start; }
+.tp-map { display: block; width: 100%; height: 170px; border: 0; border-radius: 12px; margin-top: 4px; background: #e4e0d6; }
+.tp-cap { margin-top: 5px; }
+
+/* 酒店:卡片 + 細圖 */
+.tp-hotel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.tp-hotel.has-img { display: grid; grid-template-columns: 1fr 92px; gap: 0 12px; align-items: start; }
+.tp-hotel h3 { font-size: 18px; line-height: 1.4; }
+.tp-hotel p { font-size: 14.5px; color: var(--soft); margin-top: 3px; }
+.tp-bul { margin: 10px 0 0; padding: 0 0 0 20px; font-size: 15px; line-height: 1.55; color: var(--ink); }
+.tp-bul li { margin-bottom: 3px; }
+.tp-bul li::marker { color: var(--coral); }
+.tp-sec > .tp-act { margin-top: 8px !important; }
+
+/* 預算、確認、折疊 */
 .tp-acc { border-top: 1px solid var(--line); }
 .tp-sec .tp-acc:last-of-type { border-bottom: 1px solid var(--line); }
-.tp-acc summary { cursor: pointer; padding: 14px 0; font-weight: 700; font-size: 17px; list-style: none; display: flex; align-items: center; }
+.tp-todo { list-style: none; margin: 0 0 8px; padding: 0; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+.tp-todo li { padding: 9px 14px 9px 38px; position: relative; font-size: 15px; line-height: 1.5; }
+.tp-todo li + li { border-top: 1px solid var(--line); }
+.tp-todo li::before { content: ''; position: absolute; left: 14px; top: 12px; width: 14px; height: 14px; border: 2px solid var(--coral); border-radius: 4px; }
+.tp-acc summary { cursor: pointer; padding: 12px 0; font-weight: 700; font-size: 16px; list-style: none; display: flex; align-items: center; }
 .tp-acc summary::-webkit-details-marker { display: none; }
 .tp-acc summary::after { content: '+'; margin-left: auto; color: var(--coral); font-size: 22px; font-weight: 400; }
 .tp-acc[open] summary::after { content: '–'; }
-.tp-acc > div { padding: 0 0 16px; color: var(--soft); font-size: 15.5px; line-height: 1.7; }
-.tp-acc p { margin-top: 8px; }
-.tp-acc ol, .tp-acc ul { padding-left: 20px; margin: 8px 0 0; }
-.tp-acc li { margin-bottom: 4px; }
-.tp-count { font-style: normal; font-size: 13px; font-weight: 700; margin-left: 8px; padding: 0 8px; border-radius: 99px; background: #ebe6d9; color: var(--soft); }
-.tp-table { width: 100%; border-collapse: collapse; }
-.tp-table td { padding: 12px 0; border-top: 1px solid var(--line); vertical-align: top; font-size: 16px; }
-.tp-table tr:last-child td { border-bottom: 1px solid var(--line); }
-.tp-table td:last-child { text-align: right; font-weight: 800; white-space: nowrap; padding-left: 12px; }
+.tp-acc > div { padding: 0 0 12px; color: var(--soft); font-size: 14.5px; line-height: 1.6; }
+.tp-acc ol, .tp-acc ul { padding-left: 20px; margin: 4px 0 0; }
+.tp-acc li { margin-bottom: 3px; }
+.tp-count { font-style: normal; font-size: 12.5px; font-weight: 700; margin-left: 8px; padding: 0 8px; border-radius: 99px; background: #ebe6d9; color: var(--soft); }
+.tp-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+.tp-table td { padding: 10px 14px; border-top: 1px solid var(--line); vertical-align: top; font-size: 15.5px; }
+.tp-table tr:first-child td { border-top: 0; }
+.tp-table td:last-child { text-align: right; font-weight: 800; white-space: nowrap; }
 .tp-table small { display: block; color: var(--mute); font-size: 13px; font-weight: 400; }
 .tp-table .na { color: #9a5a14; font-weight: 600; }
 .tp-table .sum td { font-weight: 800; }
-.tp-note { font-size: 13.5px; color: var(--mute); margin-top: 8px !important; }
-.tp-foot { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--mute); line-height: 1.8; text-align: center; }
-
-/* ── 平板/桌面 ── */
-@media (min-width: 700px) {
-  .tp-facts { grid-template-columns: repeat(4, 1fr); }
-  .tp-facts div:nth-child(n+3) { border-top: 0; }
-  .tp-facts div:not(:first-child) { padding-left: 16px; border-left: 1px solid var(--line); }
-  .tp-cover-t h1 { font-size: 42px; }
-}
-/* 桌面(≥960px):每日左右分欄,左邊(標題/相/介紹)貼頂,右邊係行程 */
-@media (min-width: 960px) {
-  .tp-cover { min-height: 74vh; }
-  .tp-cover-t { max-width: 1040px; padding: 0 24px 48px; }
-  .tp-cover-top { right: max(24px, calc((100vw - 1040px) / 2)); }
-  .tp-cover-t h1 { font-size: 50px; }
-  .tp-cover-t p { font-size: 19px; max-width: 640px; }
-  .tp-cred { max-width: 1040px; padding: 0 24px; }
-  .tp-wrap { max-width: 1040px; padding: 0 24px; }
-  .tp-ov ol { display: grid; grid-template-columns: 1fr 1fr; gap: 0 48px; }
-  .tp-nav { justify-content: center; padding: 0 24px; }
-  .tp-day { display: grid; grid-template-columns: 5fr 6fr; gap: 0 56px; max-width: 1040px; margin: 80px auto 0; padding: 0 24px; align-items: start; }
-  .tp-day-head { position: sticky; top: 64px; }
-  .tp-dayhero .tp-img { border-radius: 4px; }
-  .tp-dayhero-t { padding: 0 24px 24px; }
-  .tp-day .tp-lead, .tp-day .tp-cred, .tp-day .tp-mosaic { padding-left: 0; padding-right: 0; max-width: none; }
-  .tp-day .tp-mosaic .tp-cred { padding: 0; }
-  .tp-flow { max-width: none; padding: 0; margin-top: 0; }
-  .tp-flow > :first-child { margin-top: 0; }
-  .tp-feat.has-img .tp-fig, .tp-feat.inset .tp-fig { margin: 0; width: 100%; }
-  .tp-feat.inset .tp-fig { width: 80%; margin-left: auto; }
-  .tp-feat.inset .tp-fig figcaption, .tp-feat.has-img .tp-fig figcaption { padding: 0; }
-  .tp-hotel { margin: 60px 0 0; padding: 44px 40px; border-radius: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 0 48px; align-items: start; }
-  .tp-tiles { margin-top: 0; }
-  .tp-sec { max-width: 760px; }
-}
-
-.tp-cover-t h1 span { display: block; word-break: keep-all; overflow-wrap: anywhere; }
-.tp-kicker { display: block; font-family: inherit; font-size: 16px; font-weight: 700; letter-spacing: .14em; opacity: .92; margin-bottom: 6px; text-shadow: none; }
-
-/* 待定項目淡化;預算全部待查時用精簡清單;酒店小地圖 */
-.tp-facts dd.tbd { color: var(--mute); font-weight: 600; }
-.tp-bud { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
-.tp-bud li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 16px; }
+.tp-bud { list-style: none; margin: 0; padding: 0; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+.tp-bud li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 14px; font-size: 15.5px; }
+.tp-bud li + li { border-top: 1px solid var(--line); }
 .tp-bud small { color: var(--mute); font-size: 13.5px; text-align: right; }
-.tp-map { display: block; width: 100%; height: 210px; border: 0; border-radius: 6px; margin-top: 18px; background: #e4e0d6; }
+.tp-note { font-size: 13.5px; color: var(--mute); margin-top: 6px !important; }
+.tp-foot { margin-top: 30px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--mute); line-height: 1.8; text-align: center; }
+
+/* 平板/桌面:同一個單欄手冊,放寬少少 */
+@media (min-width: 700px) {
+  .tp-head h1 { font-size: 34px; }
+  .tp-cover .tp-img { max-height: 280px; }
+  .tp-day-th { width: 120px; }
+  .tp-map { height: 240px; }
+}
