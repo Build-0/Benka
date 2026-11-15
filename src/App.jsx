@@ -6,6 +6,7 @@ import Icon from './Icon.jsx'
 import Ideas from './Ideas.jsx'
 import Supplements from './Supplements.jsx'
 import Board from './Board.jsx'
+import TripsAdmin from './TripsAdmin.jsx'
 import { VersionBadge, UpdatePrompt } from './Version.jsx'
 import TripPage, { tripSlug } from './TripPage.jsx'
 
@@ -14,6 +15,7 @@ const MODULES = [
   { key: 'ideas', label: '想法', icon: 'bulb' },
   { key: 'supp', label: '保健品', icon: 'pill' },
   { key: 'board', label: '看板', icon: 'calendar-time' },
+  { key: 'trips', label: '行程', icon: 'plane' },
 ]
 
 // 公開行程頁(#/t/<slug>)唔使登入,其餘一律要登入
@@ -71,6 +73,7 @@ function Main() {
         {tab === 'ideas' && <Ideas />}
         {tab === 'supp' && <Supplements />}
         {tab === 'board' && <Board />}
+        {tab === 'trips' && <TripsAdmin />}
       </main>
 
       {menu && (
