@@ -57,5 +57,6 @@ ${og ? `<meta property="og:image" content="${esc(og)}">
   }
 } catch (e) {
   console.warn('gen-share skipped:', e.message)
+  try { fs.writeFileSync('dist/share-debug.txt', String(e && e.stack || e)) } catch { /* 忽略 */ }
 }
 process.exit(0)
