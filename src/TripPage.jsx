@@ -19,13 +19,13 @@ const mapUrl = (m) => {
 const go = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
 // 圖片:載入失敗就顯示柔和底色 + 標題;相片來源放喺圖下面,唔遮住畫面
-function Pic({ src, alt, credit, cls = '', ratio }) {
+function Pic({ src, alt, credit, cls = '', ratio, pos }) {
   const [bad, setBad] = useState(false)
   if (!src) return null
   return (
     <figure className={'tp-fig ' + cls}>
       <div className="tp-img" style={ratio ? { aspectRatio: ratio } : undefined}>
-        {bad ? <div className="tp-ph"><span>{alt}</span></div> : <img src={src} alt={alt || ''} loading="lazy" referrerPolicy="no-referrer" onError={() => setBad(true)} />}
+        {bad ? <div className="tp-ph"><span>{alt}</span></div> : <img src={src} alt={alt || ''} loading="lazy" referrerPolicy="no-referrer" style={pos ? { objectPosition: pos } : undefined} onError={() => setBad(true)} />}
       </div>
       {credit && !bad && <figcaption>{credit}</figcaption>}
     </figure>
@@ -58,7 +58,7 @@ const Detail = ({ tips }) =>
 function Feature({ it }) {
   return (
     <article className={'tp-feat' + (it.image ? ' has-img' : '')}>
-      <Pic src={it.image} alt={it.title} credit={it.credit} ratio="4 / 3" />
+      <Pic src={it.image} alt={it.title} credit={it.credit} ratio="4 / 3" pos={it.pos} />
       <div className="tp-feat-b">
         <span className="tp-when">{it.time}{it.end ? ' – ' + it.end : ''}</span>
         <h3>{it.title}<Verify show={it.verify} /></h3>
@@ -114,7 +114,7 @@ function Day({ day, n, id }) {
   return (
     <section id={id} className="tp-day">
       <div className={'tp-dayhero' + (img ? '' : ' plain')}>
-        {img && <Pic src={img} alt={day.title} ratio="4 / 5" />}
+        {img && <Pic src={img} alt={day.title} ratio="4 / 5" pos={day.image ? day.pos : heroItem?.pos} />}
         <div className="tp-dayhero-t">
           <span>DAY {String(n).padStart(2, '0')}{day.date ? ' · ' + day.date : ''}</span>
           <h2>{day.theme || day.title}</h2>
@@ -125,7 +125,7 @@ function Day({ day, n, id }) {
       {day.intro && <p className="tp-lead">{day.intro}</p>}
       {gal.length > 0 && (
         <div className={'tp-mosaic m' + Math.min(gal.length, 3)}>
-          {gal.slice(0, 3).map((g, i) => <Pic key={i} src={g.image} alt={g.caption || day.title} />)}
+          {gal.slice(0, 3).map((g, i) => <Pic key={i} src={g.image} alt={g.caption || day.title} pos={g.pos} />)}
           <p className="tp-cred">{gal.slice(0, 3).map((g) => g.credit).filter(Boolean).join(' ‧ ')}</p>
         </div>
       )}
@@ -157,7 +157,8 @@ export default function TripPage({ slug }) {
   const d = trip.data || {}
   const cov = d.cover || {}
   const days = d.days || []
-  const url = window.location.href
+  // 分享用靜態預覽頁(有封面圖預覽卡),人打開會自動跳返呢頁
+  const url = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 't/' + slug + '/'
   const share = async () => {
     if (navigator.share) { try { await navigator.share({ title: trip.title, url }); return } catch { /* 取消 */ } }
     window.open('https://wa.me/?text=' + encodeURIComponent(`${trip.title}\n${url}`), '_blank')
@@ -168,8 +169,8 @@ export default function TripPage({ slug }) {
 
   // 亮點:所有大圖重點,最多 6 張,橫向捲動
   const highlights = days.flatMap((day, di) => [
-    ...(day.image ? [{ src: day.image, label: day.theme || day.title, day: di }] : []),
-    ...(day.items || []).filter((x) => x.image).map((x) => ({ src: x.image, label: x.title, day: di })),
+    ...(day.image ? [{ src: day.image, label: day.theme || day.title, day: di, pos: day.pos }] : []),
+    ...(day.items || []).filter((x) => x.image).map((x) => ({ src: x.image, label: x.title, day: di, pos: x.pos })),
   ]).slice(0, 6)
 
   const pending = [
@@ -181,7 +182,7 @@ export default function TripPage({ slug }) {
   return (
     <div className="trip">
       <header className={'tp-cover' + (cov.image ? '' : ' plain')}>
-        {cov.image && <Pic src={cov.image} alt={trip.title} cls="tp-cover-img" />}
+        {cov.image && <Pic src={cov.image} alt={trip.title} cls="tp-cover-img" pos={cov.pos} />}
         <div className="tp-cover-shade" />
         <div className="tp-cover-top">
           <button type="button" onClick={share}>WhatsApp 分享</button>
@@ -215,7 +216,7 @@ export default function TripPage({ slug }) {
             <div className="tp-hl-row">
               {highlights.map((h, i) => (
                 <button key={i} type="button" onClick={() => go('tp-d' + (h.day + 1))}>
-                  <Pic src={h.src} alt={h.label} ratio="3 / 4" />
+                  <Pic src={h.src} alt={h.label} ratio="3 / 4" pos={h.pos} />
                   <span>{h.label}</span>
                 </button>
               ))}
@@ -238,7 +239,7 @@ export default function TripPage({ slug }) {
           <section id="tp-hotel" className="tp-hotel">
             <span className="tp-kick">STAY</span>
             <h2>{d.hotel.name}<Verify show={d.hotel.verify} /></h2>
-            {d.hotel.image && <Pic src={d.hotel.image} alt={d.hotel.name} credit={d.hotel.credit} ratio="16 / 10" />}
+            {d.hotel.image && <Pic src={d.hotel.image} alt={d.hotel.name} credit={d.hotel.credit} ratio="16 / 10" pos={d.hotel.pos} />}
             {d.hotel.text && <p className="tp-lead">{d.hotel.text}</p>}
             {d.hotel.highlights && <ul className="tp-hi">{d.hotel.highlights.map((h, i) => <li key={i}>{h}</li>)}</ul>}
             <Links item={{ map: d.hotel.map, links: d.hotel.links }} />
@@ -252,7 +253,7 @@ export default function TripPage({ slug }) {
               <details key={i} className="tp-acc">
                 <summary>{t.title}<Verify show={t.verify} /></summary>
                 <div>
-                  <Pic src={t.image} alt={t.title} credit={t.credit} ratio="16 / 9" />
+                  <Pic src={t.image} alt={t.title} credit={t.credit} ratio="16 / 9" pos={t.pos} />
                   {t.text && <p>{t.text}</p>}
                   {t.steps && <ol>{t.steps.map((s, k) => <li key={k}>{s}</li>)}</ol>}
                   <Links item={t} />

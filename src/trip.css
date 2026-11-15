@@ -1,10 +1,10 @@
-.tp-center { min-height: 60vh; display: grid; place-items: center; color: #6b7a8c; font-size: 15px; padding: 24px; text-align: center; }
+.tp-center { min-height: 60vh; display: grid; place-items: center; color: #6b7a8c; font-size: 17px; padding: 24px; text-align: center; }
 
 /* ── 基調:暖紙色、深海軍藍文字、一點珊瑚橙;標題用襯線字,有雜誌感 ── */
 .trip {
   --ink: #1d2a3a; --soft: #5b6b7e; --mute: #8a97a6; --paper: #f7f4ee; --line: #e2ddd2; --navy: #14283f; --coral: #e5683d;
   --serif: 'Noto Serif TC', 'Source Han Serif TC', 'Songti TC', 'PMingLiU', 'Georgia', serif;
-  background: var(--paper); color: var(--ink); min-height: 100vh; padding-bottom: 48px; font-size: 15.5px; line-height: 1.75;
+  background: var(--paper); color: var(--ink); min-height: 100vh; padding-bottom: 48px; font-size: 17.5px; line-height: 1.8;
 }
 .trip * { box-sizing: border-box; }
 .trip h1, .trip h2, .trip h3 { font-family: var(--serif); font-weight: 800; letter-spacing: .01em; margin: 0; }
@@ -15,8 +15,8 @@
 .tp-fig { margin: 0; }
 .tp-img { position: relative; overflow: hidden; background: #e4e0d6; }
 .tp-img img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.tp-ph { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(135deg, #cfd9e4, #e8dfd0); color: #6b7a8c; font-family: var(--serif); font-size: 15px; padding: 16px; text-align: center; }
-.tp-fig figcaption, .tp-cred { font-size: 10.5px; line-height: 1.5; color: var(--mute); margin-top: 5px; }
+.tp-ph { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(135deg, #cfd9e4, #e8dfd0); color: #6b7a8c; font-family: var(--serif); font-size: 17px; padding: 16px; text-align: center; }
+.tp-fig figcaption, .tp-cred { font-size: 12.5px; line-height: 1.5; color: var(--mute); margin-top: 5px; }
 .tp-cred { padding: 0 20px; max-width: 680px; margin-left: auto; margin-right: auto; }
 .tp-cred-cover { margin-top: 6px; }
 
@@ -27,42 +27,42 @@
 .tp-cover-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 20, 34, .38) 0%, rgba(8, 20, 34, 0) 28%, rgba(8, 20, 34, 0) 48%, rgba(8, 20, 34, .82) 100%); }
 .tp-cover.plain { background: linear-gradient(160deg, #14283f, #2c5a7a 60%, #e5683d); }
 .tp-cover-top { position: absolute; top: 14px; right: 14px; display: flex; gap: 8px; z-index: 2; }
-.tp-cover-top button { border: 0; font: inherit; font-size: 12.5px; font-weight: 700; color: #fff; background: rgba(20, 40, 63, .45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 8px 14px; border-radius: 99px; cursor: pointer; }
+.tp-cover-top button { border: 0; font: inherit; font-size: 14px; font-weight: 700; color: #fff; background: rgba(20, 40, 63, .45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 8px 14px; border-radius: 99px; cursor: pointer; }
 .tp-cover-t { position: relative; z-index: 1; width: 100%; max-width: 680px; margin: 0 auto; padding: 0 20px 34px; }
 .tp-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-.tp-tags span { font-size: 11px; font-weight: 700; letter-spacing: .06em; border: 1px solid rgba(255, 255, 255, .7); padding: 3px 10px; border-radius: 99px; }
-.tp-cover-t h1 { font-size: 30px; line-height: 1.3; text-wrap: balance; text-shadow: 0 2px 18px rgba(0, 0, 0, .35); }
-.tp-cover-t p { margin-top: 10px; font-size: 15px; opacity: .93; line-height: 1.6; }
+.tp-tags span { font-size: 12.5px; font-weight: 700; letter-spacing: .06em; border: 1px solid rgba(255, 255, 255, .7); padding: 3px 10px; border-radius: 99px; }
+.tp-cover-t h1 { font-size: 34px; line-height: 1.3; text-wrap: balance; text-shadow: 0 2px 18px rgba(0, 0, 0, .35); }
+.tp-cover-t p { margin-top: 10px; font-size: 17px; opacity: .93; line-height: 1.6; }
 
 /* 概要:一行事實,唔係四格卡片 */
 .tp-facts { display: grid; grid-template-columns: repeat(2, 1fr); margin: 22px 0 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .tp-facts div { padding: 12px 0; }
 .tp-facts div:nth-child(odd) { padding-right: 12px; }
-.tp-facts dt { font-size: 11px; letter-spacing: .12em; color: var(--mute); }
-.tp-facts dd { margin: 0; font-weight: 700; font-size: 15px; }
+.tp-facts dt { font-size: 12.5px; letter-spacing: .12em; color: var(--mute); }
+.tp-facts dd { margin: 0; font-weight: 700; font-size: 17px; }
 .tp-facts div:nth-child(n+3) { border-top: 1px solid var(--line); }
 
 /* 待確認:收埋,唔搶視線 */
-.tp-pending { margin: 14px 0 0; font-size: 13px; color: #9a5a14; }
+.tp-pending { margin: 14px 0 0; font-size: 15px; color: #9a5a14; }
 .tp-pending summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
 .tp-pending summary::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #e0922f; }
 .tp-pending summary::after { content: '展開 ›'; font-weight: 400; color: var(--mute); }
 .tp-pending[open] summary::after { content: '收埋 ‹'; }
 .tp-pending ul { margin: 8px 0 0; padding-left: 18px; color: var(--soft); line-height: 1.7; }
-.tp-verify { font-style: normal; font-weight: 600; font-family: inherit; font-size: 10.5px; color: #9a5a14; margin-left: 8px; padding: 1px 7px; border: 1px solid #e8c89a; border-radius: 99px; vertical-align: middle; white-space: nowrap; }
+.tp-verify { font-style: normal; font-weight: 600; font-family: inherit; font-size: 12.5px; color: #9a5a14; margin-left: 8px; padding: 1px 7px; border: 1px solid #e8c89a; border-radius: 99px; vertical-align: middle; white-space: nowrap; }
 
 /* 亮點:橫向相片條 */
-.tp-h { font-size: 12px !important; letter-spacing: .22em; color: var(--mute); text-transform: uppercase; font-family: inherit !important; font-weight: 700 !important; margin: 0 0 12px !important; }
+.tp-h { font-size: 13.5px !important; letter-spacing: .22em; color: var(--mute); text-transform: uppercase; font-family: inherit !important; font-weight: 700 !important; margin: 0 0 12px !important; }
 .tp-hl { margin-top: 30px; }
 .tp-hl-row { display: flex; gap: 10px; overflow-x: auto; margin: 0 -20px; padding: 0 20px 4px; scroll-snap-type: x mandatory; scroll-padding-left: 20px; scrollbar-width: none; }
 .tp-hl-row::-webkit-scrollbar { display: none; }
 .tp-hl-row button { flex: none; width: 138px; border: 0; background: none; padding: 0; text-align: left; font: inherit; cursor: pointer; scroll-snap-align: start; color: var(--ink); }
 .tp-hl-row .tp-img { border-radius: 4px; }
-.tp-hl-row span { display: block; font-size: 12.5px; font-weight: 700; line-height: 1.4; margin-top: 6px; }
+.tp-hl-row span { display: block; font-size: 14px; font-weight: 700; line-height: 1.4; margin-top: 6px; }
 
 /* 導航:細字連結,貼頂 */
 .tp-nav { position: sticky; top: 0; z-index: 10; display: flex; gap: 22px; overflow-x: auto; padding: 0 20px; margin-top: 26px; background: rgba(247, 244, 238, .92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); scrollbar-width: none; justify-content: center; }
-.tp-nav button { flex: none; border: 0; background: none; font: inherit; font-size: 13.5px; font-weight: 700; color: var(--soft); padding: 13px 0; cursor: pointer; }
+.tp-nav button { flex: none; border: 0; background: none; font: inherit; font-size: 15.5px; font-weight: 700; color: var(--soft); padding: 13px 0; cursor: pointer; }
 .tp-nav button:hover { color: var(--coral); }
 
 /* 每日:大圖開場 */
@@ -72,15 +72,15 @@
 .tp-dayhero .tp-img { aspect-ratio: 4 / 5; max-height: 560px; width: 100%; }
 .tp-dayhero .tp-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 20, 34, 0) 45%, rgba(8, 20, 34, .78)); }
 .tp-dayhero-t { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 20px 22px; max-width: 680px; margin: 0 auto; z-index: 1; }
-.tp-dayhero-t span { font-size: 12px; font-weight: 700; letter-spacing: .24em; }
-.tp-dayhero-t h2 { font-size: 30px; line-height: 1.25; margin: 4px 0 2px; text-shadow: 0 2px 14px rgba(0, 0, 0, .4); }
-.tp-dayhero-t small { font-size: 13px; opacity: .88; }
+.tp-dayhero-t span { font-size: 13.5px; font-weight: 700; letter-spacing: .24em; }
+.tp-dayhero-t h2 { font-size: 34px; line-height: 1.25; margin: 4px 0 2px; text-shadow: 0 2px 14px rgba(0, 0, 0, .4); }
+.tp-dayhero-t small { font-size: 15px; opacity: .88; }
 .tp-dayhero.plain { color: var(--ink); }
 .tp-dayhero.plain .tp-dayhero-t { position: static; padding-top: 4px; }
 .tp-dayhero.plain .tp-dayhero-t span { color: var(--coral); }
 .tp-dayhero .tp-cred { display: none; }
 .tp-day > .tp-cred { margin-top: 6px; }
-.tp-lead { font-family: var(--serif); font-size: 16.5px; line-height: 1.85; color: var(--ink); max-width: 680px; margin: 22px auto 0 !important; padding: 0 20px; }
+.tp-lead { font-family: var(--serif); font-size: 19px; line-height: 1.85; color: var(--ink); max-width: 680px; margin: 22px auto 0 !important; padding: 0 20px; }
 .tp-hotel .tp-lead, .tp-sec .tp-lead { padding: 0; }
 
 /* 相片拼貼 */
@@ -101,20 +101,20 @@
 .tp-feat.has-img .tp-fig figcaption { padding: 0 20px; }
 .tp-feat-b { padding-top: 12px; }
 .tp-feat:not(.has-img) .tp-feat-b { border-left: 3px solid var(--coral); padding: 2px 0 2px 16px; }
-.tp-when { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .18em; color: var(--coral); margin-bottom: 2px; }
-.tp-feat h3 { font-size: 21px; line-height: 1.4; margin-bottom: 6px; }
+.tp-when { display: block; font-size: 12.5px; font-weight: 700; letter-spacing: .18em; color: var(--coral); margin-bottom: 2px; }
+.tp-feat h3 { font-size: 24px; line-height: 1.4; margin-bottom: 6px; }
 .tp-feat p { color: var(--soft); }
 .tp-tl { list-style: none; margin: 24px 0 0; padding: 0; border-top: 1px solid var(--line); }
-.tp-tl li { display: grid; grid-template-columns: 46px 1fr; gap: 0 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
-.tp-tl-t { font-size: 12.5px; font-weight: 700; color: var(--mute); padding-top: 2px; }
-.tp-tl b { font-size: 15.5px; }
+.tp-tl li { display: grid; grid-template-columns: 54px 1fr; gap: 0 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.tp-tl-t { font-size: 14px; font-weight: 700; color: var(--mute); padding-top: 2px; }
+.tp-tl b { font-size: 17.5px; }
 .tp-tl b i { font-style: normal; margin-right: 6px; }
-.tp-tl p { color: var(--soft); font-size: 14.5px; margin-top: 2px; }
+.tp-tl p { color: var(--soft); font-size: 16.5px; margin-top: 2px; }
 
 /* 連結:文字連結 */
-.tp-act { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 8px !important; font-size: 13.5px; }
+.tp-act { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 8px !important; font-size: 15.5px; }
 .tp-act a { color: #2a6aa8; font-weight: 700; text-decoration: none; border-bottom: 1px solid rgba(42, 106, 168, .35); }
-.tp-more { margin-top: 8px; font-size: 13.5px; }
+.tp-more { margin-top: 8px; font-size: 15.5px; }
 .tp-more summary { cursor: pointer; font-weight: 700; color: var(--soft); list-style: none; }
 .tp-more summary::before { content: '+ '; color: var(--coral); }
 .tp-more[open] summary::before { content: '– '; }
@@ -122,11 +122,11 @@
 
 /* 酒店:深色區塊 */
 .tp-hotel { margin: 40px -20px 0; padding: 34px 20px 32px; background: var(--navy); color: #fff; }
-.tp-hotel h2 { font-size: 24px; line-height: 1.35; margin: 4px 0 14px; }
+.tp-hotel h2 { font-size: 27.5px; line-height: 1.35; margin: 4px 0 14px; }
 .tp-hotel .tp-lead { color: rgba(255, 255, 255, .88); margin: 14px 0 0 !important; }
 .tp-hotel .tp-fig figcaption { color: rgba(255, 255, 255, .6); }
 .tp-hotel .tp-verify { color: #f4c585; border-color: rgba(244, 197, 133, .5); }
-.tp-kick { font-size: 11.5px; font-weight: 700; letter-spacing: .3em; color: #f4a07e; }
+.tp-kick { font-size: 12.5px; font-weight: 700; letter-spacing: .3em; color: #f4a07e; }
 .tp-hi { list-style: none; margin: 16px 0 0; padding: 0; }
 .tp-hi li { padding: 10px 0 10px 18px; border-top: 1px solid var(--line); position: relative; color: var(--soft); }
 .tp-hi li::before { content: ''; position: absolute; left: 2px; top: 20px; width: 6px; height: 6px; border-radius: 50%; background: var(--coral); }
@@ -137,8 +137,8 @@
 .tp-sec { margin-top: 38px; }
 .tp-acc { border-top: 1px solid var(--line); }
 .tp-acc:last-of-type { border-bottom: 1px solid var(--line); }
-.tp-acc summary { cursor: pointer; padding: 15px 0; font-weight: 700; font-size: 16px; list-style: none; display: flex; align-items: center; }
-.tp-acc summary::after { content: '+'; margin-left: auto; color: var(--coral); font-size: 20px; font-weight: 400; }
+.tp-acc summary { cursor: pointer; padding: 15px 0; font-weight: 700; font-size: 18px; list-style: none; display: flex; align-items: center; }
+.tp-acc summary::after { content: '+'; margin-left: auto; color: var(--coral); font-size: 23px; font-weight: 400; }
 .tp-acc[open] summary::after { content: '–'; }
 .tp-acc > div { padding: 0 0 16px; color: var(--soft); }
 .tp-acc p { margin-top: 8px; }
@@ -147,19 +147,19 @@
 .tp-table td { padding: 13px 0; border-top: 1px solid var(--line); vertical-align: top; }
 .tp-table tr:last-child td { border-bottom: 1px solid var(--line); }
 .tp-table td:last-child { text-align: right; font-weight: 800; white-space: nowrap; padding-left: 12px; }
-.tp-table small { display: block; color: var(--mute); font-size: 12px; font-weight: 400; }
+.tp-table small { display: block; color: var(--mute); font-size: 13.5px; font-weight: 400; }
 .tp-table .na { color: #9a5a14; font-weight: 600; }
 .tp-table .sum td { font-weight: 800; }
-.tp-note { font-size: 12.5px; color: var(--mute); margin-top: 8px !important; }
-.tp-foot { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 12px; color: var(--mute); line-height: 1.8; text-align: center; }
+.tp-note { font-size: 14px; color: var(--mute); margin-top: 8px !important; }
+.tp-foot { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--mute); line-height: 1.8; text-align: center; }
 .tp-foot details { text-align: left; margin-bottom: 8px; }
 .tp-foot summary { cursor: pointer; }
 .tp-foot a { color: #2a6aa8; word-break: break-all; }
 
 @media (min-width: 700px) {
-  .tp-cover-t h1 { font-size: 42px; }
+  .tp-cover-t h1 { font-size: 48px; }
   .tp-dayhero .tp-img { aspect-ratio: 16 / 9; }
-  .tp-dayhero-t h2 { font-size: 38px; }
+  .tp-dayhero-t h2 { font-size: 43.5px; }
   .tp-feat.has-img .tp-fig { margin: 0; }
   .tp-hotel { margin: 40px 0 0; padding: 40px 32px; border-radius: 6px; }
 }
