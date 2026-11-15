@@ -24,3 +24,13 @@
 .tadm-res .ok { color: #1f7a45; }
 .tadm-res .bad, .tadm-res ul.bad { color: #a12c20; }
 .tadm-res .warn, .tadm-res ul.warn { color: #9a5a14; }
+.tadm-sync { margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--card, #fff); box-shadow: 0 1px 4px rgba(0, 0, 0, .06); }
+.tadm-sync-h { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tadm-sync-h button { margin-left: auto; font: inherit; font-size: 14px; font-weight: 700; border: 0; border-radius: 10px; padding: 7px 14px; background: #e9eef5; color: #2f4a6b; cursor: pointer; }
+.tadm-chip.warn { background: #fff0d9; color: #9a5a14; }
+.tadm-chip.bad { background: #f9e7e4; color: #b3372b; }
+.tadm-bad { color: #a12c20; font-size: 14px; margin: 8px 0 0; }
+.tadm-sync details { margin-top: 8px; font-size: 13.5px; color: #6b7a8c; }
+.tadm-sync ul { margin: 6px 0 0; padding-left: 18px; line-height: 1.7; }
+.tadm-sync li.bad { color: #a12c20; }
+.tadm-sync li span { color: #8a97a6; }
