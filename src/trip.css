@@ -201,3 +201,17 @@
 .tp-cmp-c { display: block; margin-top: 4px; font-size: 11.5px; color: var(--mute); line-height: 1.4; }
 .tp-cmp:not(.has-img) { border-left: 3px solid var(--coral); padding: 2px 0 2px 16px; border-top: 0; }
 @media (min-width: 700px) { .tp-dayhero .tp-img { max-height: 440px; } .tp-feat.has-img .tp-img { max-height: 380px; } }
+
+/* 第三版:可撳嘅控制項(導航、連結、展開、分享)字再大啲,方便手機睇同撳 */
+.tp-nav { gap: 26px; }
+.tp-nav button { font-size: 17.5px; padding: 15px 0; }
+.tp-act { font-size: 15.5px; gap: 6px 18px; }
+.tp-more { font-size: 15.5px; }
+.tp-pending { font-size: 15.5px; }
+.tp-cover-top button { font-size: 15px; padding: 9px 16px; }
+.tp-hl-row span { font-size: 14.5px; }
+.tp-tl-t { font-size: 14px; }
+.tp-when { font-size: 13.5px; }
+.tp-verify { font-size: 13px; }
+.tp-h { font-size: 13.5px !important; }
+.tp-facts dt { font-size: 13px; }
