@@ -3,6 +3,7 @@ import { supabase } from './supabase.js'
 import './trip.css'
 
 // 公開行程頁(唔使登入):網址 #/t/<slug>。版面固定,內容全部來自 trips.data(JSON)。
+// 版面會按內容自動調整:有圖 → 大圖編排;冇圖 → 文字版面;次要項目 → 精簡時間軸。
 export const tripSlug = () => {
   const m = window.location.hash.match(/^#\/t\/([^/?]+)/)
   return m ? decodeURIComponent(m[1]) : null
@@ -15,53 +16,123 @@ const mapUrl = (m) => {
   return q ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q) : ''
 }
 
-const osmEmbed = (m) => {
-  if (!m || m.lat == null || m.lng == null) return ''
-  const d = 0.006
-  return `https://www.openstreetmap.org/export/embed.html?bbox=${m.lng - d},${m.lat - d},${m.lng + d},${m.lat + d}&layer=mapnik&marker=${m.lat},${m.lng}`
-}
+const go = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
-const Photo = ({ src, credit, alt, cls }) => {
+// 圖片:載入失敗就顯示柔和底色 + 標題;相片來源放喺圖下面,唔遮住畫面
+function Pic({ src, alt, credit, cls = '', ratio }) {
+  const [bad, setBad] = useState(false)
   if (!src) return null
   return (
-    <figure className={'tp-photo ' + (cls || '')}>
-      <img src={src} alt={alt || ''} loading="lazy" referrerPolicy="no-referrer" />
-      {credit && <figcaption>{credit}</figcaption>}
+    <figure className={'tp-fig ' + cls}>
+      <div className="tp-img" style={ratio ? { aspectRatio: ratio } : undefined}>
+        {bad ? <div className="tp-ph"><span>{alt}</span></div> : <img src={src} alt={alt || ''} loading="lazy" referrerPolicy="no-referrer" onError={() => setBad(true)} />}
+      </div>
+      {credit && !bad && <figcaption>{credit}</figcaption>}
     </figure>
   )
 }
 
-const Links = ({ links }) =>
-  links && links.length ? (
-    <div className="tp-links">
-      {links.map((l, i) => (
-        <a key={i} href={l.url} target="_blank" rel="noopener noreferrer">{l.label}</a>
-      ))}
-    </div>
+const Verify = ({ show }) => (show ? <em className="tp-verify">待確認</em> : null)
+
+const Links = ({ item }) => {
+  const mu = mapUrl(item.map)
+  const ls = item.links || []
+  if (!mu && !ls.length) return null
+  return (
+    <p className="tp-act">
+      {mu && <a href={mu} target="_blank" rel="noopener noreferrer">地圖 ↗</a>}
+      {ls.map((l, i) => <a key={i} href={l.url} target="_blank" rel="noopener noreferrer">{l.label} ↗</a>)}
+    </p>
+  )
+}
+
+const Detail = ({ tips }) =>
+  tips && tips.length ? (
+    <details className="tp-more">
+      <summary>詳細資料</summary>
+      <ul>{tips.map((t, i) => <li key={i}>{t}</li>)}</ul>
+    </details>
   ) : null
 
-const Verify = ({ show }) => (show ? <span className="tp-verify">待確認</span> : null)
-
-function Item({ it }) {
-  const mu = mapUrl(it.map)
+// 重點項目:有圖 → 大圖 + 簡介;冇圖 → 文字重點
+function Feature({ it }) {
   return (
-    <li className="tp-item">
-      <div className="tp-time">
-        <b>{it.time}</b>
-        {it.end && <span>{it.end}</span>}
-      </div>
-      <div className="tp-dot"><i>{it.icon || '•'}</i></div>
-      <div className="tp-card">
-        <Photo src={it.image} credit={it.credit} alt={it.title} />
-        <h4>{it.title}<Verify show={it.verify} /></h4>
+    <article className={'tp-feat' + (it.image ? ' has-img' : '')}>
+      <Pic src={it.image} alt={it.title} credit={it.credit} ratio="4 / 3" />
+      <div className="tp-feat-b">
+        <span className="tp-when">{it.time}{it.end ? ' – ' + it.end : ''}</span>
+        <h3>{it.title}<Verify show={it.verify} /></h3>
         {it.text && <p>{it.text}</p>}
-        {it.tips && it.tips.length > 0 && <ul className="tp-mini">{it.tips.map((t, i) => <li key={i}>{t}</li>)}</ul>}
-        <div className="tp-links">
-          {mu && <a href={mu} target="_blank" rel="noopener noreferrer">📍 地圖</a>}
-          {(it.links || []).map((l, i) => <a key={i} href={l.url} target="_blank" rel="noopener noreferrer">{l.label}</a>)}
+        <Links item={it} />
+        <Detail tips={it.tips} />
+      </div>
+    </article>
+  )
+}
+
+// 次要項目:精簡時間軸
+function Timeline({ items }) {
+  return (
+    <ol className="tp-tl">
+      {items.map((it, i) => (
+        <li key={i}>
+          <span className="tp-tl-t">{it.time}</span>
+          <div>
+            <b>{it.icon && <i>{it.icon}</i>}{it.title}<Verify show={it.verify} /></b>
+            {it.text && <p>{it.text}</p>}
+            <Links item={it} />
+            <Detail tips={it.tips} />
+          </div>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+const levelOf = (it) => it.level || (it.image ? 'feature' : 'minor')
+
+// 連續嘅同類項目歸做一組,保持原本次序
+const groupItems = (items) => {
+  const out = []
+  for (const it of items) {
+    const feat = levelOf(it) === 'feature'
+    const last = out[out.length - 1]
+    if (feat) out.push({ feat: true, it })
+    else if (last && !last.feat) last.items.push(it)
+    else out.push({ feat: false, items: [it] })
+  }
+  return out
+}
+
+const dayImage = (day) => day.image || (day.items || []).find((x) => x.image)?.image || ''
+
+function Day({ day, n, id }) {
+  const img = dayImage(day)
+  const heroItem = !day.image ? (day.items || []).find((x) => x.image) : null
+  const gal = (day.gallery || []).filter((g) => g.image)
+  const items = (day.items || []).filter((x) => !(heroItem && x === heroItem && !x.level))
+  return (
+    <section id={id} className="tp-day">
+      <div className={'tp-dayhero' + (img ? '' : ' plain')}>
+        {img && <Pic src={img} alt={day.title} ratio="4 / 5" />}
+        <div className="tp-dayhero-t">
+          <span>DAY {String(n).padStart(2, '0')}{day.date ? ' · ' + day.date : ''}</span>
+          <h2>{day.theme || day.title}</h2>
+          {day.theme && <small>{day.title}</small>}
         </div>
       </div>
-    </li>
+      {(day.credit || (img && heroItem?.credit) || (day.image && day.credit)) && <p className="tp-cred">相片:{day.credit || heroItem?.credit}</p>}
+      {day.intro && <p className="tp-lead">{day.intro}</p>}
+      {gal.length > 0 && (
+        <div className={'tp-mosaic m' + Math.min(gal.length, 3)}>
+          {gal.slice(0, 3).map((g, i) => <Pic key={i} src={g.image} alt={g.caption || day.title} />)}
+          <p className="tp-cred">{gal.slice(0, 3).map((g) => g.credit).filter(Boolean).join(' ‧ ')}</p>
+        </div>
+      )}
+      <div className="tp-flow">
+        {groupItems(items).map((g, i) => (g.feat ? <Feature key={i} it={g.it} /> : <Timeline key={i} items={g.items} />))}
+      </div>
+    </section>
   )
 }
 
@@ -85,101 +156,115 @@ export default function TripPage({ slug }) {
 
   const d = trip.data || {}
   const cov = d.cover || {}
+  const days = d.days || []
   const url = window.location.href
   const share = async () => {
-    const text = `${trip.title}\n${url}`
     if (navigator.share) { try { await navigator.share({ title: trip.title, url }); return } catch { /* 取消 */ } }
-    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank')
+    window.open('https://wa.me/?text=' + encodeURIComponent(`${trip.title}\n${url}`), '_blank')
   }
   const copy = async () => {
     try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1800) } catch { /* 忽略 */ }
   }
+
+  // 亮點:所有大圖重點,最多 6 張,橫向捲動
+  const highlights = days.flatMap((day, di) => [
+    ...(day.image ? [{ src: day.image, label: day.theme || day.title, day: di }] : []),
+    ...(day.items || []).filter((x) => x.image).map((x) => ({ src: x.image, label: x.title, day: di })),
+  ]).slice(0, 6)
+
+  const pending = [
+    ...(d.checks || []),
+  ]
   const total = (d.budget?.items || []).reduce((a, x) => a + (x.amount || 0), 0)
   const unknown = (d.budget?.items || []).some((x) => x.amount == null)
 
   return (
     <div className="trip">
-      <header className="tp-hero" style={cov.image ? { backgroundImage: `linear-gradient(180deg, rgba(10,25,45,.15), rgba(10,25,45,.78)), url("${cov.image}")` } : undefined}>
-        <div className="tp-hero-in">
+      <header className={'tp-cover' + (cov.image ? '' : ' plain')}>
+        {cov.image && <Pic src={cov.image} alt={trip.title} cls="tp-cover-img" />}
+        <div className="tp-cover-shade" />
+        <div className="tp-cover-top">
+          <button type="button" onClick={share}>WhatsApp 分享</button>
+          <button type="button" onClick={copy}>{copied ? '已複製 ✓' : '複製連結'}</button>
+        </div>
+        <div className="tp-cover-t">
           {cov.tags && <div className="tp-tags">{cov.tags.map((t) => <span key={t}>{t}</span>)}</div>}
           <h1>{trip.title}</h1>
           {cov.subtitle && <p>{cov.subtitle}</p>}
-          {cov.dates && <div className="tp-dates">{cov.dates}</div>}
         </div>
-        {cov.credit && <small className="tp-credit">{cov.credit}</small>}
       </header>
+      {cov.image && cov.credit && <p className="tp-cred tp-cred-cover">相片:{cov.credit}</p>}
 
       <div className="tp-wrap">
-        <div className="tp-share">
-          <button type="button" className="wa" onClick={share}>WhatsApp 分享</button>
-          <button type="button" onClick={copy}>{copied ? '已複製 ✓' : '複製連結'}</button>
-        </div>
-
         {d.summary && (
-          <section className="tp-sum">
-            {d.summary.map((s, i) => (
-              <div key={i}><span>{s.label}</span><b>{s.value}</b></div>
-            ))}
-          </section>
+          <dl className="tp-facts">
+            {d.summary.map((s, i) => <div key={i}><dt>{s.label}</dt><dd>{s.value}</dd></div>)}
+          </dl>
         )}
 
-        {d.checks && d.checks.length > 0 && (
-          <section className="tp-check">
-            <h3>出發前要確認</h3>
-            <ul>{d.checks.map((c, i) => <li key={i}>{c}</li>)}</ul>
-          </section>
+        {pending.length > 0 && (
+          <details className="tp-pending">
+            <summary>出發前仍有 {pending.length} 項資料要確認</summary>
+            <ul>{pending.map((c, i) => <li key={i}>{c}</li>)}</ul>
+          </details>
         )}
 
-        <nav className="tp-nav">
-          {(d.days || []).map((x, i) => <a key={i} href={'#/t/' + slug + '/d' + (i + 1)} onClick={(e) => { e.preventDefault(); document.getElementById('tp-d' + (i + 1))?.scrollIntoView({ behavior: 'smooth' }) }}>{x.label}</a>)}
-          {d.hotel && <a href="#hotel" onClick={(e) => { e.preventDefault(); document.getElementById('tp-hotel')?.scrollIntoView({ behavior: 'smooth' }) }}>酒店</a>}
-          {d.budget && <a href="#budget" onClick={(e) => { e.preventDefault(); document.getElementById('tp-budget')?.scrollIntoView({ behavior: 'smooth' }) }}>預算</a>}
-        </nav>
-
-        {(d.days || []).map((day, i) => (
-          <section key={i} id={'tp-d' + (i + 1)} className="tp-day">
-            <div className="tp-dayhead">
-              <span>{day.label}</span>
-              <h2>{day.title}</h2>
-              {day.date && <small>{day.date}</small>}
+        {highlights.length >= 2 && (
+          <section className="tp-hl">
+            <h2 className="tp-h">行程亮點</h2>
+            <div className="tp-hl-row">
+              {highlights.map((h, i) => (
+                <button key={i} type="button" onClick={() => go('tp-d' + (h.day + 1))}>
+                  <Pic src={h.src} alt={h.label} ratio="3 / 4" />
+                  <span>{h.label}</span>
+                </button>
+              ))}
             </div>
-            {day.intro && <p className="tp-intro">{day.intro}</p>}
-            <ol className="tp-line">{(day.items || []).map((it, k) => <Item key={k} it={it} />)}</ol>
           </section>
-        ))}
+        )}
+      </div>
 
+      <nav className="tp-nav">
+        {days.map((x, i) => <button key={i} type="button" onClick={() => go('tp-d' + (i + 1))}>Day {i + 1}</button>)}
+        {d.hotel && <button type="button" onClick={() => go('tp-hotel')}>酒店</button>}
+        {d.transport && d.transport.length > 0 && <button type="button" onClick={() => go('tp-tr')}>交通</button>}
+        {d.budget && <button type="button" onClick={() => go('tp-budget')}>預算</button>}
+      </nav>
+
+      {days.map((day, i) => <Day key={i} day={day} n={i + 1} id={'tp-d' + (i + 1)} />)}
+
+      <div className="tp-wrap">
         {d.hotel && (
-          <section id="tp-hotel" className="tp-block">
-            <h2>住喺邊</h2>
-            <Photo src={d.hotel.image} credit={d.hotel.credit} alt={d.hotel.name} />
-            <h3>{d.hotel.name}<Verify show={d.hotel.verify} /></h3>
-            {d.hotel.text && <p>{d.hotel.text}</p>}
-            {d.hotel.highlights && <ul className="tp-mini">{d.hotel.highlights.map((h, i) => <li key={i}>{h}</li>)}</ul>}
-            {d.hotel.map && osmEmbed(d.hotel.map) && <iframe className="tp-map" title="地圖" src={osmEmbed(d.hotel.map)} loading="lazy" />}
-            <div className="tp-links">
-              {mapUrl(d.hotel.map) && <a href={mapUrl(d.hotel.map)} target="_blank" rel="noopener noreferrer">📍 Google 地圖</a>}
-              {(d.hotel.links || []).map((l, i) => <a key={i} href={l.url} target="_blank" rel="noopener noreferrer">{l.label}</a>)}
-            </div>
+          <section id="tp-hotel" className="tp-hotel">
+            <span className="tp-kick">STAY</span>
+            <h2>{d.hotel.name}<Verify show={d.hotel.verify} /></h2>
+            {d.hotel.image && <Pic src={d.hotel.image} alt={d.hotel.name} credit={d.hotel.credit} ratio="16 / 10" />}
+            {d.hotel.text && <p className="tp-lead">{d.hotel.text}</p>}
+            {d.hotel.highlights && <ul className="tp-hi">{d.hotel.highlights.map((h, i) => <li key={i}>{h}</li>)}</ul>}
+            <Links item={{ map: d.hotel.map, links: d.hotel.links }} />
           </section>
         )}
 
         {d.transport && d.transport.length > 0 && (
-          <section className="tp-block">
-            <h2>交通</h2>
+          <section id="tp-tr" className="tp-sec">
+            <h2 className="tp-h">交通</h2>
             {d.transport.map((t, i) => (
-              <div key={i} className="tp-tr">
-                <h3>{t.title}<Verify show={t.verify} /></h3>
-                {t.text && <p>{t.text}</p>}
-                {t.steps && <ol className="tp-mini">{t.steps.map((s, k) => <li key={k}>{s}</li>)}</ol>}
-                <Links links={t.links} />
-              </div>
+              <details key={i} className="tp-acc">
+                <summary>{t.title}<Verify show={t.verify} /></summary>
+                <div>
+                  <Pic src={t.image} alt={t.title} credit={t.credit} ratio="16 / 9" />
+                  {t.text && <p>{t.text}</p>}
+                  {t.steps && <ol>{t.steps.map((s, k) => <li key={k}>{s}</li>)}</ol>}
+                  <Links item={t} />
+                </div>
+              </details>
             ))}
           </section>
         )}
 
         {d.budget && (
-          <section id="tp-budget" className="tp-block">
-            <h2>預算</h2>
+          <section id="tp-budget" className="tp-sec">
+            <h2 className="tp-h">預算</h2>
             <table className="tp-table">
               <tbody>
                 {d.budget.items.map((x, i) => (
@@ -196,16 +281,16 @@ export default function TripPage({ slug }) {
         )}
 
         {d.tips && d.tips.length > 0 && (
-          <section className="tp-block">
-            <h2>小提醒</h2>
-            <ul className="tp-mini">{d.tips.map((t, i) => <li key={i}>{t}</li>)}</ul>
+          <section className="tp-sec">
+            <h2 className="tp-h">小提醒</h2>
+            <ul className="tp-hi">{d.tips.map((t, i) => <li key={i}>{t}</li>)}</ul>
           </section>
         )}
 
         {d.links && d.links.length > 0 && (
-          <section className="tp-block">
-            <h2>有用連結</h2>
-            <Links links={d.links} />
+          <section className="tp-sec">
+            <h2 className="tp-h">有用連結</h2>
+            <p className="tp-act">{d.links.map((l, i) => <a key={i} href={l.url} target="_blank" rel="noopener noreferrer">{l.label} ↗</a>)}</p>
           </section>
         )}
 
