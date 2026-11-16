@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { cget, cset } from './cache.js'
 import Hero from './Hero.jsx'
 
@@ -39,6 +39,50 @@ const ROWS = [
 ]
 
 const hasOk = (r) => r.status.some((s) => s.k === 'ok')
+
+// 身體部位對照圖:頁頂兩張縮圖,撳開大圖(再撳圖放大,可左右拖)
+const BASE = import.meta.env.BASE_URL
+const MAPS = [
+  { key: 'back', label: '背面 · 骨骼與肌肉', thumb: BASE + 'body/back-s.jpg', full: BASE + 'body/back.jpg' },
+  { key: 'foot', label: '腳底 · 肌肉與表面', thumb: BASE + 'body/foot-s.jpg', full: BASE + 'body/foot.jpg' },
+]
+
+function BodyMaps() {
+  const [open, setOpen] = useState(null)
+  const [zoom, setZoom] = useState(false)
+  const close = () => { setOpen(null); setZoom(false) }
+  useEffect(() => {
+    if (!open) return
+    const k = (e) => e.key === 'Escape' && close()
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [open])
+  const m = MAPS.find((x) => x.key === open)
+  return (
+    <>
+      <div className="ab-maps">
+        {MAPS.map((x) => (
+          <button key={x.key} className="ab-map" onClick={() => setOpen(x.key)}>
+            <img src={x.thumb} alt={x.label} loading="lazy" />
+            <span>{x.label}</span>
+          </button>
+        ))}
+      </div>
+      {m && (
+        <div className="ab-lb" onClick={close}>
+          <div className="ab-lb-bar" onClick={(e) => e.stopPropagation()}>
+            <span>{m.label}</span>
+            <button onClick={() => setZoom((z) => !z)}>{zoom ? '縮小' : '放大'}</button>
+            <button onClick={close} aria-label="關閉">✕</button>
+          </div>
+          <div className="ab-lb-body" onClick={(e) => e.stopPropagation()}>
+            <img src={m.full} alt={m.label} style={{ width: zoom ? '240%' : '100%' }} onClick={() => setZoom((z) => !z)} />
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
 
 // 由 YouTube 連結攞影片 id
 const vid = (u) => (u || '').match(/(?:v=|youtu\.be\/)([\w-]{11})/)?.[1] || ''
@@ -103,6 +147,7 @@ export default function Ability() {
         sub="哪裡累 → 舒緩 + 能力建立"
         stats={[{ n: ROWS.length, label: '部位' }, { n: ok, label: '有效' }, { n: wait, label: '待測' }]}
       />
+      <BodyMaps />
       <div className="filters ab-filters">
         <select value={kind} onChange={(e) => pickKind(e.target.value)} aria-label="類別">
           <option value="all">全部 {nRelief + nBuild}</option>
