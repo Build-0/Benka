@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { cget, cset } from './cache.js'
 import Hero from './Hero.jsx'
 
 // 鍛煉:能力建造表(來源:Notion「d.鍛煉與精力」表2)。動作名稱連去示範影片。
@@ -84,6 +85,14 @@ function Actions({ scope, items, playing, setPlaying }) {
 
 export default function Ability() {
   const [playing, setPlaying] = useState('')
+  const [kind, setKind] = useState(() => cget('ab-kind') || 'all')
+  const [part, setPart] = useState(() => cget('ab-part') || 'all')
+  const pickKind = (v) => { setKind(v); cset('ab-kind', v) }
+  const pickPart = (v) => { setPart(v); cset('ab-part', v) }
+  const nRelief = ROWS.reduce((n, r) => n + r.relief.length, 0)
+  const nBuild = ROWS.reduce((n, r) => n + r.build.length, 0)
+  // 篩選:類別(舒緩/能力建立)只留該類動作,冇該類動作嘅部位隱藏;部位只留揀咗嗰個
+  const shown = ROWS.filter((r) => (part === 'all' || r.pos === part) && (kind === 'all' || (kind === 'relief' ? r.relief : r.build).length > 0))
   const ok = ROWS.filter(hasOk).length
   const wait = ROWS.filter((r) => r.status.some((s) => s.k === 'wait')).length
   return (
@@ -94,15 +103,27 @@ export default function Ability() {
         sub="哪裡累 → 舒緩 + 能力建立"
         stats={[{ n: ROWS.length, label: '部位' }, { n: ok, label: '有效' }, { n: wait, label: '待測' }]}
       />
+      <div className="filters ab-filters">
+        <select value={kind} onChange={(e) => pickKind(e.target.value)} aria-label="類別">
+          <option value="all">全部 {nRelief + nBuild}</option>
+          <option value="relief">舒緩 {nRelief}</option>
+          <option value="build">能力建立 {nBuild}</option>
+        </select>
+        <select value={part} onChange={(e) => pickPart(e.target.value)} aria-label="身體部位">
+          <option value="all">所有部位</option>
+          {ROWS.map((r) => <option key={r.pos} value={r.pos}>{r.pos}</option>)}
+        </select>
+      </div>
+      {shown.length === 0 && <div className="empty muted">冇符合嘅項目。</div>}
       <div className="ab-list">
-        {ROWS.map((r) => (
+        {shown.map((r) => (
           <section key={r.pos} className="card ab-card">
             <div className="ab-head">
               <b>{r.pos}</b>
               {r.issue && <span className="muted ab-issue">{r.issue}</span>}
             </div>
-            {(r.relief.length > 0 || r.build.length > 0) && (
-              <Actions scope={r.pos} items={[...r.relief.map((x) => ({ ...x, kind: 'relief' })), ...r.build.map((x) => ({ ...x, kind: 'build' }))]} playing={playing} setPlaying={setPlaying} />
+            {(kind === 'all' ? r.relief.length + r.build.length : (kind === 'relief' ? r.relief : r.build).length) > 0 && (
+              <Actions scope={r.pos} items={[...(kind === 'build' ? [] : r.relief.map((x) => ({ ...x, kind: 'relief' }))), ...(kind === 'relief' ? [] : r.build.map((x) => ({ ...x, kind: 'build' })))]} playing={playing} setPlaying={setPlaying} />
             )}
             <div className="ab-status">
               {r.status.map((s) => <span key={s.t} className={'ab-badge ' + s.k}>{s.t}</span>)}

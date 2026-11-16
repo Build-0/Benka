@@ -502,3 +502,4 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .ab-tag.relief { background: #e3f0fb; color: #2a6aa5; }
 .ab-tag.build { background: #fdeadf; color: #b4541f; }
 .ab-act.plain { gap: 4px; }
+.ab-filters select { width: 100%; min-width: 0; }
