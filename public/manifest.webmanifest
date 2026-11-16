@@ -1,6 +1,6 @@
 {
-  "name": "本家",
-  "short_name": "本家",
+  "name": "照行",
+  "short_name": "照行",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

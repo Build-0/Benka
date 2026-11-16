@@ -39,7 +39,7 @@ export default function App() {
     <div className="shell">
       <UpdatePrompt />
       <nav className="nav">
-        <div className="brand">本家</div>
+        <div className="brand">照行</div>
         {MODULES.map((m) => (
           <button key={m.key} className={'navbtn' + (tab === m.key ? ' on' : '')} onClick={() => go(m.key)}>
             <Icon n={m.icon} />

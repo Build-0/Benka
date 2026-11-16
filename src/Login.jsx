@@ -19,7 +19,7 @@ export default function Login() {
   return (
     <div className="center">
       <form className="card login" onSubmit={submit}>
-        <h1>本家</h1>
+        <h1>照行</h1>
         <input type="email" placeholder="電郵" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required />
         <div className="pw">
           <input type={show ? 'text' : 'password'} placeholder="密碼" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
