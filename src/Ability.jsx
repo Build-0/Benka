@@ -87,42 +87,42 @@ function BodyMaps() {
 // 由 YouTube 連結攞影片 id
 const vid = (u) => (u || '').match(/(?:v=|youtu\.be\/)([\w-]{11})/)?.[1] || ''
 
-// 動作卡:有影片 → 縮圖+播放掣,撳一下就地播放(撳先載入,唔拖慢頁面);冇影片 → 純文字卡
-function Actions({ scope, items, playing, setPlaying }) {
-  // 舒緩同能力建立放喺同一個兩欄格,左右並排;每張卡有類別標籤
+// 動作卡:每個動作一張卡(影片縮圖 → 類別+「部位 動作」一行 → 問題 → YouTube → 狀態)。
+// 撳縮圖就地播放(撳先載入,唔拖慢頁面);冇影片嘅動作同冇動作嘅部位係純文字卡。
+function Card({ c, playing, setPlaying }) {
+  const { r, x, kind } = c
+  const id = vid(x?.u)
+  const key = r.pos + (kind || '') + (x?.t || '')
+  const on = playing === key
+  const tag = kind && <span className={'ab-tag ' + kind}>{kind === 'relief' ? '舒緩' : '能力建立'}</span>
   return (
-    <div className="ab-acts">
-      {items.map((x) => {
-        const id = vid(x.u)
-        const tag = <span className={'ab-tag ' + x.kind}>{x.kind === 'relief' ? '舒緩' : '能力建立'}</span>
-        if (!id) return <div key={x.kind + x.t} className="ab-act plain">{tag}<span className="ab-t">{x.t}</span></div>
-        const key = scope + x.kind + x.t
-        const on = playing === key
-        return (
-          <div key={x.kind + x.t} className={'ab-act' + (on ? ' on' : '')}>
-            <div className="ab-vid">
-              {on ? (
-                <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1`}
-                  title={x.t}
-                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                  allowFullScreen
-                />
-              ) : (
-                <button className="ab-thumb" onClick={() => setPlaying(key)} aria-label={'播放 ' + x.t}>
-                  <img src={`https://i.ytimg.com/vi/${id}/mqdefault.jpg`} alt="" loading="lazy" />
-                  <span className="ab-play" aria-hidden="true">▶</span>
-                </button>
-              )}
-            </div>
-            <div className="ab-cap">
-              {tag}
-              <span className="ab-t">{x.t}</span>
-              <a className="ab-yt" href={x.u} target="_blank" rel="noopener noreferrer">YouTube ↗</a>
-            </div>
-          </div>
-        )
-      })}
+    <div className={'ab-act' + (on ? ' on' : '') + (id ? '' : ' plain')}>
+      {id && (
+        <div className="ab-vid">
+          {on ? (
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1`}
+              title={x.t}
+              allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+              allowFullScreen
+            />
+          ) : (
+            <button className="ab-thumb" onClick={() => setPlaying(key)} aria-label={'播放 ' + x.t}>
+              <img src={`https://i.ytimg.com/vi/${id}/mqdefault.jpg`} alt="" loading="lazy" />
+              <span className="ab-play" aria-hidden="true">▶</span>
+            </button>
+          )}
+        </div>
+      )}
+      <div className="ab-cap">
+        {tag}
+        <span className="ab-t">{r.pos}{x && <> <b>{x.t}</b></>}</span>
+        {r.issue && <span className="ab-issue">{r.issue}</span>}
+        {id && <a className="ab-yt" href={x.u} target="_blank" rel="noopener noreferrer">YouTube ↗</a>}
+        <div className="ab-status">
+          {r.status.map((s) => <span key={s.t} className={'ab-badge ' + s.k}>{s.t}</span>)}
+        </div>
+      </div>
     </div>
   )
 }
@@ -135,8 +135,14 @@ export default function Ability() {
   const pickPart = (v) => { setPart(v); cset('ab-part', v) }
   const nRelief = ROWS.reduce((n, r) => n + r.relief.length, 0)
   const nBuild = ROWS.reduce((n, r) => n + r.build.length, 0)
-  // 篩選:類別(舒緩/能力建立)只留該類動作,冇該類動作嘅部位隱藏;部位只留揀咗嗰個
-  const shown = ROWS.filter((r) => (part === 'all' || r.pos === part) && (kind === 'all' || (kind === 'relief' ? r.relief : r.build).length > 0))
+  // 攤平成一張張動作卡;類別只留該類動作;冇任何動作嘅部位只喺「全部」顯示
+  const cards = ROWS.filter((r) => part === 'all' || r.pos === part).flatMap((r) => {
+    const items = [
+      ...(kind === 'build' ? [] : r.relief.map((x) => ({ r, x, kind: 'relief' }))),
+      ...(kind === 'relief' ? [] : r.build.map((x) => ({ r, x, kind: 'build' }))),
+    ]
+    return items.length || kind !== 'all' ? items : [{ r, x: null, kind: '' }]
+  })
   const ok = ROWS.filter(hasOk).length
   const wait = ROWS.filter((r) => r.status.some((s) => s.k === 'wait')).length
   return (
@@ -159,22 +165,9 @@ export default function Ability() {
           {ROWS.map((r) => <option key={r.pos} value={r.pos}>{r.pos}</option>)}
         </select>
       </div>
-      {shown.length === 0 && <div className="empty muted">冇符合嘅項目。</div>}
-      <div className="ab-list">
-        {shown.map((r) => (
-          <section key={r.pos} className="card ab-card">
-            <div className="ab-head">
-              <b>{r.pos}</b>
-              {r.issue && <span className="muted ab-issue">{r.issue}</span>}
-            </div>
-            {(kind === 'all' ? r.relief.length + r.build.length : (kind === 'relief' ? r.relief : r.build).length) > 0 && (
-              <Actions scope={r.pos} items={[...(kind === 'build' ? [] : r.relief.map((x) => ({ ...x, kind: 'relief' }))), ...(kind === 'relief' ? [] : r.build.map((x) => ({ ...x, kind: 'build' })))]} playing={playing} setPlaying={setPlaying} />
-            )}
-            <div className="ab-status">
-              {r.status.map((s) => <span key={s.t} className={'ab-badge ' + s.k}>{s.t}</span>)}
-            </div>
-          </section>
-        ))}
+      {cards.length === 0 && <div className="empty muted">冇符合嘅項目。</div>}
+      <div className="ab-acts">
+        {cards.map((c) => <Card key={c.r.pos + c.kind + (c.x?.t || '')} c={c} playing={playing} setPlaying={setPlaying} />)}
       </div>
     </>
   )
