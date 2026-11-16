@@ -1,4 +1,4 @@
-import Icon from './Icon.jsx'
+import { useState } from 'react'
 import Hero from './Hero.jsx'
 
 // 鍛煉:能力建造表(來源:Notion「d.鍛煉與精力」表2)。動作名稱連去示範影片。
@@ -39,17 +39,48 @@ const ROWS = [
 
 const hasOk = (r) => r.status.some((s) => s.k === 'ok')
 
-function Links({ items }) {
+// 由 YouTube 連結攞影片 id
+const vid = (u) => (u || '').match(/(?:v=|youtu\.be\/)([\w-]{11})/)?.[1] || ''
+
+// 動作卡:有影片 → 縮圖+播放掣,撳一下就地播放(撳先載入,唔拖慢頁面);冇影片 → 純文字卡
+function Actions({ scope, items, playing, setPlaying }) {
   return (
-    <div className="ab-links">
-      {items.map((x) => x.u
-        ? <a key={x.t} className="ab-link" href={x.u} target="_blank" rel="noopener noreferrer">{x.t}<span aria-hidden="true"> ↗</span></a>
-        : <span key={x.t} className="ab-link plain">{x.t}</span>)}
+    <div className="ab-acts">
+      {items.map((x) => {
+        const id = vid(x.u)
+        if (!id) return <div key={x.t} className="ab-act plain"><span className="ab-t">{x.t}</span></div>
+        const key = scope + x.t
+        const on = playing === key
+        return (
+          <div key={x.t} className={'ab-act' + (on ? ' on' : '')}>
+            <div className="ab-vid">
+              {on ? (
+                <iframe
+                  src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1`}
+                  title={x.t}
+                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                  allowFullScreen
+                />
+              ) : (
+                <button className="ab-thumb" onClick={() => setPlaying(key)} aria-label={'播放 ' + x.t}>
+                  <img src={`https://i.ytimg.com/vi/${id}/mqdefault.jpg`} alt="" loading="lazy" />
+                  <span className="ab-play" aria-hidden="true">▶</span>
+                </button>
+              )}
+            </div>
+            <div className="ab-cap">
+              <span className="ab-t">{x.t}</span>
+              <a className="ab-yt" href={x.u} target="_blank" rel="noopener noreferrer">YouTube ↗</a>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
 
 export default function Ability() {
+  const [playing, setPlaying] = useState('')
   const ok = ROWS.filter(hasOk).length
   const wait = ROWS.filter((r) => r.status.some((s) => s.k === 'wait')).length
   return (
@@ -68,10 +99,10 @@ export default function Ability() {
               {r.issue && <span className="muted ab-issue">{r.issue}</span>}
             </div>
             {r.relief.length > 0 && (
-              <div className="ab-row"><span className="ab-lab">舒緩</span><Links items={r.relief} /></div>
+              <div className="ab-sec"><div className="ab-lab">舒緩</div><Actions scope={r.pos + "relief"} items={r.relief} playing={playing} setPlaying={setPlaying} /></div>
             )}
             {r.build.length > 0 && (
-              <div className="ab-row"><span className="ab-lab">能力建立</span><Links items={r.build} /></div>
+              <div className="ab-sec"><div className="ab-lab">能力建立</div><Actions scope={r.pos + "build"} items={r.build} playing={playing} setPlaying={setPlaying} /></div>
             )}
             <div className="ab-status">
               {r.status.map((s) => <span key={s.t} className={'ab-badge ' + s.k}>{s.t}</span>)}
