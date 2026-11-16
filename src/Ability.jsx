@@ -44,15 +44,17 @@ const vid = (u) => (u || '').match(/(?:v=|youtu\.be\/)([\w-]{11})/)?.[1] || ''
 
 // 動作卡:有影片 → 縮圖+播放掣,撳一下就地播放(撳先載入,唔拖慢頁面);冇影片 → 純文字卡
 function Actions({ scope, items, playing, setPlaying }) {
+  // 舒緩同能力建立放喺同一個兩欄格,左右並排;每張卡有類別標籤
   return (
     <div className="ab-acts">
       {items.map((x) => {
         const id = vid(x.u)
-        if (!id) return <div key={x.t} className="ab-act plain"><span className="ab-t">{x.t}</span></div>
-        const key = scope + x.t
+        const tag = <span className={'ab-tag ' + x.kind}>{x.kind === 'relief' ? '舒緩' : '能力建立'}</span>
+        if (!id) return <div key={x.kind + x.t} className="ab-act plain">{tag}<span className="ab-t">{x.t}</span></div>
+        const key = scope + x.kind + x.t
         const on = playing === key
         return (
-          <div key={x.t} className={'ab-act' + (on ? ' on' : '')}>
+          <div key={x.kind + x.t} className={'ab-act' + (on ? ' on' : '')}>
             <div className="ab-vid">
               {on ? (
                 <iframe
@@ -69,6 +71,7 @@ function Actions({ scope, items, playing, setPlaying }) {
               )}
             </div>
             <div className="ab-cap">
+              {tag}
               <span className="ab-t">{x.t}</span>
               <a className="ab-yt" href={x.u} target="_blank" rel="noopener noreferrer">YouTube ↗</a>
             </div>
@@ -98,11 +101,8 @@ export default function Ability() {
               <b>{r.pos}</b>
               {r.issue && <span className="muted ab-issue">{r.issue}</span>}
             </div>
-            {r.relief.length > 0 && (
-              <div className="ab-sec"><div className="ab-lab">舒緩</div><Actions scope={r.pos + "relief"} items={r.relief} playing={playing} setPlaying={setPlaying} /></div>
-            )}
-            {r.build.length > 0 && (
-              <div className="ab-sec"><div className="ab-lab">能力建立</div><Actions scope={r.pos + "build"} items={r.build} playing={playing} setPlaying={setPlaying} /></div>
+            {(r.relief.length > 0 || r.build.length > 0) && (
+              <Actions scope={r.pos} items={[...r.relief.map((x) => ({ ...x, kind: 'relief' })), ...r.build.map((x) => ({ ...x, kind: 'build' }))]} playing={playing} setPlaying={setPlaying} />
             )}
             <div className="ab-status">
               {r.status.map((s) => <span key={s.t} className={'ab-badge ' + s.k}>{s.t}</span>)}
