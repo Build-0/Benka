@@ -6,6 +6,7 @@ import Icon from './Icon.jsx'
 import Ideas from './Ideas.jsx'
 import Supplements from './Supplements.jsx'
 import Board from './Board.jsx'
+import Ability from './Ability.jsx'
 import { VersionBadge, UpdatePrompt } from './Version.jsx'
 
 // 之後每個模組加落呢個表，手機底部分頁 / 闊畫面側邊欄會自動出現。
@@ -13,6 +14,7 @@ const MODULES = [
   { key: 'ideas', label: '想法', icon: 'bulb' },
   { key: 'supp', label: '保健品', icon: 'pill' },
   { key: 'board', label: '看板', icon: 'calendar-time' },
+  { key: 'ability', label: '鍛煉', icon: 'barbell' },
 ]
 
 export default function App() {
@@ -59,6 +61,7 @@ export default function App() {
         {tab === 'ideas' && <Ideas />}
         {tab === 'supp' && <Supplements />}
         {tab === 'board' && <Board />}
+        {tab === 'ability' && <Ability />}
       </main>
 
       {menu && (
