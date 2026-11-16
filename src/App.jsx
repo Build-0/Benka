@@ -6,30 +6,16 @@ import Icon from './Icon.jsx'
 import Ideas from './Ideas.jsx'
 import Supplements from './Supplements.jsx'
 import Board from './Board.jsx'
-import TripsAdmin from './TripsAdmin.jsx'
 import { VersionBadge, UpdatePrompt } from './Version.jsx'
-import TripPage, { tripSlug } from './TripPage.jsx'
 
 // 之後每個模組加落呢個表，手機底部分頁 / 闊畫面側邊欄會自動出現。
 const MODULES = [
   { key: 'ideas', label: '想法', icon: 'bulb' },
   { key: 'supp', label: '保健品', icon: 'pill' },
   { key: 'board', label: '看板', icon: 'calendar-time' },
-  { key: 'trips', label: '行程', icon: 'plane' },
 ]
 
-// 公開行程頁(#/t/<slug>)唔使登入,其餘一律要登入
 export default function App() {
-  const [slug, setSlug] = useState(tripSlug)
-  useEffect(() => {
-    const f = () => setSlug(tripSlug())
-    window.addEventListener('hashchange', f)
-    return () => window.removeEventListener('hashchange', f)
-  }, [])
-  return slug ? <TripPage key={slug} slug={slug} /> : <Main />
-}
-
-function Main() {
   const [session, setSession] = useState(undefined)
   const [menu, setMenu] = useState(false)
   const [tab, setTab] = useState(() => {
@@ -73,7 +59,6 @@ function Main() {
         {tab === 'ideas' && <Ideas />}
         {tab === 'supp' && <Supplements />}
         {tab === 'board' && <Board />}
-        {tab === 'trips' && <TripsAdmin />}
       </main>
 
       {menu && (
