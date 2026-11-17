@@ -62,7 +62,7 @@ function BodyMaps() {
     <>
       <div className="ab-maps">
         {MAPS.map((x) => (
-          <button key={x.key} className="ab-map" style={{ flex: x.ar + ' 1 0' }} onClick={() => setOpen(x.key)}>
+          <button key={x.key} className="ab-map" onClick={() => setOpen(x.key)}>
             <img src={x.thumb} alt={x.label} loading="lazy" style={{ aspectRatio: x.ar }} />
             <span>{x.label}</span>
           </button>
