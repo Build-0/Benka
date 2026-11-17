@@ -512,3 +512,5 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .ab-status { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
 .ab-badge { font-size: 11px; padding: 1px 6px; }
 .ab-act.plain { align-self: start; }
+/* 篩選器凍結喺頂部,捲動時一直見到 */
+.ab-filters { position: sticky; top: var(--sat); z-index: 15; margin: 0 -14px 10px; padding: 8px 14px 10px; background: rgba(238, 243, 249, .94); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 6px 10px -8px rgba(31, 43, 58, .35); }
