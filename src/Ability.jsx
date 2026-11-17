@@ -136,13 +136,15 @@ export default function Ability() {
   const nRelief = ROWS.reduce((n, r) => n + r.relief.length, 0)
   const nBuild = ROWS.reduce((n, r) => n + r.build.length, 0)
   // 攤平成一張張動作卡;類別只留該類動作;冇任何動作嘅部位只喺「全部」顯示
-  const cards = ROWS.filter((r) => part === 'all' || r.pos === part).flatMap((r) => {
+  const allCards = ROWS.filter((r) => part === 'all' || r.pos === part).flatMap((r) => {
     const items = [
       ...(kind === 'build' ? [] : r.relief.map((x) => ({ r, x, kind: 'relief' }))),
       ...(kind === 'relief' ? [] : r.build.map((x) => ({ r, x, kind: 'build' }))),
     ]
     return items.length || kind !== 'all' ? items : [{ r, x: null, kind: '' }]
   })
+  // 有影片嘅排前面,冇影片(純文字)嘅放最後;各自保持原有次序
+  const cards = [...allCards.filter((c) => vid(c.x?.u)), ...allCards.filter((c) => !vid(c.x?.u))]
   const ok = ROWS.filter(hasOk).length
   const wait = ROWS.filter((r) => r.status.some((s) => s.k === 'wait')).length
   return (
