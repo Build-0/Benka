@@ -49,6 +49,7 @@ export default function Supplements() {
       />
       {err && <div className="card errbox">讀取失敗:{err}</div>}
 
+      <div className="stickyf">
       <div className="seg" role="tablist">
         {TABS.map((s) => (
           <button key={s.key} role="tab" aria-selected={slot === s.key} className={'sg' + (slot === s.key ? ' on' : '')} style={{ '--c': s.color }} onClick={() => pick(s.key)}>
@@ -57,6 +58,7 @@ export default function Supplements() {
             <span className="n">{s.key === 'all' ? total : inSlot(s.key).length}</span>
           </button>
         ))}
+      </div>
       </div>
 
       {rows && total === 0 && <div className="empty muted">未有保健品。</div>}

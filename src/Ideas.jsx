@@ -105,6 +105,7 @@ export default function Ideas() {
         </div>
       )}
 
+      <div className="stickyf">
       <div className="tools">
         <input className="search" type="search" placeholder="搜尋標題、內容、標籤…" value={q} onChange={(e) => setQ(e.target.value)} />
         <div className="tog" role="group" aria-label="檢視方式">
@@ -121,6 +122,7 @@ export default function Ideas() {
           ))}
         </div>
       )}
+      </div>
 
       {rows && shown.length === 0 && !err && (
         <div className="empty muted">{rows.length === 0 ? '未有想法,撳右下角「＋」記低第一個。' : '搵唔到符合嘅想法。'}</div>

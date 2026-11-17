@@ -284,7 +284,7 @@ export default function Board() {
       )}
 
       {(
-        <div className="filters">
+        <div className="filters stickyf">
           <label>日子
             <select value={day} onChange={(e) => pickDay(e.target.value)}>
               {dayOpts.map((d) => <option key={d.key} value={d.key}>{d.label}{mode === 'me' ? '(自由 ' + dur(summary.find((s) => s.key === d.key).total) + ')' : ''}</option>)}
