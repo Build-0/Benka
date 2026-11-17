@@ -43,8 +43,8 @@ const hasOk = (r) => r.status.some((s) => s.k === 'ok')
 // 身體部位對照圖:頁頂兩張縮圖,撳開大圖(再撳圖放大,可左右拖)
 const BASE = import.meta.env.BASE_URL
 const MAPS = [
-  { key: 'back', label: '背面 · 骨骼與肌肉', thumb: BASE + 'body/back-s.jpg', full: BASE + 'body/back.jpg' },
-  { key: 'foot', label: '腳底 · 肌肉與表面', thumb: BASE + 'body/foot-s.jpg', full: BASE + 'body/foot.jpg' },
+  { key: 'back', ar: 0.8, label: '背面 骨骼肌肉', thumb: BASE + 'body/back-s.jpg', full: BASE + 'body/back.jpg' },
+  { key: 'foot', ar: 1.5, label: '腳底 肌肉表面', thumb: BASE + 'body/foot-s.jpg', full: BASE + 'body/foot.jpg' },
 ]
 
 function BodyMaps() {
@@ -62,8 +62,8 @@ function BodyMaps() {
     <>
       <div className="ab-maps">
         {MAPS.map((x) => (
-          <button key={x.key} className="ab-map" onClick={() => setOpen(x.key)}>
-            <img src={x.thumb} alt={x.label} loading="lazy" />
+          <button key={x.key} className="ab-map" style={{ flex: x.ar + ' 1 0' }} onClick={() => setOpen(x.key)}>
+            <img src={x.thumb} alt={x.label} loading="lazy" style={{ aspectRatio: x.ar }} />
             <span>{x.label}</span>
           </button>
         ))}

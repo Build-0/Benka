@@ -491,10 +491,11 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .ab-tag { align-self: flex-start; font-size: 11px; padding: 1px 7px; border-radius: 6px; font-weight: 600; }
 .ab-tag.relief { background: #e3f0fb; color: #2a6aa5; }
 .ab-tag.build { background: #fdeadf; color: #b4541f; }
-.ab-filters select { width: 100%; min-width: 0; }
-.ab-maps { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 12px; }
-.ab-map { padding: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--card); overflow: hidden; cursor: pointer; display: flex; flex-direction: column; font: inherit; color: var(--ink); text-align: left; }
-.ab-map img { width: 100%; height: 120px; object-fit: cover; object-position: top; display: block; background: #fff; }
+.ab-filters { gap: 12px; }
+.ab-filters select { width: 100%; min-width: 0; min-height: 58px; font-size: 18px; padding: 0 16px; border-radius: 16px; }
+.ab-maps { display: flex; gap: 10px; margin: 0 0 12px; align-items: stretch; }
+.ab-map { min-width: 0; padding: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--card); overflow: hidden; cursor: pointer; display: flex; flex-direction: column; font: inherit; color: var(--ink); text-align: left; }
+.ab-map img { width: 100%; height: auto; object-fit: contain; display: block; background: #fff; }
 .ab-map span { padding: 6px 10px 8px; font-size: 13px; font-weight: 600; }
 .ab-lb { position: fixed; inset: 0; z-index: 60; background: rgba(15, 22, 32, .88); display: flex; flex-direction: column; }
 .ab-lb-bar { flex: none; display: flex; align-items: center; gap: 8px; padding: calc(10px + env(safe-area-inset-top, 0px)) 14px 10px; color: #fff; font-size: 14px; }
@@ -502,7 +503,7 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .ab-lb-bar button { border: 1px solid rgba(255, 255, 255, .4); background: transparent; color: #fff; border-radius: 10px; min-height: 36px; padding: 0 14px; font: inherit; font-size: 14px; cursor: pointer; }
 .ab-lb-body { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 0 8px calc(12px + env(safe-area-inset-bottom, 0px)); }
 .ab-lb-body img { display: block; max-width: none; margin: 0 auto; background: #fff; border-radius: 8px; cursor: zoom-in; }
-@media (min-width: 800px) { .ab-lb-body img { max-width: 900px; } .ab-map img { height: 160px; } }
+@media (min-width: 800px) { .ab-lb-body img { max-width: 900px; } .ab-maps { max-width: 560px; } }
 .ab-act.plain { padding: 0; background: var(--bg); }
 .ab-cap { padding: 7px 9px 9px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
 .ab-t { font-size: 14px; line-height: 1.35; color: var(--muted); }
@@ -510,3 +511,4 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .ab-issue { font-size: 12px; color: var(--muted); }
 .ab-status { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
 .ab-badge { font-size: 11px; padding: 1px 6px; }
+.ab-act.plain { align-self: start; }
