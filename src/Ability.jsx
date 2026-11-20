@@ -11,7 +11,7 @@ const ROWS = [
     build: [{ t: '短足運動', u: 'https://youtube.com/shorts/7EQ_9LfUYcM', d: '每次維持 5 秒，重複 8 次;抬起足弓,唔好蜷腳趾' }],
     status: [{ t: '舒緩已驗證有效', k: 'ok' }] },
   { pos: '久走｜小腿', issue: '酸、脹、累',
-    relief: [{ t: '比目魚肌伸展', u: yt('zV4TFmtSmkc') }, { t: '靠牆小腿伸展', u: yt('G3CFdJCNKgk'), d: '每次 30 秒 × 3 次;腳跟唔好離地(影片 9:03 起)' }], build: [{ t: '坐姿提踵', u: yt('BxfKOyI8sUg') }],
+    relief: [{ t: '比目魚肌伸展', u: yt('zV4TFmtSmkc') }], build: [{ t: '坐姿提踵', u: yt('BxfKOyI8sUg') }],
     status: [{ t: '舒緩已驗證有效', k: 'ok' }] },
   { pos: '單側右手向下｜右肩胛', issue: '酸、累',
     relief: [{ t: '肩胛後收', u: yt('9tJTdqUXW14') }], build: [{ t: '牆面滑手', u: yt('rw35lIr2LjA') }],
@@ -38,6 +38,27 @@ const ROWS = [
     relief: [], build: [{ t: '前夾胸／側抬腿等' }],
     status: [{ t: '測試中', k: 'wait' }] },
 ]
+
+// 做法:每個動作都寫明次數/時間(沒有逐項 d 時用呢度)。屬一般建議,按身體感覺調整,痛就停
+const DOSE = {
+  '筋膜槍／震動泡沫軸': '每個位置 30–60 秒,避開骨頭,力度以微酸為限',
+  '比目魚肌伸展': '膝微屈、腳跟壓地,每次 30 秒 × 3 次',
+  '坐姿提踵': '每組 12–15 下 × 3 組,慢升慢降',
+  '肩胛後收': '夾緊肩胛骨 5 秒 × 10 次',
+  '牆面滑手': '背貼牆,手臂沿牆上下滑 10 次 × 2 組',
+  '地面側屈＋輕旋轉': '每邊 20–30 秒 × 2 次,慢慢做',
+  '死蟲式': '每邊 8–10 下 × 2–3 組,腰貼地',
+  '彈力帶划船': '每組 12–15 下 × 3 組,肩胛後收',
+  '臀肌伸展': '每邊 30 秒 × 2–3 次',
+  '髖屈肌伸展': '每邊 30 秒 × 2–3 次,骨盆收正',
+  '髖鉸鏈': '每組 10–12 下 × 3 組,背打直、屈髖',
+  '臀橋': '每組 12–15 下 × 3 組,頂點停 2 秒',
+  '貓牛式': '慢慢來回 10 次 × 2 組',
+  '跑前動態熱身': '5–10 分鐘,由慢到快',
+  '跑後拉伸': '每個部位 30 秒 × 2 次',
+  '跑步': '循序漸進,以可聊天嘅強度為準',
+  '前夾胸／側抬腿等': '每組 12–15 下 × 2–3 組',
+}
 
 const hasOk = (r) => r.status.some((s) => s.k === 'ok')
 
@@ -119,7 +140,7 @@ function Card({ c, playing, setPlaying }) {
         {tag}
         <span className="ab-t">{r.pos}{x && <> <b>{x.t}</b></>}</span>
         {r.issue && <span className="ab-issue">{r.issue}</span>}
-        {x?.d && <span className="ab-issue">做法:{x.d}</span>}
+        {(x?.d || DOSE[x?.t]) && <span className="ab-issue">做法:{x.d || DOSE[x.t]}</span>}
         {id && <a className="ab-yt" href={x.u} target="_blank" rel="noopener noreferrer">YouTube ↗</a>}
         <div className="ab-status">
           {r.status.map((s) => <span key={s.t} className={'ab-badge ' + s.k}>{s.t}</span>)}
