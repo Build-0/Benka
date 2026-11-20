@@ -8,7 +8,7 @@ const yt = (id) => 'https://www.youtube.com/watch?v=' + id
 const ROWS = [
   { pos: '久走｜腳掌', issue: '酸、脹、累',
     relief: [{ t: '筋膜槍／震動泡沫軸' }, { t: '足底筋膜伸展(大腳趾)', u: yt('Rcsd2frLJ78'), d: '每次 20–30 秒 × 3 次;前腳掌痛加劇就停' }],
-    build: [{ t: '短足運動', d: '每次維持 5 秒 × 8 次;抬起足弓,唔好蜷腳趾' }],
+    build: [{ t: '短足運動', u: 'https://youtube.com/shorts/7EQ_9LfUYcM', d: '每次維持 5 秒 × 8 次;抬起足弓,唔好蜷腳趾' }],
     status: [{ t: '舒緩已驗證有效', k: 'ok' }] },
   { pos: '久走｜小腿', issue: '酸、脹、累',
     relief: [{ t: '比目魚肌伸展', u: yt('zV4TFmtSmkc') }, { t: '靠牆小腿伸展', u: yt('G3CFdJCNKgk'), d: '每次 30 秒 × 3 次;腳跟唔好離地(影片 9:03 起)' }], build: [{ t: '坐姿提踵', u: yt('BxfKOyI8sUg') }],
