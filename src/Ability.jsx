@@ -7,10 +7,11 @@ import Hero from './Hero.jsx'
 const yt = (id) => 'https://www.youtube.com/watch?v=' + id
 const ROWS = [
   { pos: '久走｜腳掌', issue: '酸、脹、累',
-    relief: [{ t: '筋膜槍／震動泡沫軸' }], build: [],
+    relief: [{ t: '筋膜槍／震動泡沫軸' }, { t: '足底筋膜伸展(大腳趾)', u: yt('Rcsd2frLJ78') }],
+    build: [{ t: '短足運動' }],
     status: [{ t: '舒緩已驗證有效', k: 'ok' }] },
   { pos: '久走｜小腿', issue: '酸、脹、累',
-    relief: [{ t: '比目魚肌伸展', u: yt('zV4TFmtSmkc') }], build: [{ t: '坐姿提踵', u: yt('BxfKOyI8sUg') }],
+    relief: [{ t: '比目魚肌伸展', u: yt('zV4TFmtSmkc') }, { t: '靠牆小腿伸展', u: yt('G3CFdJCNKgk') }], build: [{ t: '坐姿提踵', u: yt('BxfKOyI8sUg') }],
     status: [{ t: '舒緩已驗證有效', k: 'ok' }] },
   { pos: '單側右手向下｜右肩胛', issue: '酸、累',
     relief: [{ t: '肩胛後收', u: yt('9tJTdqUXW14') }], build: [{ t: '牆面滑手', u: yt('rw35lIr2LjA') }],
