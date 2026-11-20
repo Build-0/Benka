@@ -167,7 +167,9 @@ export default function Ability() {
     return items.length || kind !== 'all' ? items : [{ r, x: null, kind: '' }]
   })
   // 有影片嘅排前面,冇影片(純文字)嘅放最後;各自保持原有次序
-  const cards = [...allCards.filter((c) => vid(c.x?.u)), ...allCards.filter((c) => !vid(c.x?.u))]
+  const withVid = allCards.filter((c) => vid(c.x?.u))
+  const noVid = allCards.filter((c) => !vid(c.x?.u))
+  const cards = [...withVid, ...noVid]
   const ok = ROWS.filter(hasOk).length
   const wait = ROWS.filter((r) => r.status.some((s) => s.k === 'wait')).length
   return (
@@ -191,9 +193,19 @@ export default function Ability() {
         </select>
       </div>
       {cards.length === 0 && <div className="empty muted">冇符合嘅項目。</div>}
-      <div className="ab-acts">
-        {cards.map((c) => <Card key={c.r.pos + c.kind + (c.x?.t || '')} c={c} playing={playing} setPlaying={setPlaying} />)}
-      </div>
+      {withVid.length > 0 && (
+        <div className="ab-acts">
+          {withVid.map((c) => <Card key={c.r.pos + c.kind + (c.x?.t || '')} c={c} playing={playing} setPlaying={setPlaying} />)}
+        </div>
+      )}
+      {noVid.length > 0 && (
+        <>
+          <div className="ab-sep"><span>未有示範影片</span></div>
+          <div className="ab-acts">
+            {noVid.map((c) => <Card key={c.r.pos + c.kind + (c.x?.t || '')} c={c} playing={playing} setPlaying={setPlaying} />)}
+          </div>
+        </>
+      )}
     </>
   )
 }
