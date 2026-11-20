@@ -102,7 +102,7 @@ function Card({ c, playing, setPlaying }) {
         <div className="ab-vid">
           {on ? (
             <iframe
-              src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1`}
+              src={`https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1`}
               title={x.t}
               allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
               allowFullScreen
