@@ -592,3 +592,9 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
   .bdlay.two > .bdmain { grid-column: 1; grid-row: 1; min-width: 0; }
   .bdlay.two > :not(.bkd):not(.bdmain) { grid-column: auto; grid-row: auto; }
 }
+
+/* 兩欄撐滿整個寬度:左時間線、右分佈(闊時自動分兩欄,名稱同時間唔會離太遠) */
+@media (min-width: 1000px) {
+  .bdlay.two { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); justify-content: stretch; }
+  .bdlay.two .bkd-list { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)) !important; column-gap: 20px !important; }
+}
