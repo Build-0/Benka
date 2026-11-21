@@ -535,3 +535,10 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .pp.on .pa { border: 3px solid #1f4f8f; box-shadow: 0 0 0 3px rgba(47,111,191,.28), 0 4px 10px rgba(31,79,143,.35); transform: scale(1.08); }
 .pp.on .pa::after { content: '✓'; position: absolute; right: -6px; top: -6px; width: 18px; height: 18px; border-radius: 50%; background: #1f4f8f; color: #fff; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
 .pp.on .pn { background: #1f4f8f; color: #fff; padding: 2px 8px; border-radius: 10px; font-weight: 800; }
+
+/* 24小時分佈:桌面版唔再攤到全闊,名稱同時間貼近,一眼睇到 */
+@media (min-width: 800px) {
+  .bkd-list { grid-template-columns: repeat(auto-fill, 250px); column-gap: 32px; justify-content: start; }
+  .bkd-row { border-bottom: 1px solid rgba(31,43,58,.07); }
+  .bkd-n { white-space: nowrap; }
+}
