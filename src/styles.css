@@ -565,3 +565,9 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .bkd-row { border-radius: 0; border-bottom: 1px solid rgba(31,43,58,.2); padding: 0 6px; }
 .bkd-row.blank { border-radius: 8px; border-bottom: 1.5px dashed #c0841a; }
 .bkd-row b { min-width: 3.4em; padding-left: 8px; border-left: 1px solid rgba(31,43,58,.25); }
+
+/* 24小時分佈:線加喺項目與項目之間(每項一格有框),名稱同時間之間唔再有線 */
+.bkd-list { row-gap: 8px !important; column-gap: 12px !important; }
+.bkd-row b { border-left: 0; padding-left: 0; }
+.bkd-row { border: 1.5px solid rgba(31,43,58,.22); border-radius: 10px; }
+.bkd-row.blank { border: 1.5px dashed #c0841a; }
