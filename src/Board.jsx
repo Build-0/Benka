@@ -274,7 +274,7 @@ export default function Board() {
 
       {mode === 'all' && (
         <div className="people">
-          {[...TRACKS, { key: 'all', name: '全部人' }].map((t) => (
+          {[{ key: 'all', name: '全部人' }, ...TRACKS].map((t) => (
             <button key={t.key} type="button" className={'pp' + (whoS === t.key ? ' on' : '')} onClick={() => (whoS === t.key ? setFacePick(t.key) : pickWho(t.key))}>
               <span className="pa" style={pface(t.key) || PHOTO[t.key] ? undefined : { background: MONO[t.key][1] }}>{pface(t.key) || (PHOTO[t.key] ? <img src={import.meta.env.BASE_URL + PHOTO[t.key]} alt={t.name} /> : <b>{MONO[t.key][0]}</b>)}</span>
               <span className="pn">{t.name}</span>
