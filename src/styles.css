@@ -623,3 +623,9 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 /* 全部人:24小時分佈預設摺疊 */
 .fam-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 0; background: transparent; font: inherit; font-size: 15px; font-weight: 700; color: var(--ink); padding: 6px 2px; cursor: pointer; text-align: left; }
 .fam-toggle em { font-style: normal; font-size: 13px; font-weight: 600; color: #2f4a6b; background: #dbe6f3; padding: 3px 10px; border-radius: 999px; }
+
+/* 手機/平板:分佈清單撐滿全闊,右邊唔留空 */
+@media (max-width: 999px) {
+  .bkd-list { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)) !important; }
+  .fam-card .bkd-list { grid-template-columns: 1fr !important; }
+}
