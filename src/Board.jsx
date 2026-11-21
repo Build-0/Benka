@@ -362,14 +362,14 @@ function Breakdown({ items, title }) {
   const total = items.reduce((a, x) => a + x.n, 0) || 1
   const rows = items.map((x) => {
     const color = barColor(x.k)
-    return { ...x, color, name: x.k === 'me' ? '自由時間' : x.k === '__standby' ? '待命(沒有指定責任)' : x.k === '__blank' ? '沒有安排' : tname(x.k), icon: x.k === 'me' ? '⭐' : x.k === '__standby' ? '⏳' : x.k === '__blank' ? '▫️' : ticon(x.k) }
+    return { ...x, color, name: x.k === 'me' ? '自由時間' : x.k === '__standby' ? '待命(沒有指定責任)' : x.k === '__blank' ? '沒有安排的時間' : tname(x.k), icon: x.k === 'me' ? '⭐' : x.k === '__standby' ? '⏳' : x.k === '__blank' ? '▫️' : ticon(x.k) }
   })
   return (
     <section className="bkd">
       <div className="bkd-title">{title || '這一天 24 小時去了哪裡'}</div>
       <div className="bkd-list">
         {rows.map((r) => (
-          <div key={r.k} className={'bkd-row' + (r.k === 'me' ? ' free' : '')} style={{ '--c': r.color, '--w': (r.n / total) * 100 + '%' }}>
+          <div key={r.k} className={'bkd-row' + (r.k === 'me' ? ' free' : '') + (r.k === '__blank' ? ' blank' : '')} style={{ '--c': r.color, '--w': (r.n / total) * 100 + '%' }}>
             <i style={{ background: r.color }} />
             <span className="bkd-n">{r.icon} {r.name}</span>
             <b>{dur(r.n)}</b>

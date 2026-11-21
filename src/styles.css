@@ -555,3 +555,7 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 @media (min-width: 800px) { .bkd-list { grid-template-columns: repeat(auto-fill, minmax(260px, 360px)); } }
 .bkd-row { min-height: 40px; font-size: 16px; }
 .bkd-row b { font-size: 17px; min-width: 4.2em; text-align: right; }
+
+/* 沒有安排的時間:醒目標出 */
+.bkd-row.blank { border: 1.5px dashed #c0841a; color: #8a5a00; font-weight: 800; background: rgba(240, 180, 60, .14); }
+.bkd-row.blank b { color: #8a5a00; }
