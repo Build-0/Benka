@@ -605,3 +605,9 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
   .bdlay.two .bkd-list { grid-template-columns: 1fr !important; }
   .bdlay.two .agenda { max-width: none; }
 }
+
+/* 全部人:每人一張卡,清單樣式同單人一致 */
+.fam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 8px; }
+.fam-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; min-width: 0; }
+.fam-h { font-size: 16px; font-weight: 800; color: #2f4a6b; margin-bottom: 4px; }
+.fam-card .bkd-list { grid-template-columns: 1fr !important; }

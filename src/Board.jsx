@@ -362,46 +362,51 @@ const barColor = (k) => {
   const f = (n) => { const q = (n + h / 30) % 12; const v = l - s * Math.min(l, 1 - l) * Math.max(-1, Math.min(q - 3, 9 - q, 1)); return Math.round(v * 255).toString(16).padStart(2, '0') }
   return '#' + f(0) + f(8) + f(4)
 }
-function Breakdown({ items, title }) {
-  const total = items.reduce((a, x) => a + x.n, 0) || 1
-  const rows = [...items].sort((p, q) => q.n - p.n).map((x) => {
+function bkdRows(items) {
+  return [...items].sort((p, q) => q.n - p.n).map((x) => {
     const color = barColor(x.k)
     return { ...x, color, name: x.k === 'me' ? '自由時間' : x.k === '__standby' ? '待命(沒有指定責任)' : x.k === '__blank' ? '沒有安排的時間' : tname(x.k), icon: x.k === 'me' ? '⭐' : x.k === '__standby' ? '⏳' : x.k === '__blank' ? '▫️' : ticon(x.k) }
   })
+}
+
+// 一直行清單:色塊 + 圖示名稱 + 時間,行底按比例填色
+function BkdList({ items }) {
+  const total = items.reduce((a, x) => a + x.n, 0) || 1
+  return (
+    <div className="bkd-list">
+      {bkdRows(items).map((r) => (
+        <div key={r.k} className={'bkd-row' + (r.k === 'me' ? ' free' : '') + (r.k === '__blank' ? ' blank' : '')} style={{ '--c': r.color, '--w': (r.n / total) * 100 + '%' }}>
+          <i style={{ background: r.color }} />
+          <span className="bkd-n">{r.icon} {r.name}</span>
+          <b>{dur(r.n)}</b>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function Breakdown({ items, title }) {
   return (
     <section className="bkd">
       <div className="bkd-title">{title || '這一天 24 小時去了哪裡'}</div>
-      <div className="bkd-list">
-        {rows.map((r) => (
-          <div key={r.k} className={'bkd-row' + (r.k === 'me' ? ' free' : '') + (r.k === '__blank' ? ' blank' : '')} style={{ '--c': r.color, '--w': (r.n / total) * 100 + '%' }}>
-            <i style={{ background: r.color }} />
-            <span className="bkd-n">{r.icon} {r.name}</span>
-            <b>{dur(r.n)}</b>
-          </div>
-        ))}
-      </div>
+      <BkdList items={items} />
     </section>
   )
 }
 
-// 全部人:每人一條橫棒 + 最大三項
+// 全部人:每人一張卡,入面同單人一樣嘅清單
 function FamilyBars({ items }) {
   return (
-    <section className="bkd">
+    <section className="bkd bkd-fam">
       <div className="bkd-title">全家 24 小時去了哪裡</div>
-      {items.map(({ t, items: its }) => {
-        const total = its.reduce((a, x) => a + x.n, 0) || 1
-        const rows = its.map((x) => ({ ...x, color: barColor(x.k) }))
-        const top = its.filter((x) => !x.k.startsWith('__') && x.k !== 'me').slice(0, 3).map((x) => tname(x.k) + ' ' + dur(x.n)).join(' · ')
-        return (
-          <div key={t.key} className="fb">
-            <div className="fb-h"><b>{t.name}</b><span>{top}</span></div>
-            <div className="bkd-bar slim">
-              {rows.map((r) => <span key={r.k} style={{ width: (r.n / total) * 100 + '%', background: r.color }} />)}
-            </div>
+      <div className="fam-grid">
+        {items.map(({ t, items: its }) => (
+          <div key={t.key} className="fam-card">
+            <div className="fam-h">{t.name}</div>
+            <BkdList items={its} />
           </div>
-        )
-      })}
+        ))}
+      </div>
     </section>
   )
 }
