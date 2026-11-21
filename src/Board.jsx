@@ -122,7 +122,7 @@ export default function Board() {
   useEffect(() => { load(); loadCfg() }, [])
 
   // 任務 / 分類設定:改名、圖標、歸類、新增、刪除(patch = null 即刪除 / 還原預設)
-  const syncErr = (error) => error && setErr('任務庫只存咗喺呢部機(跨裝置同步要先喺 Supabase 跑 supabase/03_board_task_names.sql):' + error.message)
+  const syncErr = (error) => error && setErr('任務庫只存在這部裝置(跨裝置同步需先在 Supabase 執行 supabase/03_board_task_names.sql):' + error.message)
   const saveTask = async (k, patch) => {
     const c = getCfg()
     const t = { ...c.t }
@@ -255,19 +255,19 @@ export default function Board() {
         tone={mode}
         title="24 小時看板"
         icon="calendar-time"
-        sub={mode === 'all' ? '全家 6 個人嘅一日總覽' : rows ? `最長連續 ${dur(longest)}${standby ? ` · 待命 ${dur(standby)}` : ''}` : '我嘅時間'}
-        stats={mode === 'me' && rows ? [{ n: total ? dur(total) : '—', label: '我嘅自由時間' }] : []}
+        sub={mode === 'all' ? '全家 6 個人的一日總覽' : rows ? `最長連續 ${dur(longest)}${standby ? ` · 待命 ${dur(standby)}` : ''}` : '我的時間'}
+        stats={mode === 'me' && rows ? [{ n: total ? dur(total) : '—', label: '我的自由時間' }] : []}
       />
 
       <div className="modeseg" role="tablist">
-        <button role="tab" aria-selected={mode === 'me'} className={'mode me' + (mode === 'me' ? ' on' : '')} onClick={() => pickMode('me')}><i>👤</i>我嘅時間</button>
-        <button role="tab" aria-selected={mode === 'all'} className={'mode all' + (mode === 'all' ? ' on' : '')} onClick={() => pickMode('all')}><i>👨‍👩‍👧</i>全貌</button>
+        <button role="tab" aria-selected={mode === 'me'} className={'mode me' + (mode === 'me' ? ' on' : '')} onClick={() => pickMode('me')}><i>👤</i>我的時間</button>
+        <button role="tab" aria-selected={mode === 'all'} className={'mode all' + (mode === 'all' ? ' on' : '')} onClick={() => pickMode('all')}><i>👨‍👩‍👧</i>全部人</button>
       </div>
 
       {err && (
         <div className="card errbox">
           讀取失敗:{err}
-          {/relation|schema cache|does not exist/i.test(err) && <div className="muted">board_slots 表未建立,請先喺 Supabase SQL Editor 執行 supabase/02_board.sql。</div>}
+          {/relation|schema cache|does not exist/i.test(err) && <div className="muted">board_slots 表尚未建立,請先在 Supabase SQL Editor 執行 supabase/02_board.sql。</div>}
         </div>
       )}
       {empty && <div className="card errbox">未有看板資料,請先執行 supabase/02_board.sql。</div>}
@@ -302,7 +302,7 @@ export default function Board() {
 
 
       {mode === 'me' && rows && <Breakdown items={breakdownOf('benny')} />}
-      {mode === 'all' && rows && who !== 'all' && <Breakdown items={breakdownOf(who)} title={TRACKS.find((t) => t.key === who).name + ' 呢一日 24 小時去咗邊'} />}
+      {mode === 'all' && rows && who !== 'all' && <Breakdown items={breakdownOf(who)} title={TRACKS.find((t) => t.key === who).name + ' 這一天 24 小時去了哪裡'} />}
       {mode === 'all' && rows && who === 'all' && <FamilyBars items={TRACKS.map((t) => ({ t, items: breakdownOf(t.key) }))} />}
 
 
@@ -325,7 +325,7 @@ export default function Board() {
         <div className="backdrop mgrback" onMouseDown={(e) => e.target === e.currentTarget && setFacePick(null)}>
           <div className="sheet">
             <div className="sheet-head">
-              <h2>揀{TRACKS.find((t) => t.key === facePick)?.name || '全部人'}嘅頭像</h2>
+              <h2>選擇{TRACKS.find((t) => t.key === facePick)?.name || '全部人'}的頭像</h2>
               <button type="button" className="x" onClick={() => setFacePick(null)} aria-label="關閉"><Icon n="x" /></button>
             </div>
             <div className="sheet-body">
@@ -362,11 +362,11 @@ function Breakdown({ items, title }) {
   const total = items.reduce((a, x) => a + x.n, 0) || 1
   const rows = items.map((x) => {
     const color = barColor(x.k)
-    return { ...x, color, name: x.k === 'me' ? '自由時間' : x.k === '__standby' ? '待命(冇指定責任)' : x.k === '__blank' ? '冇安排' : tname(x.k), icon: x.k === 'me' ? '⭐' : x.k === '__standby' ? '⏳' : x.k === '__blank' ? '▫️' : ticon(x.k) }
+    return { ...x, color, name: x.k === 'me' ? '自由時間' : x.k === '__standby' ? '待命(沒有指定責任)' : x.k === '__blank' ? '沒有安排' : tname(x.k), icon: x.k === 'me' ? '⭐' : x.k === '__standby' ? '⏳' : x.k === '__blank' ? '▫️' : ticon(x.k) }
   })
   return (
     <section className="bkd">
-      <div className="bkd-title">{title || '呢一日 24 小時去咗邊'}</div>
+      <div className="bkd-title">{title || '這一天 24 小時去了哪裡'}</div>
       <div className="bkd-bar">
         {rows.map((r) => <span key={r.k} style={{ width: (r.n / total) * 100 + '%', background: r.color }} title={r.name} />)}
       </div>
@@ -387,7 +387,7 @@ function Breakdown({ items, title }) {
 function FamilyBars({ items }) {
   return (
     <section className="bkd">
-      <div className="bkd-title">全家 24 小時去咗邊</div>
+      <div className="bkd-title">全家 24 小時去了哪裡</div>
       {items.map(({ t, items: its }) => {
         const total = its.reduce((a, x) => a + x.n, 0) || 1
         const rows = its.map((x) => ({ ...x, color: barColor(x.k) }))
@@ -442,7 +442,7 @@ function ListView({ mode, who, grid, wins, onEdit }) {
                   return (
                     <button key={'o' + e.from} className="ag open" onClick={() => onEdit('benny', { from: e.from, to: e.to, task: '' })}>
                       <span className="agt">{hm(e.from)}–{endHm(e.to)}</span>
-                      <span className="agb">待命 · 冇指定責任</span>
+                      <span className="agb">待命 · 沒有指定責任</span>
                       <span className="agp"><em style={{ '--p': '#9aaabb' }}>{dur(e.to - e.from)}</em></span>
                     </button>
                   )
@@ -469,7 +469,7 @@ function ListView({ mode, who, grid, wins, onEdit }) {
           </section>
         )
       })}
-      {events.length === 0 && <div className="empty muted">呢個日子類型未有安排。</div>}
+      {events.length === 0 && <div className="empty muted">這個日子類型還沒有安排。</div>}
     </>
   )
 }
@@ -540,7 +540,7 @@ function SlotEditor({ init, grid, onClose, onSave, onManage }) {
     else setPicked([...picked.filter((x) => x !== 'flex'), k].slice(-2).concat(picked.includes('flex') ? ['flex'] : [])) // 最多同時兩件事(彈性標記唔計,永遠排最尾)
   }
   const save = async (clearIt) => {
-    if (to === from) { setErr('「由」同「至」唔可以一樣'); return }
+    if (to === from) { setErr('「由」與「至」不可以相同'); return }
     setBusy(true); setErr('')
     const m = await onSave({ track, from, to, task: clearIt ? '' : picked.join('+'), oldFrom: init.isNew ? from : seg.from, oldTo: init.isNew ? to : seg.to })
     setBusy(false)
@@ -572,10 +572,10 @@ function SlotEditor({ init, grid, onClose, onSave, onManage }) {
           </div>
           {to < from && <div className="overnight">跨過午夜:{hm(from)} → 第二日 {endHm(to)}</div>}
           <div className="pickhead">
-            <b>揀任務</b><span className="muted">最多兩個,一齊做嘅事</span>
+            <b>選擇任務</b><span className="muted">最多兩個,同時進行的事</span>
             <button type="button" className="rnbtn" onClick={() => onManage({ focus: tab })}>⚙ 任務庫</button>
           </div>
-          {picked.length > 0 && <div className="pickedline">已揀:{label(picked.join('+'))}</div>}
+          {picked.length > 0 && <div className="pickedline">已選:{label(picked.join('+'))}</div>}
           <div className="cattabs">
             {cats.map((c) => (
               <button key={c.key} type="button" className={'ctab' + (tab === c.key ? ' on' : '')} onClick={() => setTab(c.key)}><i>{c.e}</i><span>{c.n}</span></button>

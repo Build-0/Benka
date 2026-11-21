@@ -7,8 +7,8 @@ import Hero from './Hero.jsx'
 const yt = (id) => 'https://www.youtube.com/watch?v=' + id
 const ROWS = [
   { pos: '久走｜腳掌', issue: '酸、脹、累',
-    relief: [{ t: '筋膜槍／震動泡沫軸' }, { t: '足底筋膜伸展(大腳趾)', u: yt('Rcsd2frLJ78'), d: '每次 20–30 秒 × 3 次;前腳掌痛加劇就停' }],
-    build: [{ t: '短足運動', u: 'https://youtube.com/shorts/7EQ_9LfUYcM', d: '每次維持 5 秒，重複 8 次;抬起足弓,唔好蜷腳趾' }],
+    relief: [{ t: '筋膜槍／震動泡沫軸' }, { t: '足底筋膜伸展(大腳趾)', u: yt('Rcsd2frLJ78'), d: '每次 20–30 秒 × 3 次;前腳掌疼痛加劇就停止' }],
+    build: [{ t: '短足運動', u: 'https://youtube.com/shorts/7EQ_9LfUYcM', d: '每次維持 5 秒，重複 8 次;抬起足弓,不要蜷起腳趾' }],
     status: [{ t: '舒緩已驗證有效', k: 'ok' }] },
   { pos: '久走｜小腿', issue: '酸、脹、累',
     relief: [{ t: '比目魚肌伸展', u: yt('zV4TFmtSmkc') }], build: [{ t: '坐姿提踵', u: yt('BxfKOyI8sUg') }],
@@ -56,7 +56,7 @@ const DOSE = {
   '貓牛式': '每個方向 5–10 下 × 1–3 組,配合呼吸慢慢做',
   '跑前動態熱身': '5–10 分鐘,由慢到快',
   '跑後拉伸': '每個部位 15–30 秒 × 2 次',
-  '跑步': '循序漸進,以可聊天嘅強度為準',
+  '跑步': '循序漸進,以可以聊天的強度為準',
   '前夾胸／側抬腿等': '每組 12–15 下 × 2–3 組',
 }
 
@@ -192,7 +192,7 @@ export default function Ability() {
           {ROWS.map((r) => <option key={r.pos} value={r.pos}>{r.pos}</option>)}
         </select>
       </div>
-      {cards.length === 0 && <div className="empty muted">冇符合嘅項目。</div>}
+      {cards.length === 0 && <div className="empty muted">沒有符合的項目。</div>}
       {withVid.length > 0 && (
         <div className="ab-acts">
           {withVid.map((c) => <Card key={c.r.pos + c.kind + (c.x?.t || '')} c={c} playing={playing} setPlaying={setPlaying} />)}

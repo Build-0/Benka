@@ -49,10 +49,10 @@ export default function TaskManager({ start, focus, onSaved, onClose, onSaveTask
   }
   const remove = async () => {
     if (form.kind === 'task') {
-      if (isCustomTask(form.key) && !window.confirm('刪除任務「' + form.name + '」?已經用咗嘅時段會顯示做「(已刪任務)」')) return
+      if (isCustomTask(form.key) && !window.confirm('刪除任務「' + form.name + '」?已經使用過的時段會顯示為「(已刪任務)」')) return
       await onSaveTask(form.key, null)
     } else {
-      if (form.custom && !window.confirm('刪除分類「' + form.name + '」?入面嘅任務會移去第一個分類')) return
+      if (form.custom && !window.confirm('刪除分類「' + form.name + '」?裡面的任務會移到第一個分類')) return
       await onSaveCat(form.key, null)
     }
     closeForm()
@@ -72,7 +72,7 @@ export default function TaskManager({ start, focus, onSaved, onClose, onSaveTask
           {!form && (
             <>
               <div className="mgrbar">
-                <span className="muted">{sorting ? '用箭咀調位置,完成後撳右邊「完成」' : '撳分類標題改分類;撳任務改名、圖標、歸邊類'}</span>
+                <span className="muted">{sorting ? '用箭頭調整位置,完成後按右邊「完成」' : '點選分類標題修改分類;點選任務可改名、圖示、歸類'}</span>
                 <button type="button" className={'rnbtn' + (sorting ? ' on' : '')} onClick={() => setSorting(!sorting)}>{sorting ? '完成' : '⇅ 排序'}</button>
               </div>
               {cats.map((c, ci) => (

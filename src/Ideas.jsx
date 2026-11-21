@@ -101,7 +101,7 @@ export default function Ideas() {
         <div className="card errbox">
           讀取失敗:{err}
           {/relation|schema cache|does not exist/i.test(err) && (
-            <div className="muted">ideas 表未建立,請先喺 Supabase SQL Editor 執行 supabase/01_ideas.sql。</div>
+            <div className="muted">ideas 表尚未建立,請先在 Supabase SQL Editor 執行 supabase/01_ideas.sql。</div>
           )}
         </div>
       )}
@@ -126,7 +126,7 @@ export default function Ideas() {
       </div>
 
       {rows && shown.length === 0 && !err && (
-        <div className="empty muted">{rows.length === 0 ? '未有想法,撳右下角「＋」記低第一個。' : '搵唔到符合嘅想法。'}</div>
+        <div className="empty muted">{rows.length === 0 ? '還沒有想法,按右下角「＋」記下第一個。' : '找不到符合的想法。'}</div>
       )}
 
       <div className={'grid' + (view === 'list' ? ' list' : '')}>
@@ -230,7 +230,7 @@ function Editor({ idea, q = '', allTags, onClose, onSaved }) {
   }
 
   const del = async () => {
-    if (!window.confirm('確定刪除呢個想法?')) return
+    if (!window.confirm('確定刪除這個想法?')) return
     setBusy(true)
     const { error } = await supabase.from('ideas').delete().eq('id', idea.id)
     setBusy(false)
@@ -253,7 +253,7 @@ function Editor({ idea, q = '', allTags, onClose, onSaved }) {
             {idea.tags.length > 0 && <div className="tags">{idea.tags.map((t) => <span key={t} className="tag">{t}</span>)}</div>}
             {idea.content
               ? <div className="rcontent">{hl(idea.content, q)}</div>
-              : <div className="muted">(冇內容)</div>}
+              : <div className="muted">(沒有內容)</div>}
             {idea.updated_at && idea.updated_at !== idea.created_at && <div className="muted rupd">最後修改 {fmtFull(idea.updated_at)}</div>}
           </div>
           <div className="actions">
@@ -277,7 +277,7 @@ function Editor({ idea, q = '', allTags, onClose, onSaved }) {
         <div className="sheet-body">
           {restored && (
             <div className="draftnote">
-              <span>已還原你上次未儲存嘅草稿</span>
+              <span>已還原你上次未儲存的草稿</span>
               <button type="button" onClick={discard}>放棄草稿</button>
             </div>
           )}
