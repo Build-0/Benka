@@ -559,3 +559,9 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 /* 沒有安排的時間:醒目標出 */
 .bkd-row.blank { border: 1.5px dashed #c0841a; color: #8a5a00; font-weight: 800; background: rgba(240, 180, 60, .14); }
 .bkd-row.blank b { color: #8a5a00; }
+
+/* 24小時分佈:更窄、名稱同時間更近,加分隔線 */
+.bkd-list, .bkd-list { grid-template-columns: repeat(auto-fill, minmax(210px, 250px)) !important; column-gap: 22px; row-gap: 0; }
+.bkd-row { border-radius: 0; border-bottom: 1px solid rgba(31,43,58,.2); padding: 0 6px; }
+.bkd-row.blank { border-radius: 8px; border-bottom: 1.5px dashed #c0841a; }
+.bkd-row b { min-width: 3.4em; padding-left: 8px; border-left: 1px solid rgba(31,43,58,.25); }
