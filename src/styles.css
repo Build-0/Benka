@@ -576,3 +576,12 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .bkd-list { row-gap: 0 !important; }
 .bkd-row { border: 0; border-bottom: 1.5px solid rgba(31,43,58,.25); border-radius: 0; }
 .bkd-row.blank { border: 0; border-bottom: 2px dashed #c0841a; border-radius: 0; }
+
+/* 桌面版:「這一天 24 小時去了哪裡」放時間線右側,捲動時跟住 */
+@media (min-width: 1000px) {
+  .bdlay.two { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+  .bdlay.two > .bkd { grid-column: 2; grid-row: 1; position: sticky; top: 150px; margin: 0; }
+  .bdlay.two > :not(.bkd) { grid-column: 1; grid-row: 1; }
+  .bdlay.two .bkd-list { grid-template-columns: 1fr !important; }
+  .bdlay.two .agenda { max-width: none; }
+}

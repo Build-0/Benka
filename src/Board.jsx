@@ -301,6 +301,7 @@ export default function Board() {
       )}
 
 
+      <div className={'bdlay' + (view !== 'day' && who !== 'all' ? ' two' : '')}>
       {mode === 'me' && rows && <Breakdown items={breakdownOf('benny')} />}
       {mode === 'all' && rows && who !== 'all' && <Breakdown items={breakdownOf(who)} title={TRACKS.find((t) => t.key === who).name + ' 這一天 24 小時去了哪裡'} />}
       {mode === 'all' && rows && who === 'all' && <FamilyBars items={TRACKS.map((t) => ({ t, items: breakdownOf(t.key) }))} />}
@@ -311,6 +312,7 @@ export default function Board() {
       )}
       {rows && view !== 'day' && <ListView mode={view} who={who} grid={grid} wins={wins} onEdit={(track, s) => setEdit({ track, ...s })} />}
       {rows && view === 'day' && <DayView who={who} grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
+      </div>
 
       {edit && (
         <SlotEditor
