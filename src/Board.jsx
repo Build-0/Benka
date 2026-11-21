@@ -367,9 +367,6 @@ function Breakdown({ items, title }) {
   return (
     <section className="bkd">
       <div className="bkd-title">{title || '這一天 24 小時去了哪裡'}</div>
-      <div className="bkd-bar">
-        {rows.map((r) => { const pc = (r.n / total) * 100; return <span key={r.k} className="bkd-seg" style={{ width: pc + '%', background: r.color }} title={r.name + ' ' + dur(r.n)}>{pc >= 12 ? r.icon + ' ' + r.name : pc >= 5 ? r.icon : ''}</span> })}
-      </div>
       <div className="bkd-list">
         {rows.map((r) => (
           <div key={r.k} className={'bkd-row' + (r.k === 'me' ? ' free' : '')} style={{ '--c': r.color, '--w': (r.n / total) * 100 + '%' }}>
