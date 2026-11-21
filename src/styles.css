@@ -549,3 +549,9 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
   .bkd-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; row-gap: 4px; }
   .bkd-row { border-bottom: 0; }
 }
+
+/* 24小時分佈:每行限闊,名稱同時間貼近(唔再隔住成個畫面) */
+.bkd-list { grid-template-columns: repeat(auto-fill, minmax(260px, 360px)); column-gap: 28px; justify-content: start; }
+@media (min-width: 800px) { .bkd-list { grid-template-columns: repeat(auto-fill, minmax(260px, 360px)); } }
+.bkd-row { min-height: 40px; font-size: 16px; }
+.bkd-row b { font-size: 17px; min-width: 4.2em; text-align: right; }
