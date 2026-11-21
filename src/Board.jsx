@@ -88,11 +88,11 @@ const dur = (slots) => { const m = slots * 30; return m >= 60 ? `${Math.floor(m 
 
 export default function Board() {
   const [dayRaw, setDay] = useState(() => cget('board-day') || defaultDay())
-  const [mode, setMode] = useState(() => (cget('board-mode') === 'all' ? 'all' : 'me')) // me = 我嘅時間;all = 全貌
   const [whoS, setWho] = useState(() => cget('board-who') || 'benny')
   const [viewS, setView] = useState(() => (['day', 'list'].includes(cget('board-view')) ? cget('board-view') : 'time'))
   // 「我嘅時間」永遠係 Benny、只有列表;「全貌」先有人物篩選同總表
-  const who = mode === 'me' ? 'benny' : whoS
+  const who = whoS
+  const mode = whoS === 'benny' ? 'me' : 'all' // me = 揀咗 Benny(我的時間);all = 其他人 / 全部人
   const view = (mode === 'me' || whoS !== 'all') && viewS === 'day' ? 'time' : viewS
   const [rows, setRows] = useState(() => cget('board')) // 全部日子嘅格
   const [err, setErr] = useState('')
@@ -196,7 +196,6 @@ export default function Board() {
   const grid = grids[day]
 
   const pickDay = (k) => { setDay(k); cset('board-day', k) }
-  const pickMode = (k) => { setMode(k); cset('board-mode', k); if (k === 'all') { setView('day'); cset('board-view', 'day'); setWho('all'); cset('board-who', 'all') } }
   const pickWho = (k) => { setWho(k); cset('board-who', k); if (k === 'all') { setView('day'); cset('board-view', 'day') } } // 揀全部人即刻睇總表
   const pickView = (k) => { setView(k); cset('board-view', k) }
 
@@ -259,10 +258,6 @@ export default function Board() {
         stats={mode === 'me' && rows ? [{ n: total ? dur(total) : '—', label: '我的自由時間' }] : []}
       />
 
-      <div className="modeseg" role="tablist">
-        <button role="tab" aria-selected={mode === 'me'} className={'mode me' + (mode === 'me' ? ' on' : '')} onClick={() => pickMode('me')}><i>👤</i>我的時間</button>
-        <button role="tab" aria-selected={mode === 'all'} className={'mode all' + (mode === 'all' ? ' on' : '')} onClick={() => pickMode('all')}><i>👨‍👩‍👧</i>全部人</button>
-      </div>
 
       {err && (
         <div className="card errbox">
@@ -272,7 +267,7 @@ export default function Board() {
       )}
       {empty && <div className="card errbox">未有看板資料,請先執行 supabase/02_board.sql。</div>}
 
-      {mode === 'all' && (
+      {(
         <div className="people">
           {[{ key: 'all', name: '全部人' }, ...TRACKS].map((t) => (
             <button key={t.key} type="button" className={'pp' + (whoS === t.key ? ' on' : '')} onClick={() => (whoS === t.key ? setFacePick(t.key) : pickWho(t.key))}>
