@@ -43,7 +43,8 @@ const colorOf = (tag) => {
 }
 const fmt = (s) => {
   const d = new Date(s)
-  return `${d.getDate()}/${d.getMonth() + 1}`
+  const p = (n) => String(n).padStart(2, '0')
+  return `${d.getDate()}/${d.getMonth() + 1} ${p(d.getHours())}:${p(d.getMinutes())}`
 }
 
 export default function Ideas() {
