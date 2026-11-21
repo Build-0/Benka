@@ -301,7 +301,7 @@ export default function Board() {
       )}
 
 
-      <div className={'bdlay' + (view !== 'day' && who !== 'all' ? ' two' : '')}>
+      <div className={'bdlay' + ''}>
       {mode === 'me' && rows && <Breakdown items={breakdownOf('benny')} />}
       {mode === 'all' && rows && who !== 'all' && <Breakdown items={breakdownOf(who)} title={TRACKS.find((t) => t.key === who).name + ' 這一天 24 小時去了哪裡'} />}
       {mode === 'all' && rows && who === 'all' && <FamilyBars items={TRACKS.map((t) => ({ t, items: breakdownOf(t.key) }))} />}
@@ -364,7 +364,7 @@ const barColor = (k) => {
 }
 function Breakdown({ items, title }) {
   const total = items.reduce((a, x) => a + x.n, 0) || 1
-  const rows = items.map((x) => {
+  const rows = [...items].sort((p, q) => q.n - p.n).map((x) => {
     const color = barColor(x.k)
     return { ...x, color, name: x.k === 'me' ? '自由時間' : x.k === '__standby' ? '待命(沒有指定責任)' : x.k === '__blank' ? '沒有安排的時間' : tname(x.k), icon: x.k === 'me' ? '⭐' : x.k === '__standby' ? '⏳' : x.k === '__blank' ? '▫️' : ticon(x.k) }
   })
