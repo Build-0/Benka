@@ -611,3 +611,11 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .fam-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; min-width: 0; }
 .fam-h { font-size: 16px; font-weight: 800; color: #2f4a6b; margin-bottom: 4px; }
 .fam-card .bkd-list { grid-template-columns: 1fr !important; }
+
+/* 全部人:六人盡量排同一行 */
+.fam-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.fam-card { padding: 8px 8px; }
+.fam-card .bkd-row { font-size: 14px; gap: 5px; padding: 0 4px; min-height: 36px; }
+.fam-card .bkd-row i { width: 13px; height: 13px; }
+.fam-card .bkd-row b { font-size: 14px; min-width: 0; }
+.fam-card .bkd-n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
