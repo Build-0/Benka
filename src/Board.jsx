@@ -310,8 +310,10 @@ export default function Board() {
       {rows && view !== 'day' && (
         <button className="fab bfab" onClick={() => setEdit({ track: who === 'all' ? 'benny' : who, from: 18, to: 19, task: '', isNew: true })} aria-label="新增安排"><Icon n="plus" /></button>
       )}
+      <div className="bdmain">
       {rows && view !== 'day' && <ListView mode={view} who={who} grid={grid} wins={wins} onEdit={(track, s) => setEdit({ track, ...s })} />}
       {rows && view === 'day' && <DayView who={who} grid={grid} onEdit={(track, s) => setEdit({ track, ...s })} />}
+      </div>
       </div>
 
       {edit && (

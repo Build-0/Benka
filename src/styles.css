@@ -585,3 +585,10 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
   .bdlay.two .bkd-list { grid-template-columns: 1fr !important; }
   .bdlay.two .agenda { max-width: none; }
 }
+
+/* 修正:時間線各段要包喺同一格,唔好逐段疊埋(字亂);兩欄收窄,唔再太長條 */
+@media (min-width: 1000px) {
+  .bdlay.two { grid-template-columns: minmax(0, 620px) 340px; justify-content: start; }
+  .bdlay.two > .bdmain { grid-column: 1; grid-row: 1; min-width: 0; }
+  .bdlay.two > :not(.bkd):not(.bdmain) { grid-column: auto; grid-row: auto; }
+}
