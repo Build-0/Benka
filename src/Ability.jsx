@@ -14,7 +14,7 @@ const ROWS = [
     relief: [{ t: '比目魚肌伸展', u: yt('zV4TFmtSmkc') }], build: [{ t: '坐姿提踵', u: yt('BxfKOyI8sUg') }],
     status: [{ t: '舒緩已驗證有效', k: 'ok' }] },
   { pos: '單側右手向下｜右肩胛', issue: '酸、累',
-    relief: [{ t: '肩胛後收', u: yt('9tJTdqUXW14') }], build: [{ t: '牆面滑手', u: yt('rw35lIr2LjA') }],
+    relief: [{ t: '肩胛後收', u: yt('9tJTdqUXW14') }, { t: '菱形肌放鬆', u: 'https://youtube.com/shorts/6SBqySvkkIc', d: '每次 20–30 秒 × 2–3 次,感到繃緊即可,不要硬拉' }], build: [{ t: '牆面滑手', u: yt('rw35lIr2LjA') }],
     status: [{ t: '舒緩待測', k: 'wait' }, { t: '能力建立有效', k: 'ok' }] },
   { pos: '身體轉動｜腰方肌', issue: '酸、累',
     relief: [{ t: '地面側屈＋輕旋轉', u: 'https://youtu.be/SCTCiqEW07k' }],
