@@ -526,3 +526,12 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 .paused { margin-top: 26px; padding-top: 14px; border-top: 2px dashed rgba(31,43,58,.18); --c: #8a96a6; }
 .tile.off { opacity: .55; filter: grayscale(1); background: rgba(255,255,255,.5); }
 .tile.off b { text-decoration: line-through; text-decoration-color: rgba(31,43,58,.4); }
+
+/* 看板人物篩選:揀中嘅一眼睇得出(其他變淡,揀中嘅粗框+名牌+剔號) */
+.people:has(.pp.on) .pp:not(.on) { opacity: .45; }
+.people:has(.pp.on) .pp:not(.on) .pa { filter: grayscale(.6); }
+.pp .pa { position: relative; overflow: visible; }
+.pp .pa img, .pp .pa b { border-radius: 14px; }
+.pp.on .pa { border: 3px solid #1f4f8f; box-shadow: 0 0 0 3px rgba(47,111,191,.28), 0 4px 10px rgba(31,79,143,.35); transform: scale(1.08); }
+.pp.on .pa::after { content: '✓'; position: absolute; right: -6px; top: -6px; width: 18px; height: 18px; border-radius: 50%; background: #1f4f8f; color: #fff; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+.pp.on .pn { background: #1f4f8f; color: #fff; padding: 2px 8px; border-radius: 10px; font-weight: 800; }
