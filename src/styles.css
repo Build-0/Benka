@@ -540,3 +540,12 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
   .bkd-row { border-bottom: 1px solid rgba(31,43,58,.07); }
   .bkd-n { white-space: nowrap; }
 }
+
+/* 24小時分佈:色塊內直接寫名,清單每行按比例填色,顏色同項目一眼對應 */
+.bkd-seg { display: flex; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap; font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.45); }
+.bkd-row { position: relative; padding: 0 8px; border-radius: 8px; background: linear-gradient(to right, color-mix(in srgb, var(--c) 30%, transparent) var(--w), transparent var(--w)); }
+.bkd-row i { width: 16px; height: 16px; border-radius: 5px; }
+@media (min-width: 800px) {
+  .bkd-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; row-gap: 4px; }
+  .bkd-row { border-bottom: 0; }
+}
