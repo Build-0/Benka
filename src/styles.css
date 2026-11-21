@@ -598,3 +598,10 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
   .bdlay.two { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); justify-content: stretch; }
   .bdlay.two .bkd-list { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)) !important; column-gap: 20px !important; }
 }
+
+/* 最終:左邊時間線(撐滿),右邊 24 小時分佈一直行(340px,跟住捲動) */
+@media (min-width: 1000px) {
+  .bdlay.two { grid-template-columns: minmax(0, 1fr) 340px; justify-content: stretch; gap: 24px; }
+  .bdlay.two .bkd-list { grid-template-columns: 1fr !important; }
+  .bdlay.two .agenda { max-width: none; }
+}
