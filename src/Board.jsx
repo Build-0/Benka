@@ -391,17 +391,23 @@ function Breakdown({ items, title }) {
 
 // 全部人:每人一張卡,入面同單人一樣嘅清單
 function FamilyBars({ items }) {
+  const [open, setOpen] = useState(false) // 預設摺疊,免得推低下面嘅時間表
   return (
     <section className="bkd bkd-fam">
-      <div className="bkd-title">全家 24 小時去了哪裡</div>
-      <div className="fam-grid">
-        {items.map(({ t, items: its }) => (
-          <div key={t.key} className="fam-card">
-            <div className="fam-h">{t.name}</div>
-            <BkdList items={its} />
-          </div>
-        ))}
-      </div>
+      <button type="button" className="fam-toggle" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        <span>全家 24 小時去了哪裡</span>
+        <em>{open ? '收起 ▲' : '點擊展開 ▼'}</em>
+      </button>
+      {open && (
+        <div className="fam-grid">
+          {items.map(({ t, items: its }) => (
+            <div key={t.key} className="fam-card">
+              <div className="fam-h">{t.name}</div>
+              <BkdList items={its} />
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   )
 }
