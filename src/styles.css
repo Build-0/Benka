@@ -521,3 +521,8 @@ mark { background: #ffe38a; color: inherit; border-radius: 3px; padding: 0 1px; 
 /* 有影片 / 未有影片 分隔 */
 .ab-sep { display: flex; align-items: center; gap: 10px; margin: 22px 2px 12px; color: var(--muted, #6b7a8c); font-size: 14px; font-weight: 600; }
 .ab-sep::before, .ab-sep::after { content: ''; flex: 1; height: 1px; background: rgba(31,43,58,.15); }
+
+/* 保健品:已暫停區 */
+.paused { margin-top: 26px; padding-top: 14px; border-top: 2px dashed rgba(31,43,58,.18); --c: #8a96a6; }
+.tile.off { opacity: .55; filter: grayscale(1); background: rgba(255,255,255,.5); }
+.tile.off b { text-decoration: line-through; text-decoration-color: rgba(31,43,58,.4); }

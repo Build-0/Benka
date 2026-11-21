@@ -23,18 +23,20 @@ export default function Supplements() {
   useEffect(() => {
     supabase
       .from('supplements')
-      .select('id, name, dose_text, time_slots')
-      .eq('is_active', true)
+      .select('id, name, dose_text, time_slots, is_active')
       .order('sort_order')
       .then(({ data, error }) => {
         if (error) { setErr(error.message); setRows((r) => r || []) } else { setRows(data); cset('supp', data) }
       })
   }, [])
 
-  const inSlot = (k) => (rows || []).filter((r) => (r.time_slots || []).includes(k))
+  const act = (rows || []).filter((r) => r.is_active !== false)
+  const inSlot = (k) => act.filter((r) => (r.time_slots || []).includes(k))
+  const label = Object.fromEntries(SLOTS.map((x) => [x.key, x.label]))
+  const paused = (rows || []).filter((r) => r.is_active === false && (slot === 'all' || (r.time_slots || []).includes(slot)))
   const shown = slot === 'all' ? SLOTS : SLOTS.filter((s) => s.key === slot)
   const cur = TABS.find((s) => s.key === slot)
-  const total = (rows || []).length
+  const total = act.length
 
   return (
     <>
@@ -61,7 +63,7 @@ export default function Supplements() {
       </div>
       </div>
 
-      {rows && total === 0 && <div className="empty muted">未有保健品。</div>}
+      {rows && total === 0 && paused.length === 0 && <div className="empty muted">未有保健品。</div>}
 
       {shown.map((s) => {
         const items = inSlot(s.key)
@@ -83,6 +85,21 @@ export default function Supplements() {
           </section>
         )
       })}
+
+      {paused.length > 0 && (
+        <section className="paused">
+          <div className="grp">已暫停<span className="gn">{paused.length} 種</span></div>
+          <div className="tiles">
+            {paused.map((r) => (
+              <div key={r.id} className="tile off">
+                <div className="pill"><Icon n="pill" /></div>
+                <b>{r.name}</b>
+                <span className="dose">{(r.time_slots || []).map((k) => label[k]).filter(Boolean).join('・') || '—'}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </>
   )
 }
